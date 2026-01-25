@@ -49,6 +49,17 @@ const Index: React.FC = () => {
       <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] bg-secondary/5 blob-shape animate-breathe" style={{ animationDelay: '2s' }} />
       <div className="absolute top-[30%] right-[5%] w-[20vw] h-[20vw] bg-accent/40 blob-shape animate-breathe" style={{ animationDelay: '1s' }} />
 
+      {/* Mini circles matching button colors */}
+      <div className="absolute top-[18%] left-[15%] w-16 h-16 rounded-full bg-chart-2/20 blur-[1px] animate-float" style={{ animationDelay: '0.5s' }} />
+      <div className="absolute top-[12%] right-[18%] w-20 h-20 rounded-full bg-chart-1/20 blur-[1px] animate-float" style={{ animationDelay: '1.5s' }} />
+      <div className="absolute bottom-[20%] left-[8%] w-24 h-24 rounded-full bg-chart-3/20 blur-[1px] animate-float" style={{ animationDelay: '2.5s' }} />
+      <div className="absolute bottom-[15%] right-[25%] w-14 h-14 rounded-full bg-secondary/20 blur-[1px] animate-float" style={{ animationDelay: '3.5s' }} />
+      
+      {/* Smaller accents */}
+      <div className="absolute top-[40%] left-[5%] w-8 h-8 rounded-full bg-chart-1/30 animate-float" style={{ animationDelay: '4s' }} />
+      <div className="absolute top-[60%] right-[8%] w-10 h-10 rounded-full bg-chart-2/30 animate-float" style={{ animationDelay: '2s' }} />
+      <div className="absolute bottom-[35%] left-[20%] w-6 h-6 rounded-full bg-secondary/30 animate-float" style={{ animationDelay: '1s' }} />
+
       <div className="max-w-2xl w-full text-center relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
         {/* Title with decorative elements */}
         <div className="mb-8 animate-fade-in-up">

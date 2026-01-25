@@ -10,7 +10,8 @@ import FinancePanel from '@/components/FinancePanel';
 import MiniGames from '@/components/MiniGames';
 import Achievements from '@/components/Achievements';
 import EventModal from '@/components/EventModal';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint } from 'lucide-react';
+import NotificationsPanel from '@/components/NotificationsPanel';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const GameDashboard: React.FC = () => {
@@ -118,7 +119,14 @@ const GameDashboard: React.FC = () => {
           {/* Right Column - Tabs */}
           <div className="lg:col-span-2 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
             <Tabs defaultValue="shop" className="h-full">
-              <TabsList className="grid w-full grid-cols-4 mb-5 bg-card/80 border-2 border-border/50 p-1.5 rounded-2xl h-auto">
+              <TabsList className="grid w-full grid-cols-5 mb-5 bg-card/80 border-2 border-border/50 p-1.5 rounded-2xl h-auto">
+                <TabsTrigger
+                  value="alerts"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
+                >
+                  <Bell className="w-4 h-4" />
+                  <span className="hidden md:inline font-medium">Needs</span>
+                </TabsTrigger>
                 <TabsTrigger
                   value="shop"
                   className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
@@ -148,6 +156,10 @@ const GameDashboard: React.FC = () => {
                   <span className="hidden md:inline font-medium">Awards</span>
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="alerts" className="mt-0 h-full">
+                <NotificationsPanel />
+              </TabsContent>
 
               <TabsContent value="shop" className="mt-0">
                 <Shop />

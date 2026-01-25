@@ -160,7 +160,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
                       alt={data.name}
                       className={cn(
                         "w-24 h-24 mx-auto object-contain transition-transform duration-300",
-                        selectedSpecies === species && "animate-float"
+                        selectedSpecies === species && "animate-happy-jump"
                       )}
                     />
                   </div>
