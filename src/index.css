@@ -1,0 +1,325 @@
+@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Cozy Cottage Core Design System
+   A warm, hand-crafted aesthetic inspired by storybook illustrations
+   Soft textures, earthy tones, organic shapes
+*/
+
+@layer base {
+  :root {
+    /* Cream paper background */
+    --background: 40 33% 96%;
+    /* Warm charcoal for text */
+    --foreground: 25 25% 20%;
+
+    /* Warm off-white cards */
+    --card: 42 40% 97%;
+    --card-foreground: 25 25% 20%;
+
+    --popover: 40 30% 94%;
+    --popover-foreground: 25 25% 20%;
+
+    /* Terracotta - warm coral-orange */
+    --primary: 16 65% 55%;
+    --primary-foreground: 40 33% 98%;
+
+    /* Sage green */
+    --secondary: 140 25% 40%;
+    --secondary-foreground: 40 33% 98%;
+
+    /* Dusty rose muted */
+    --muted: 350 20% 75%;
+    --muted-foreground: 25 20% 40%;
+
+    /* Soft butter yellow accent */
+    --accent: 45 60% 90%;
+    --accent-foreground: 25 30% 30%;
+
+    /* Soft red for warnings */
+    --destructive: 0 55% 50%;
+    --destructive-foreground: 40 33% 98%;
+
+    /* Warm beige borders */
+    --border: 35 25% 80%;
+    --input: 35 25% 85%;
+    --ring: 16 65% 55%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 42 40% 97%;
+    --sidebar-foreground: 25 25% 20%;
+    --sidebar-primary: 16 65% 55%;
+    --sidebar-primary-foreground: 40 33% 98%;
+    --sidebar-accent: 140 25% 40%;
+    --sidebar-accent-foreground: 40 33% 98%;
+    --sidebar-border: 35 25% 80%;
+    --sidebar-ring: 16 65% 55%;
+
+    /* Chart colors - earthy palette */
+    --chart-1: 30 70% 55%;  /* Warm amber for hunger */
+    --chart-2: 340 50% 60%; /* Dusty rose for happiness */
+    --chart-3: 45 70% 60%;  /* Golden yellow for energy */
+    --chart-4: 140 30% 50%; /* Sage for cleanliness */
+    --chart-5: 0 50% 55%;   /* Soft coral for health */
+
+    --sidebar: 42 40% 97%;
+
+    --font-sans: 'Quicksand', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    /* Warm, soft shadows */
+    --shadow-2xs: 0 1px 2px 0px hsl(25 30% 30% / 0.04);
+    --shadow-xs: 0 1px 3px 0px hsl(25 30% 30% / 0.06);
+    --shadow-sm: 0 2px 4px 0px hsl(25 30% 30% / 0.08), 0 1px 2px -1px hsl(25 30% 30% / 0.06);
+    --shadow: 0 4px 6px -1px hsl(25 30% 30% / 0.08), 0 2px 4px -2px hsl(25 30% 30% / 0.06);
+    --shadow-md: 0 6px 10px -2px hsl(25 30% 30% / 0.1), 0 3px 6px -3px hsl(25 30% 30% / 0.08);
+    --shadow-lg: 0 10px 15px -3px hsl(25 30% 30% / 0.1), 0 4px 6px -4px hsl(25 30% 30% / 0.08);
+    --shadow-xl: 0 20px 25px -5px hsl(25 30% 30% / 0.1), 0 8px 10px -6px hsl(25 30% 30% / 0.08);
+    --shadow-2xl: 0 25px 50px -12px hsl(25 30% 30% / 0.2);
+
+    --tracking-normal: 0.01em;
+    --spacing: 0.25rem;
+  }
+
+  .dark {
+    /* Deep warm brown background */
+    --background: 25 30% 12%;
+    --foreground: 40 30% 92%;
+
+    --card: 25 25% 16%;
+    --card-foreground: 40 30% 92%;
+
+    --popover: 25 25% 18%;
+    --popover-foreground: 40 30% 92%;
+
+    /* Lighter terracotta for dark mode */
+    --primary: 18 70% 60%;
+    --primary-foreground: 25 30% 12%;
+
+    /* Brighter sage */
+    --secondary: 145 35% 55%;
+    --secondary-foreground: 25 30% 12%;
+
+    --muted: 25 15% 35%;
+    --muted-foreground: 40 25% 75%;
+
+    --accent: 25 20% 22%;
+    --accent-foreground: 40 30% 85%;
+
+    --destructive: 0 60% 55%;
+    --destructive-foreground: 40 30% 95%;
+
+    --border: 25 20% 25%;
+    --input: 25 20% 25%;
+    --ring: 18 70% 60%;
+
+    --sidebar-background: 25 25% 14%;
+    --sidebar-foreground: 40 30% 92%;
+    --sidebar-primary: 18 70% 60%;
+    --sidebar-primary-foreground: 25 30% 12%;
+    --sidebar-accent: 145 35% 55%;
+    --sidebar-accent-foreground: 25 30% 12%;
+    --sidebar-border: 25 20% 25%;
+    --sidebar-ring: 18 70% 60%;
+
+    --chart-1: 32 75% 60%;
+    --chart-2: 345 55% 65%;
+    --chart-3: 48 75% 65%;
+    --chart-4: 145 35% 55%;
+    --chart-5: 5 55% 60%;
+
+    --sidebar: 25 25% 16%;
+
+    --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.15);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.2);
+    --shadow-sm: 0 2px 4px 0px hsl(0 0% 0% / 0.25), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
+    --shadow: 0 4px 6px -1px hsl(0 0% 0% / 0.25), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 6px 10px -2px hsl(0 0% 0% / 0.3), 0 3px 6px -3px hsl(0 0% 0% / 0.25);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.25);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3), 0 8px 10px -6px hsl(0 0% 0% / 0.25);
+    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.5);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    letter-spacing: var(--tracking-normal);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.02); opacity: 0.95; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.1); }
+  50% { transform: scale(1); }
+  75% { transform: scale(1.05); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 3s ease-in-out infinite;
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.4s ease-out forwards;
+}
+
+/* Staggered animation delays for lists */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* Paper texture background */
+.paper-texture {
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* Decorative border style */
+.decorative-border {
+  border: 2px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 0 0 1px hsl(var(--background)),
+    inset 0 0 0 3px hsl(var(--border) / 0.3);
+}
+
+/* Warm glow effect */
+.warm-glow {
+  box-shadow:
+    0 0 20px hsl(var(--primary) / 0.15),
+    0 0 40px hsl(var(--primary) / 0.08);
+}
+
+/* Soft card hover effect */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 12px 24px -8px hsl(25 30% 30% / 0.15),
+    0 4px 8px -4px hsl(25 30% 30% / 0.1);
+}
+
+/* Progress bar glow */
+.progress-glow {
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Organic blob shapes for backgrounds */
+.blob-shape {
+  border-radius: 60% 40% 50% 70% / 70% 50% 60% 40%;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted) / 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted) / 0.7);
+}
