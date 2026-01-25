@@ -13,11 +13,23 @@ interface MiniGamesProps {
 }
 
 // Catch the Treat Game
-const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void }> = ({ onWin, onLose }) => {
+const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void; petSpecies: string }> = ({ onWin, onLose, petSpecies }) => {
   const [targetPosition, setTargetPosition] = useState({ x: 50, y: 50 });
+  const [petPosition, setPetPosition] = useState({ x: 50, y: 80 });
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(15);
   const [gameActive, setGameActive] = useState(true);
+  const [isJumping, setIsJumping] = useState(false);
+
+  const getPetEmoji = (species: string) => {
+    switch (species) {
+      case 'dog': return '🐕';
+      case 'cat': return '🐈';
+      case 'rabbit': return '🐇';
+      case 'hamster': return '🐹';
+      default: return '🐾';
+    }
+  };
 
   useEffect(() => {
     if (!gameActive) return;
@@ -46,10 +58,27 @@ const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void 
     });
   }, []);
 
-  const handleClick = () => {
+  const handleAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!gameActive) return;
-    setScore((prevScore) => prevScore + 1);
-    moveTarget();
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    setPetPosition({ x, y });
+    setIsJumping(true);
+    setTimeout(() => setIsJumping(false), 300);
+
+    // Check collision (simple distance check)
+    // Distance in % units (approximate)
+    const distance = Math.sqrt(Math.pow(x - targetPosition.x, 2) + Math.pow(y - targetPosition.y, 2));
+    
+    // Threshold of ~10% distance for a "catch"
+    if (distance < 12) {
+      setScore((prevScore) => prevScore + 1);
+      // Small delay to let pet "arrive" visually before moving target
+      setTimeout(moveTarget, 150);
+    }
   };
 
   return (
@@ -82,8 +111,9 @@ const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void 
 
       {/* Game area */}
       <div
+        onClick={handleAreaClick}
         className={cn(
-          "relative h-72 rounded-2xl border-2 border-dashed overflow-hidden",
+          "relative h-72 rounded-2xl border-2 border-dashed overflow-hidden cursor-crosshair",
           "bg-gradient-to-br from-accent/30 via-card to-secondary/10",
           "transition-all duration-300"
         )}
@@ -93,22 +123,34 @@ const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void 
         <div className="absolute bottom-4 right-4 text-4xl opacity-20">🐾</div>
 
         {gameActive && (
-          <button
-            onClick={handleClick}
-            className={cn(
-              "absolute w-14 h-14 rounded-full flex items-center justify-center text-3xl cursor-pointer",
-              "transform -translate-x-1/2 -translate-y-1/2",
-              "bg-primary shadow-lg hover:scale-110 transition-transform duration-150",
-              "animate-pulse warm-glow"
-            )}
-            style={{ left: `${targetPosition.x}%`, top: `${targetPosition.y}%` }}
-          >
-            🦴
-          </button>
+          <>
+            {/* The Target (Treat) */}
+            <div
+              className={cn(
+                "absolute w-12 h-12 flex items-center justify-center text-3xl pointer-events-none",
+                "transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300"
+              )}
+              style={{ left: `${targetPosition.x}%`, top: `${targetPosition.y}%` }}
+            >
+              🦴
+            </div>
+
+            {/* The Pet */}
+            <div
+              className={cn(
+                "absolute w-16 h-16 flex items-center justify-center text-5xl pointer-events-none",
+                "transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out",
+                isJumping && "scale-125 mb-2"
+              )}
+              style={{ left: `${petPosition.x}%`, top: `${petPosition.y}%` }}
+            >
+              {getPetEmoji(petSpecies)}
+            </div>
+          </>
         )}
 
         {!gameActive && (
-          <div className="absolute inset-0 flex items-center justify-center bg-card/90 backdrop-blur-sm">
+          <div className="absolute inset-0 flex items-center justify-center bg-card/90 backdrop-blur-sm z-10 pointer-events-auto">
             <div className="text-center p-6 animate-fade-in-up">
               <div className={cn(
                 "text-6xl mb-4",
@@ -129,7 +171,7 @@ const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void 
 
       {/* Instructions */}
       <p className="text-sm text-muted-foreground text-center bg-accent/30 p-3 rounded-xl">
-        Click the treats as fast as you can! Catch <span className="font-semibold text-foreground">5+</span> to win.
+        Click to guide your pet to the treats! Catch <span className="font-semibold text-foreground">5+</span> to win.
       </p>
     </div>
   );
@@ -262,7 +304,7 @@ const MemoryGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void
 };
 
 const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
-  const { addMoney, updateStats } = useGame();
+  const { state, addMoney, updateStats } = useGame();
   const [selectedGame, setSelectedGame] = useState<MiniGameType>(null);
   const [gameResult, setGameResult] = useState<{ won: boolean; reward: number } | null>(null);
 
@@ -396,7 +438,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
               </div>
             ) : (
               <>
-                {selectedGame === 'catch' && <CatchGame onWin={handleWin} onLose={handleLose} />}
+                {selectedGame === 'catch' && <CatchGame onWin={handleWin} onLose={handleLose} petSpecies={state.pet?.species || 'dog'} />}
                 {selectedGame === 'memory' && <MemoryGame onWin={handleWin} onLose={handleLose} />}
               </>
             )}
