@@ -13,7 +13,13 @@ interface MiniGamesProps {
 }
 
 // Catch the Treat Game
-const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void; petSpecies: string }> = ({ onWin, onLose, petSpecies }) => {
+const CatchGame: React.FC<{ 
+  onWin: (reward: number) => void; 
+  onLose: () => void; 
+  petSpecies: string; 
+  highScore: number;
+  onNewHighScore: (score: number) => void;
+}> = ({ onWin, onLose, petSpecies, highScore, onNewHighScore }) => {
   const [targetPosition, setTargetPosition] = useState({ x: 50, y: 50 });
   const [petPosition, setPetPosition] = useState({ x: 50, y: 80 });
   const [score, setScore] = useState(0);
@@ -44,6 +50,9 @@ const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void;
           clearInterval(timer);
           if (score >= 5) {
             onWin(10 + score * 2);
+            if (score > highScore) {
+              onNewHighScore(score);
+            }
           } else {
             onLose();
           }
@@ -53,7 +62,7 @@ const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [gameActive, score, onWin, onLose]);
+  }, [gameActive, score, onWin, onLose, onNewHighScore]);
 
   const moveTarget = useCallback(() => {
     setTargetPosition({
@@ -100,7 +109,36 @@ const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void;
 
   return (
     <div className="space-y-5">
-      {/* ... (stats and progress bar code remains same) */}
+      {/* Game stats */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-xl">
+          <Target className="w-4 h-4 text-secondary" />
+          <div className="flex flex-col items-start leading-none">
+            <div>
+              <span className="font-mono font-semibold text-foreground">{score}</span>
+              <span className="text-sm text-muted-foreground ml-1">caught</span>
+            </div>
+            <span className="text-xs text-muted-foreground">Best: {highScore}</span>
+          </div>
+        </div>
+        <div className={cn(
+          "flex items-center gap-2 px-4 py-2 rounded-xl transition-colors duration-300",
+          timeLeft <= 5 ? "bg-destructive/15 text-destructive" : "bg-accent/50"
+        )}>
+          <span className="font-mono font-semibold">{timeLeft}s</span>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-2.5 bg-accent/30 rounded-full overflow-hidden">
+        <div
+          className={cn(
+            "h-full rounded-full transition-all duration-1000 ease-linear",
+            timeLeft <= 5 ? "bg-destructive" : "bg-secondary"
+          )}
+          style={{ width: `${(timeLeft / 15) * 100}%` }}
+        />
+      </div>
       
       {/* (Game Area) */}
       <div
@@ -181,7 +219,12 @@ const CatchGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void;
 };
 
 // Memory Match Game
-const MemoryGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void }> = ({ onWin, onLose }) => {
+const MemoryGame: React.FC<{ 
+  onWin: (reward: number) => void; 
+  onLose: () => void;
+  highScore: number;
+  onNewHighScore: (score: number) => void;
+}> = ({ onWin, onLose, highScore, onNewHighScore }) => {
   const emojis = ['🐕', '🐈', '🐰', '🐹', '🦴', '🐟'];
   const [cards, setCards] = useState<{ id: number; emoji: string; flipped: boolean; matched: boolean }[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
@@ -227,8 +270,17 @@ const MemoryGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void
       setGameComplete(true);
       const reward = moves <= 10 ? 30 : moves <= 15 ? 20 : 10;
       onWin(reward);
+      
+      // For memory game, lower moves is better. We store as negative for the "higher is better" reducer logic.
+      // -8 (8 moves) > -12 (12 moves)
+      const currentBest = highScore === 0 ? -999 : highScore; 
+      
+      const newScore = -moves;
+      if (highScore === 0 || newScore > highScore) { 
+         onNewHighScore(newScore);
+      }
     }
-  }, [matches, moves, onWin]);
+  }, [matches, moves, onWin, highScore, onNewHighScore]);
 
   const handleCardClick = (index: number) => {
     if (
@@ -250,8 +302,15 @@ const MemoryGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void
       {/* Game stats */}
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2 px-4 py-2 bg-accent/50 rounded-xl">
-          <span className="text-sm text-muted-foreground">Moves:</span>
-          <span className="font-mono font-semibold text-foreground">{moves}</span>
+          <div className="flex flex-col items-start leading-none">
+            <div>
+              <span className="text-sm text-muted-foreground mr-1">Moves:</span>
+              <span className="font-mono font-semibold text-foreground">{moves}</span>
+            </div>
+            {highScore !== 0 && (
+              <span className="text-xs text-muted-foreground">Best: {Math.abs(highScore)}</span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-xl">
           <span className="text-sm text-muted-foreground">Matches:</span>
@@ -307,7 +366,7 @@ const MemoryGame: React.FC<{ onWin: (reward: number) => void; onLose: () => void
 };
 
 const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
-  const { state, addMoney, updateStats } = useGame();
+  const { state, addMoney, updateStats, updateHighScore } = useGame();
   const [selectedGame, setSelectedGame] = useState<MiniGameType>(null);
   const [gameResult, setGameResult] = useState<{ won: boolean; reward: number } | null>(null);
 
@@ -359,9 +418,17 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
               <p className="text-sm text-muted-foreground mb-3">
                 Click treats as fast as you can!
               </p>
-              <div className="flex items-center justify-center gap-2 text-secondary">
-                <Coins className="w-4 h-4" />
-                <span className="font-semibold">Earn up to $40</span>
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center gap-2 text-secondary">
+                  <Coins className="w-4 h-4" />
+                  <span className="font-semibold text-sm">Earn up to $40</span>
+                </div>
+                {state.highScores?.['catch'] !== undefined && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
+                    <Trophy className="w-3 h-3 text-primary" />
+                    <span>Best: {state.highScores['catch']}</span>
+                  </div>
+                )}
               </div>
             </button>
 
@@ -372,7 +439,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 "p-6 rounded-2xl border-2 border-dashed border-border/50",
                 "bg-gradient-to-br from-card to-secondary/5",
                 "hover:border-secondary/50 hover:shadow-lg",
-                "transition-all duration-300 text-center group card-hover"
+                "transition-all duration-300 text-center group card-hover flex flex-col items-center"
               )}
             >
               <div className="p-4 bg-secondary/10 rounded-2xl inline-flex mb-4 group-hover:scale-110 transition-transform duration-300">
@@ -382,9 +449,22 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
               <p className="text-sm text-muted-foreground mb-3">
                 Match all the pairs!
               </p>
-              <div className="flex items-center justify-center gap-2 text-secondary">
-                <Coins className="w-4 h-4" />
-                <span className="font-semibold">Earn up to $30</span>
+              <div className="flex items-center justify-between w-full mt-auto">
+                 <div className="flex items-center gap-2 text-secondary justify-center w-full relative">
+                   {/* Centered earnings, absolute positioned high score? Or just flex row */}
+                 </div>
+              </div>
+               <div className="flex items-center justify-between w-full mt-2">
+                <div className="flex items-center gap-2 text-secondary">
+                  <Coins className="w-4 h-4" />
+                  <span className="font-semibold text-sm">Earn up to $30</span>
+                </div>
+                {state.highScores?.['memory'] !== undefined && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
+                    <Trophy className="w-3 h-3 text-secondary" />
+                    <span>Best: {Math.abs(state.highScores['memory'])} moves</span>
+                  </div>
+                )}
               </div>
             </button>
           </div>
@@ -441,8 +521,23 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
               </div>
             ) : (
               <>
-                {selectedGame === 'catch' && <CatchGame onWin={handleWin} onLose={handleLose} petSpecies={state.pet?.species || 'dog'} />}
-                {selectedGame === 'memory' && <MemoryGame onWin={handleWin} onLose={handleLose} />}
+                {selectedGame === 'catch' && (
+                  <CatchGame 
+                    onWin={handleWin} 
+                    onLose={handleLose} 
+                    petSpecies={state.pet?.species || 'dog'} 
+                    highScore={state.highScores?.['catch'] || 0}
+                    onNewHighScore={(score) => updateHighScore('catch', score)}
+                  />
+                )}
+                {selectedGame === 'memory' && (
+                  <MemoryGame 
+                    onWin={handleWin} 
+                    onLose={handleLose}
+                    highScore={state.highScores?.['memory'] || 0}
+                    onNewHighScore={(score) => updateHighScore('memory', score)}
+                  />
+                )}
               </>
             )}
           </div>
