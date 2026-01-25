@@ -11,6 +11,7 @@ const Index: React.FC = () => {
   const { state, loadGame, resetGame } = useGame();
   const [showCreation, setShowCreation] = useState(false);
   const [hasSave, setHasSave] = useState(false);
+  const [showTips, setShowTips] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('paws-and-prosper-save');
@@ -35,22 +36,22 @@ const Index: React.FC = () => {
   }
 
   const features = [
-    { icon: Heart, label: 'Nurture', description: 'Care for your companion', color: 'text-chart-2' },
-    { icon: Coins, label: 'Budget', description: 'Manage your finances', color: 'text-chart-1' },
-    { icon: Gamepad2, label: 'Play', description: 'Earn through games', color: 'text-chart-3' },
-    { icon: Award, label: 'Achieve', description: 'Unlock rewards', color: 'text-secondary' },
+    { icon: Heart, label: 'Nurture', description: 'Care for your companion', color: 'chart-2', bg: 'bg-chart-2/10', border: 'border-chart-2/20', text: 'text-chart-2' },
+    { icon: Coins, label: 'Budget', description: 'Manage your finances', color: 'chart-1', bg: 'bg-chart-1/10', border: 'border-chart-1/20', text: 'text-chart-1' },
+    { icon: Gamepad2, label: 'Play', description: 'Earn through games', color: 'chart-3', bg: 'bg-chart-3/10', border: 'border-chart-3/20', text: 'text-chart-3' },
+    { icon: Award, label: 'Achieve', description: 'Unlock rewards', color: 'secondary', bg: 'bg-secondary/10', border: 'border-secondary/20', text: 'text-secondary' },
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 paper-texture relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 paper-texture relative overflow-hidden">
       {/* Decorative background blobs */}
       <div className="absolute top-[-10%] left-[-5%] w-[40vw] h-[40vw] bg-primary/5 blob-shape animate-breathe" />
       <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] bg-secondary/5 blob-shape animate-breathe" style={{ animationDelay: '2s' }} />
       <div className="absolute top-[30%] right-[5%] w-[20vw] h-[20vw] bg-accent/40 blob-shape animate-breathe" style={{ animationDelay: '1s' }} />
 
-      <div className="max-w-2xl w-full text-center relative z-10">
+      <div className="max-w-2xl w-full text-center relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
         {/* Title with decorative elements */}
-        <div className="mb-10 animate-fade-in-up">
+        <div className="mb-8 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/60 rounded-full text-sm font-medium text-accent-foreground mb-4">
             <PawPrint className="w-4 h-4" />
             <span>A cozy pet care adventure</span>
@@ -65,23 +66,25 @@ const Index: React.FC = () => {
           </p>
         </div>
 
-        {/* Feature Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+        {/* Feature Buttons - Uniform Size & Colored */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 w-full">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <div
                 key={index}
-                className="animate-fade-in-up"
+                className="animate-fade-in-up h-full"
                 style={{ animationDelay: `${0.1 + index * 0.1}s` }}
               >
-                <Card className="bg-card/70 backdrop-blur-sm border-2 border-border/50 hover:border-primary/30 transition-all duration-300 card-hover">
-                  <CardContent className="p-4 text-center">
-                    <div className={`inline-flex p-3 rounded-2xl bg-background/80 mb-3 ${feature.color}`}>
+                <Card className={`h-full border-2 ${feature.bg} ${feature.border} hover:scale-105 transition-all duration-300 cursor-default`}>
+                  <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center gap-2">
+                    <div className={`p-2.5 rounded-full bg-white/60 shadow-sm ${feature.text}`}>
                       <Icon className="w-6 h-6" />
                     </div>
-                    <p className="font-semibold text-foreground">{feature.label}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{feature.description}</p>
+                    <div>
+                      <p className={`font-bold ${feature.text}`}>{feature.label}</p>
+                      <p className="text-xs text-muted-foreground/80 leading-tight">{feature.description}</p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -89,68 +92,32 @@ const Index: React.FC = () => {
           })}
         </div>
 
-        {/* Action Card */}
-        <Card
-          className="bg-card/90 backdrop-blur-sm border-2 border-border shadow-xl animate-fade-in-up decorative-border"
-          style={{ animationDelay: '0.5s' }}
-        >
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center justify-center gap-3 text-2xl">
-              <div className="p-2 bg-primary/10 rounded-xl">
-                <PawPrint className="w-6 h-6 text-primary" />
-              </div>
-              <span>Begin Your Journey</span>
-            </CardTitle>
-            <CardDescription className="text-base">
-              Your new companion is waiting to meet you
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pb-8">
+        {/* Centered Action Section */}
+        <div className="w-full max-w-md space-y-4 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+          <Button
+            size="lg"
+            className="w-full text-lg h-16 rounded-2xl bg-primary hover:bg-primary/90 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group"
+            onClick={handleNewGame}
+          >
+            <Sparkles className="w-6 h-6 mr-2 group-hover:animate-pulse" />
+            Start New Adventure
+          </Button>
+
+          {hasSave && (
             <Button
               size="lg"
-              className="w-full text-lg h-14 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 group"
-              onClick={handleNewGame}
+              variant="outline"
+              className="w-full text-lg h-14 rounded-2xl border-2 hover:bg-accent/50 transition-all duration-300"
+              onClick={handleContinue}
             >
-              <Sparkles className="w-5 h-5 mr-2 group-hover:animate-pulse" />
-              Start New Adventure
+              <Play className="w-5 h-5 mr-2" />
+              Continue Your Story
             </Button>
-
-            {hasSave && (
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full text-lg h-14 border-2 hover:bg-accent/50 transition-all duration-300"
-                onClick={handleContinue}
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Continue Your Story
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Tips Section */}
-        <div className="mt-10 p-6 rounded-2xl bg-accent/30 border border-border/50 animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
-          <p className="text-sm font-medium text-foreground mb-3">Quick Tips to Get Started</p>
-          <div className="grid grid-cols-2 gap-3 text-sm text-muted-foreground">
-            <div className="flex items-start gap-2">
-              <span className="text-primary font-bold">01</span>
-              <span>Keep stats above 30%</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary font-bold">02</span>
-              <span>$100 start + $150/week</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary font-bold">03</span>
-              <span>Play games for extra cash</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary font-bold">04</span>
-              <span>Progress saves automatically</span>
-            </div>
-          </div>
+          )}
         </div>
+
+
+        
       </div>
     </div>
   );

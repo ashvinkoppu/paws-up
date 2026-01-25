@@ -81,10 +81,17 @@ const Shop: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger
               value="inventory"
-              className="flex items-center gap-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"
+              className="group flex items-center gap-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm relative overflow-visible"
             >
-              <Package className="w-4 h-4" />
-              <span>Inventory ({state.inventory.reduce((total, item) => total + item.quantity, 0)})</span>
+              <div className="relative">
+                <Package className="w-4 h-4 group-data-[state=active]:text-primary transition-colors" />
+                {state.inventory.reduce((total, item) => total + item.quantity, 0) > 0 && (
+                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white shadow-md ring-2 ring-card animate-in zoom-in duration-300">
+                    {state.inventory.reduce((total, item) => total + item.quantity, 0)}
+                  </span>
+                )}
+              </div>
+              <span>Inventory</span>
             </TabsTrigger>
           </TabsList>
 
@@ -142,7 +149,7 @@ const Shop: React.FC = () => {
                             variant="outline"
                             className={cn(
                               "text-xs capitalize mt-1",
-                              item.tier === 'premium' ? "border-primary/50 text-primary" :
+                              item.tier === 'deluxe' ? "border-primary/50 text-primary" :
                               item.tier === 'standard' ? "border-secondary/50 text-secondary" :
                               "border-border text-muted-foreground"
                             )}

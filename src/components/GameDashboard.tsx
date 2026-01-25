@@ -118,31 +118,31 @@ const GameDashboard: React.FC = () => {
           {/* Right Column - Tabs */}
           <div className="lg:col-span-2 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
             <Tabs defaultValue="shop" className="h-full">
-              <TabsList className="grid w-full grid-cols-4 mb-5 bg-card/80 border-2 border-border/50 p-1.5 rounded-2xl">
+              <TabsList className="grid w-full grid-cols-4 mb-5 bg-card/80 border-2 border-border/50 p-1.5 rounded-2xl h-auto">
                 <TabsTrigger
                   value="shop"
-                  className="flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
                 >
                   <Store className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Shop</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="games"
-                  className="flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
                 >
                   <Gamepad2 className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Games</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="finance"
-                  className="flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
                 >
                   <Wallet className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Finance</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="achievements"
-                  className="flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
                 >
                   <Trophy className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Awards</span>

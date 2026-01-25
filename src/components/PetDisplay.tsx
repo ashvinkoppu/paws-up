@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Species, GrowthStage } from '@/types/game';
 import { cn } from '@/lib/utils';
@@ -27,8 +27,25 @@ const PetDisplay: React.FC = () => {
 
   if (!state.pet) return null;
 
+  const [interaction, setInteraction] = useState<'none' | 'happy' | 'sad'>('none');
+
   const { pet } = state;
   const avgHealth = Object.values(pet.stats).reduce((sum, value) => sum + value, 0) / 5;
+
+  const handlePetClick = () => {
+    if (interaction !== 'none') return;
+
+    // Determine mood based on health
+    // Happy if average health is 40 or above (Okay, Happy, Thriving)
+    const isHappy = avgHealth >= 40;
+    
+    setInteraction(isHappy ? 'happy' : 'sad');
+    
+    // Reset animation state after it completes
+    setTimeout(() => {
+      setInteraction('none');
+    }, 1000);
+  };
 
   const getMood = () => {
     if (avgHealth >= 80) return { emoji: '😄', text: 'Thriving!', color: 'text-secondary' };
@@ -92,17 +109,22 @@ const PetDisplay: React.FC = () => {
             <img
               src={PET_IMAGES[pet.species]}
               alt={pet.name}
+              onClick={handlePetClick}
               className={cn(
-                "w-36 h-36 object-contain transition-all duration-300 drop-shadow-lg",
+                "w-36 h-36 object-contain transition-all duration-300 drop-shadow-lg cursor-pointer hover:scale-105 active:scale-95",
+                interaction === 'happy' ? "animate-happy-jump" : 
+                interaction === 'sad' ? "animate-sad-shake" :
                 avgHealth >= 60 ? "animate-float" : "",
-                avgHealth < 30 && "grayscale-[40%] opacity-90"
+                avgHealth < 30 && interaction === 'none' && "grayscale-[40%] opacity-90",
+                // Apply black filter if pet color is black
+                pet.color.toLowerCase() === 'black' && "brightness-[0.4] grayscale contrast-125"
               )}
             />
 
             {/* Mood indicator floating beside pet */}
             <div className={cn(
               "absolute -bottom-1 left-1/2 -translate-x-1/2",
-              "text-4xl transition-transform duration-300",
+              "text-4xl transition-transform duration-300 pointer-events-none",
               avgHealth >= 60 ? "animate-wiggle" : avgHealth < 30 ? "animate-heartbeat" : ""
             )}>
               {mood.emoji}
