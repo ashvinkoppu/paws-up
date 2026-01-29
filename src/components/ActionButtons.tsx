@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { Utensils, Gamepad2, Moon, Sparkles, Stethoscope, Zap } from 'lucide-react';
@@ -57,13 +57,86 @@ const ACTIONS = [
   },
 ];
 
+const ACTION_FEEDBACK: Record<string, { emoji: string; verb: string }> = {
+  feed: { emoji: '🍖', verb: 'Fed' },
+  play: { emoji: '🎾', verb: 'Played with' },
+  rest: { emoji: '💤', verb: 'Rested' },
+  clean: { emoji: '🛁', verb: 'Cleaned' },
+  vet: { emoji: '💊', verb: 'Healed' },
+};
+
+interface ActionFeedback {
+  actionId: string;
+  key: number;
+}
+
 const ActionButtons: React.FC = () => {
   const { state, performAction } = useGame();
+  const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
+
+  useEffect(() => {
+    if (!feedback) return;
+    const timer = setTimeout(() => setFeedback(null), 2200);
+    return () => clearTimeout(timer);
+  }, [feedback]);
+
+  const handleAction = useCallback((actionId: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => {
+    performAction(actionId);
+    setFeedback({ actionId, key: Date.now() });
+  }, [performAction]);
 
   if (!state.pet) return null;
 
+  const activeFeedback = feedback ? ACTIONS.find(action => action.id === feedback.actionId) : null;
+  const activeFeedbackMeta = feedback ? ACTION_FEEDBACK[feedback.actionId] : null;
+
   return (
-    <div className="bg-card rounded-2xl border-2 border-border/50 shadow-md p-5">
+    <div className="bg-card rounded-2xl border-2 border-border/50 shadow-md p-5 relative">
+      {/* Prominent action feedback overlay */}
+      {feedback && activeFeedback && activeFeedbackMeta && (
+        <div
+          key={feedback.key}
+          className="fixed top-6 left-1/2 z-[100] pointer-events-none"
+          style={{
+            transform: 'translateX(-50%)',
+            animation: 'actionFeedbackIn 0.4s ease-out, actionFeedbackOut 0.4s ease-in 1.8s forwards',
+          }}
+        >
+          <div
+            className={cn(
+              "flex items-center gap-4 px-8 py-5 rounded-2xl shadow-2xl border-2",
+              "bg-card border-border/60"
+            )}
+            style={{
+              minWidth: '320px',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1)',
+            }}
+          >
+            <div className={cn(
+              "text-4xl",
+            )}
+              style={{ animation: 'actionEmojiPop 0.5s ease-out' }}
+            >
+              {activeFeedbackMeta.emoji}
+            </div>
+            <div className="flex flex-col">
+              <span className="font-serif font-bold text-lg text-foreground">
+                {activeFeedbackMeta.verb} {state.pet?.name}!
+              </span>
+              <span className={cn("text-sm font-semibold", activeFeedback.color)}>
+                {activeFeedback.description}
+              </span>
+            </div>
+            <div
+              className={cn("text-3xl font-bold ml-2", activeFeedback.color)}
+              style={{ animation: 'actionStatBounce 0.6s ease-out' }}
+            >
+              +
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <div className="p-2 bg-primary/10 rounded-xl">
@@ -94,7 +167,7 @@ const ActionButtons: React.FC = () => {
                 animationDelay: `${index * 0.05}s`,
                 animationFillMode: 'forwards'
               }}
-              onClick={() => performAction(action.id as 'feed' | 'play' | 'rest' | 'clean' | 'vet')}
+              onClick={() => handleAction(action.id as 'feed' | 'play' | 'rest' | 'clean' | 'vet')}
             >
               <div className={cn(
                 "p-2 rounded-xl mb-2 transition-colors duration-200",

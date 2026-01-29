@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
-import { Species, GrowthStage } from '@/types/game';
+import { Species, GrowthStage, PetColor } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { Flame, Calendar } from 'lucide-react';
 
@@ -16,18 +16,65 @@ const PET_IMAGES: Record<Species, string> = {
   hamster: petHamster,
 };
 
+// CSS filter strings to tint the pet image based on chosen color.
+// Base images are light/warm-toned, so filters shift from that baseline.
+const PET_COLOR_FILTERS: Record<PetColor, string> = {
+  white: '',
+  cream: 'sepia(0.15) saturate(0.9) brightness(1.02)',
+  golden: 'sepia(0.5) saturate(1.4) brightness(0.92)',
+  orange: 'sepia(0.8) saturate(2.5) brightness(0.85) hue-rotate(-5deg)',
+  brown: 'sepia(0.7) saturate(1.5) brightness(0.6)',
+  gray: 'saturate(0.05) brightness(0.78)',
+  black: 'brightness(0.35) contrast(1.2) saturate(0.2)',
+};
+
 const STAGE_CONFIG: Record<GrowthStage, { scale: string; label: string; icon: string }> = {
   baby: { scale: 'scale-75', label: 'Baby', icon: '🍼' },
   teen: { scale: 'scale-90', label: 'Growing', icon: '🌱' },
   adult: { scale: 'scale-100', label: 'Adult', icon: '🌟' },
 };
 
+const EATING_FOOD_EMOJIS = ['🍖', '🥣', '🍗', '🥩', '🧆'];
+
 const PetDisplay: React.FC = () => {
-  const { state } = useGame();
+  const { state, lastActionFeedback } = useGame();
 
   if (!state.pet) return null;
 
   const [interaction, setInteraction] = useState<'none' | 'happy' | 'sad'>('none');
+  const [eatingState, setEatingState] = useState<'idle' | 'eating' | 'done'>('idle');
+  const [eatingEmoji, setEatingEmoji] = useState('🍖');
+  const [hungerAfter, setHungerAfter] = useState<number | null>(null);
+  const lastFeedTimestamp = useRef<number>(0);
+
+  useEffect(() => {
+    if (
+      lastActionFeedback &&
+      lastActionFeedback.action === 'feed' &&
+      lastActionFeedback.timestamp !== lastFeedTimestamp.current
+    ) {
+      lastFeedTimestamp.current = lastActionFeedback.timestamp;
+      setEatingEmoji(EATING_FOOD_EMOJIS[Math.floor(Math.random() * EATING_FOOD_EMOJIS.length)]);
+      setEatingState('eating');
+      setHungerAfter(lastActionFeedback.statValue ?? null);
+
+      // After eating animation, show the stat result
+      const doneTimer = setTimeout(() => {
+        setEatingState('done');
+      }, 1400);
+
+      // Clear everything
+      const clearTimer = setTimeout(() => {
+        setEatingState('idle');
+        setHungerAfter(null);
+      }, 3200);
+
+      return () => {
+        clearTimeout(doneTimer);
+        clearTimeout(clearTimer);
+      };
+    }
+  }, [lastActionFeedback]);
 
   const { pet } = state;
   const avgHealth = Object.values(pet.stats).reduce((sum, value) => sum + value, 0) / 5;
@@ -112,22 +159,59 @@ const PetDisplay: React.FC = () => {
               onClick={handlePetClick}
               className={cn(
                 "w-36 h-36 object-contain transition-all duration-300 drop-shadow-lg cursor-pointer hover:scale-105 active:scale-95",
-                interaction === 'happy' ? "animate-happy-jump" : 
+                eatingState === 'eating' ? "animate-pet-eating" :
+                interaction === 'happy' ? "animate-happy-jump" :
                 interaction === 'sad' ? "animate-sad-shake" :
                 avgHealth >= 60 ? "animate-float" : "",
-                avgHealth < 30 && interaction === 'none' && "grayscale-[40%] opacity-90",
-                // Apply black filter if pet color is black
-                pet.color.toLowerCase() === 'black' && "brightness-[0.4] grayscale contrast-125"
+                avgHealth < 30 && interaction === 'none' && eatingState === 'idle' && "grayscale-[40%] opacity-90",
               )}
+              style={{
+                filter: PET_COLOR_FILTERS[pet.color] || undefined,
+              }}
             />
+
+            {/* Eating animation overlay */}
+            {eatingState === 'eating' && (
+              <>
+                {/* Food items floating toward pet */}
+                {[0, 1, 2].map((index) => (
+                  <div
+                    key={index}
+                    className="absolute pointer-events-none z-10 text-3xl animate-food-float"
+                    style={{
+                      left: `${20 + index * 25}%`,
+                      top: '10%',
+                      animationDelay: `${index * 0.25}s`,
+                    }}
+                  >
+                    {eatingEmoji}
+                  </div>
+                ))}
+                {/* Nom nom text */}
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-nom-text">
+                  <span className="font-serif font-bold text-lg text-primary">nom nom nom</span>
+                </div>
+              </>
+            )}
+
+            {/* Hunger result after eating */}
+            {eatingState === 'done' && hungerAfter !== null && (
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-fade-in-up">
+                <div className="bg-card border-2 border-secondary/40 rounded-xl px-4 py-2 shadow-lg text-center whitespace-nowrap">
+                  <div className="text-xs text-muted-foreground">Hunger now</div>
+                  <div className="font-mono font-bold text-lg text-secondary">{Math.round(hungerAfter)}%</div>
+                </div>
+              </div>
+            )}
 
             {/* Mood indicator floating beside pet */}
             <div className={cn(
               "absolute -bottom-1 left-1/2 -translate-x-1/2",
               "text-4xl transition-transform duration-300 pointer-events-none",
+              eatingState !== 'idle' ? "" :
               avgHealth >= 60 ? "animate-wiggle" : avgHealth < 30 ? "animate-heartbeat" : ""
             )}>
-              {mood.emoji}
+              {eatingState === 'eating' ? '😋' : mood.emoji}
             </div>
           </div>
         </div>

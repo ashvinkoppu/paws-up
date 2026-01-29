@@ -76,6 +76,18 @@ export interface EventChoice {
   message: string;
 }
 
+export type NotificationType = 'achievement' | 'alert' | 'purchase' | 'event' | 'milestone';
+
+export interface GameNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  description: string;
+  icon: string;
+  read: boolean;
+  timestamp: number;
+}
+
 export interface GameState {
   pet: Pet | null;
   money: number;
@@ -84,6 +96,7 @@ export interface GameState {
   inventory: InventoryItem[];
   transactions: Transaction[];
   achievements: Achievement[];
+  notifications: GameNotification[];
   careStreak: number;
   lastCareDate: string;
   totalDaysPlayed: number;

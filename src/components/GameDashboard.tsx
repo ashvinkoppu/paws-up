@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,11 +11,93 @@ import MiniGames from '@/components/MiniGames';
 import Achievements from '@/components/Achievements';
 import EventModal from '@/components/EventModal';
 import NotificationsPanel from '@/components/NotificationsPanel';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell } from 'lucide-react';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, ChevronDown, ChevronUp, X, Sun, DollarSign } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const GameDashboard: React.FC = () => {
-  const { state, saveGame, resetGame, triggerRandomEvent } = useGame();
+  const { state, saveGame, resetGame, triggerRandomEvent, markNotificationsRead } = useGame();
+  const [showPetDetails, setShowPetDetails] = useState(false);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [showNewDayPopup, setShowNewDayPopup] = useState(false);
+  const previousDaysPlayed = useRef(state.totalDaysPlayed);
+  const notificationPanelRef = useRef<HTMLDivElement>(null);
+  const walletRef = useRef<HTMLDivElement>(null);
+  const previousMoney = useRef(state.money);
+  const [moneyAnimations, setMoneyAnimations] = useState<Array<{ id: number; amount: number; swoopX: number; swoopY: number }>>([]);
+  const [walletPulsing, setWalletPulsing] = useState(false);
+
+  const unreadNotificationCount = state.notifications.filter(notification => !notification.read).length;
+
+  // Detect when a new day starts
+  useEffect(() => {
+    if (state.totalDaysPlayed > previousDaysPlayed.current) {
+      setShowNewDayPopup(true);
+      const timer = setTimeout(() => setShowNewDayPopup(false), 4000);
+      previousDaysPlayed.current = state.totalDaysPlayed;
+      return () => clearTimeout(timer);
+    }
+    previousDaysPlayed.current = state.totalDaysPlayed;
+  }, [state.totalDaysPlayed]);
+
+  // Detect money earned and trigger swoop animation
+  useEffect(() => {
+    const earned = state.money - previousMoney.current;
+    if (earned > 0) {
+      const animationId = Date.now() + Math.random();
+
+      // Calculate swoop target relative to viewport center
+      // The animation starts near center of viewport and swoops toward the wallet
+      let swoopX = 100;
+      let swoopY = -300;
+      if (walletRef.current) {
+        const walletRect = walletRef.current.getBoundingClientRect();
+        const startX = window.innerWidth / 2;
+        const startY = window.innerHeight / 2;
+        swoopX = walletRect.left + walletRect.width / 2 - startX;
+        swoopY = walletRect.top + walletRect.height / 2 - startY;
+      }
+
+      setMoneyAnimations((previous) => [...previous, { id: animationId, amount: Math.round(earned), swoopX, swoopY }]);
+
+      // Pulse the wallet when animation arrives
+      setTimeout(() => {
+        setWalletPulsing(true);
+        setTimeout(() => setWalletPulsing(false), 400);
+      }, 1000);
+
+      // Remove animation element after it completes
+      setTimeout(() => {
+        setMoneyAnimations((previous) => previous.filter((animation) => animation.id !== animationId));
+      }, 1500);
+    }
+    previousMoney.current = state.money;
+  }, [state.money]);
+
+  // Count stats that need attention (below 40%)
+  const needsAttentionCount = state.pet
+    ? Object.values(state.pet.stats).filter((value) => value <= 40).length
+    : 0;
+
+  // Close notification panel when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationPanelRef.current && !notificationPanelRef.current.contains(event.target as Node)) {
+        setShowNotificationPanel(false);
+      }
+    };
+    if (showNotificationPanel) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotificationPanel]);
+
+  const handleOpenNotifications = () => {
+    setShowNotificationPanel(!showNotificationPanel);
+    if (!showNotificationPanel && unreadNotificationCount > 0) {
+      markNotificationsRead();
+    }
+  };
 
   const handleReset = () => {
     if (window.confirm('Are you sure you want to reset your game? All progress will be lost!')) {
@@ -31,30 +113,52 @@ const GameDashboard: React.FC = () => {
     });
   };
 
+  const getNotificationTypeColor = (type: string) => {
+    switch (type) {
+      case 'achievement': return 'bg-amber-500/15 text-amber-600 border-amber-500/30';
+      case 'alert': return 'bg-rose-500/15 text-rose-600 border-rose-500/30';
+      case 'purchase': return 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30';
+      case 'event': return 'bg-violet-500/15 text-violet-600 border-violet-500/30';
+      case 'milestone': return 'bg-sky-500/15 text-sky-600 border-sky-500/30';
+      default: return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const formatTimeAgo = (timestamp: number) => {
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  };
+
   return (
     <div className="min-h-screen paper-texture relative">
       {/* Subtle decorative elements */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[40vw] h-[40vw] bg-primary/3 blob-shape" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[45vw] h-[45vw] bg-secondary/3 blob-shape" />
+        <div className="absolute top-[-20%] left-[-10%] w-[40vw] h-[40vw] bg-primary/5 blob-shape" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[45vw] h-[45vw] bg-secondary/5 blob-shape" />
+        <div className="absolute top-[30%] right-[5%] w-[25vw] h-[25vw] bg-violet-500/3 blob-shape" />
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-card/85 backdrop-blur-md border-b-2 border-border/50 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <header className="sticky top-0 z-40 bg-gradient-to-r from-card/90 via-card/85 to-card/90 backdrop-blur-md border-b-2 border-border/40 shadow-md">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-primary/10 rounded-xl">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl shadow-sm">
                 <PawPrint className="w-5 h-5 text-primary" />
               </div>
               <h1 className="text-xl md:text-2xl font-serif font-bold tracking-tight">
                 <span className="text-primary">Paws</span>
-                <span className="text-foreground/30 mx-1">&</span>
+                <span className="text-foreground/20 mx-1">&</span>
                 <span className="text-secondary">Prosper</span>
               </h1>
             </div>
             {state.pet && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-accent/50 rounded-full">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-accent/60 to-accent/30 rounded-full border border-accent-foreground/10">
                 <span className="text-sm text-muted-foreground">Caring for</span>
                 <span className="text-sm font-semibold text-foreground">{state.pet.name}</span>
               </div>
@@ -63,18 +167,96 @@ const GameDashboard: React.FC = () => {
 
           <div className="flex items-center gap-2">
             {/* Budget Display */}
-            <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-accent/50 rounded-xl border border-border/50">
-              <Wallet className="w-4 h-4 text-chart-1" />
-              <span className="font-mono font-semibold text-foreground">${state.money.toFixed(0)}</span>
+            <div
+              ref={walletRef}
+              className={cn(
+                "hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 rounded-xl border border-emerald-500/20",
+                walletPulsing && "animate-wallet-pulse"
+              )}
+            >
+              <Wallet className="w-4 h-4 text-emerald-600" />
+              <span className="font-mono font-bold text-emerald-700">${state.money.toFixed(0)}</span>
+            </div>
+
+            {/* Notification Bell */}
+            <div className="relative" ref={notificationPanelRef}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleOpenNotifications}
+                className={cn(
+                  "relative border-2 transition-all duration-200",
+                  showNotificationPanel
+                    ? "border-primary/50 bg-primary/5"
+                    : "hover:border-primary/30 hover:bg-primary/5"
+                )}
+              >
+                <Bell className={cn("w-4 h-4", unreadNotificationCount > 0 ? "text-primary" : "text-muted-foreground")} />
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-lg ring-2 ring-card notification-badge-pulse">
+                    {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                  </span>
+                )}
+              </Button>
+
+              {/* Notification Dropdown */}
+              {showNotificationPanel && (
+                <div className="absolute right-0 top-full mt-2 w-80 max-h-96 bg-card rounded-2xl border-2 border-border/50 shadow-2xl overflow-hidden z-50 animate-fade-in-up">
+                  <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border/50 px-4 py-3 flex items-center justify-between">
+                    <h3 className="font-serif font-semibold text-sm">Notifications</h3>
+                    <Button variant="ghost" size="sm" onClick={() => setShowNotificationPanel(false)} className="h-6 w-6 p-0">
+                      <X className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                  <div className="overflow-y-auto max-h-80">
+                    {state.notifications.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <Bell className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">No notifications yet</p>
+                      </div>
+                    ) : (
+                      <div className="p-2 space-y-1">
+                        {state.notifications.slice(0, 20).map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={cn(
+                              "flex items-start gap-3 p-3 rounded-xl transition-colors duration-200",
+                              notification.read ? "opacity-60" : "bg-accent/30"
+                            )}
+                          >
+                            <span className="text-xl flex-shrink-0 mt-0.5">{notification.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="font-semibold text-xs text-foreground truncate">{notification.title}</span>
+                                <span className={cn(
+                                  "text-[10px] px-1.5 py-0.5 rounded-full border capitalize flex-shrink-0",
+                                  getNotificationTypeColor(notification.type)
+                                )}>
+                                  {notification.type}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground truncate">{notification.description}</p>
+                              <span className="text-[10px] text-muted-foreground/60 mt-1 block">{formatTimeAgo(notification.timestamp)}</span>
+                            </div>
+                            {!notification.read && (
+                              <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 mt-2" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <Button
               variant="outline"
               size="sm"
               onClick={handleTriggerEvent}
-              className="hidden md:flex items-center gap-2 border-2 hover:border-primary/50 hover:bg-primary/5"
+              className="hidden md:flex items-center gap-2 border-2 hover:border-violet-500/50 hover:bg-violet-500/5"
             >
-              <Zap className="w-4 h-4 text-chart-3" />
+              <Zap className="w-4 h-4 text-violet-500" />
               <span>Event</span>
             </Button>
 
@@ -108,49 +290,80 @@ const GameDashboard: React.FC = () => {
             <div className="animate-fade-in-up">
               <PetDisplay />
             </div>
+
+            {/* See More / See Less toggle */}
             <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-              <PetStats />
+              <Button
+                variant="ghost"
+                onClick={() => setShowPetDetails(!showPetDetails)}
+                className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground border-2 border-dashed border-border/50 hover:border-primary/30 rounded-xl py-3"
+              >
+                {showPetDetails ? (
+                  <>
+                    <ChevronUp className="w-4 h-4" />
+                    <span>See less</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4" />
+                    <span>See more</span>
+                  </>
+                )}
+              </Button>
             </div>
-            <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              <ActionButtons />
-            </div>
+
+            {showPetDetails && (
+              <>
+                <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                  <PetStats />
+                </div>
+                <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                  <ActionButtons />
+                </div>
+              </>
+            )}
           </div>
 
           {/* Right Column - Tabs */}
           <div className="lg:col-span-2 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-            <Tabs defaultValue="shop" className="h-full">
-              <TabsList className="grid w-full grid-cols-5 mb-5 bg-card/80 border-2 border-border/50 p-1.5 rounded-2xl h-auto">
+            <Tabs defaultValue="alerts" className="h-full">
+              <TabsList className="grid w-full grid-cols-5 mb-5 bg-card/80 border-2 border-border/40 p-1.5 rounded-2xl h-auto shadow-sm">
                 <TabsTrigger
                   value="alerts"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3 relative"
                 >
                   <Bell className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Needs</span>
+                  {needsAttentionCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full shadow-md ring-2 ring-card notification-badge-pulse">
+                      {needsAttentionCount}
+                    </span>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger
                   value="shop"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Store className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Shop</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="games"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Gamepad2 className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Games</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="finance"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Wallet className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Finance</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="achievements"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 py-3"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-sky-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Trophy className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Awards</span>
@@ -181,28 +394,88 @@ const GameDashboard: React.FC = () => {
         </div>
       </main>
 
+      {/* Money earned animation overlay */}
+      {moneyAnimations.map((animation) => (
+        <div
+          key={animation.id}
+          className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center"
+        >
+          <div
+            className="animate-money-swoop flex items-center gap-1.5"
+            style={{
+              '--swoop-x': `${animation.swoopX}px`,
+              '--swoop-y': `${animation.swoopY}px`,
+            } as React.CSSProperties}
+          >
+            <DollarSign className="w-6 h-6 text-emerald-500 drop-shadow-lg" />
+            <span className="text-2xl font-mono font-black text-emerald-500 drop-shadow-lg">
+              +${animation.amount}
+            </span>
+          </div>
+        </div>
+      ))}
+
+      {/* New Day Popup Overlay */}
+      {showNewDayPopup && (
+        <div
+          className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center"
+          style={{
+            animation: 'newDayFadeIn 0.5s ease-out, newDayFadeOut 0.5s ease-in 3.5s forwards',
+          }}
+        >
+          <div
+            className="bg-gradient-to-br from-amber-400 via-orange-400 to-rose-400 p-1 rounded-3xl shadow-2xl"
+            style={{
+              animation: 'newDayPop 0.6s ease-out',
+              boxShadow: '0 0 60px rgba(251, 191, 36, 0.4), 0 10px 40px rgba(0,0,0,0.2)',
+            }}
+          >
+            <div className="bg-card/95 backdrop-blur-sm px-12 py-8 rounded-[22px] flex flex-col items-center gap-4">
+              <div
+                className="text-6xl"
+                style={{ animation: 'newDaySunSpin 1s ease-out' }}
+              >
+                <Sun className="w-16 h-16 text-amber-500" />
+              </div>
+              <div className="text-center">
+                <h2 className="font-serif font-bold text-2xl text-foreground mb-1">
+                  A New Day Dawns!
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Day <span className="font-mono font-bold text-amber-600">{state.totalDaysPlayed}</span> of your adventure
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium">
+                <span>💰</span>
+                <span>Daily allowance received!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Event Modal */}
       <EventModal />
 
       {/* Footer */}
-      <footer className="border-t-2 border-border/50 bg-card/50 backdrop-blur-sm mt-8">
+      <footer className="border-t-2 border-border/40 bg-gradient-to-r from-card/60 via-card/40 to-card/60 backdrop-blur-sm mt-8">
         <div className="container mx-auto px-4 py-5">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3">
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-chart-1" />
+                <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
                 <span>Stats above 30%</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-chart-3" />
+                <div className="w-2.5 h-2.5 rounded-full bg-violet-400" />
                 <span>Play games for money</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-secondary" />
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                 <span>Streaks = bonuses</span>
               </div>
             </div>
-            <div className="text-xs text-muted-foreground/60">
+            <div className="text-xs text-muted-foreground/60 font-mono">
               Day {state.totalDaysPlayed} of your adventure
             </div>
           </div>

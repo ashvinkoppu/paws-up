@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { GameState, Pet, PetStats, Transaction, Achievement, RandomEvent, InventoryItem, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS } from '@/types/game';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useState, ReactNode } from 'react';
+import { GameState, Pet, PetStats, Transaction, Achievement, RandomEvent, InventoryItem, GameNotification, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS } from '@/types/game';
 import { INITIAL_ACHIEVEMENTS } from '@/data/achievements';
 import { getRandomEvent } from '@/data/events';
 import { toast } from '@/hooks/use-toast';
@@ -14,6 +14,7 @@ const initialState: GameState = {
   inventory: [],
   transactions: [],
   achievements: INITIAL_ACHIEVEMENTS,
+  notifications: [],
   careStreak: 0,
   lastCareDate: '',
   totalDaysPlayed: 0,
@@ -38,6 +39,8 @@ type GameAction =
   | { type: 'LOAD_GAME'; payload: GameState }
   | { type: 'RESET_WEEKLY_BUDGET' }
   | { type: 'UPDATE_HIGH_SCORE'; payload: { gameId: string; score: number } }
+  | { type: 'ADD_NOTIFICATION'; payload: Omit<GameNotification, 'id' | 'read' | 'timestamp'> }
+  | { type: 'MARK_NOTIFICATIONS_READ' }
   | { type: 'DECAY_STATS' };
 
 const clampStat = (value: number): number => Math.max(0, Math.min(100, value));
@@ -227,11 +230,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const modifiers = PERSONALITY_MODIFIERS[personality];
       
       const decay: Partial<PetStats> = {
-        hunger: -3 + (modifiers.hunger || 0),
-        happiness: -2 + (modifiers.happiness || 0),
-        energy: -1 + (modifiers.energy || 0),
-        cleanliness: -2 + (modifiers.cleanliness || 0),
-        health: state.pet.stats.hunger < 20 || state.pet.stats.cleanliness < 20 ? -3 : -0.5,
+        hunger: -5 + (modifiers.hunger || 0),
+        happiness: -4 + (modifiers.happiness || 0),
+        energy: -3 + (modifiers.energy || 0),
+        cleanliness: -4 + (modifiers.cleanliness || 0),
+        health: state.pet.stats.hunger < 20 || state.pet.stats.cleanliness < 20 ? -5 : -1,
       };
 
       const newStats = { ...state.pet.stats };
@@ -256,6 +259,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         // If payload has the key but it's undefined (unlikely from JSON), the spread might need care,
         // but typically JSON.parse won't have the key if it wasn't there.
         // However, deeper merge for highScores might be safer if we add more keys later.
+        notifications: action.payload.notifications || initialState.notifications,
         highScores: {
           ...initialState.highScores,
           ...(action.payload.highScores || {}),
@@ -283,13 +287,44 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return state;
     }
 
+    case 'ADD_NOTIFICATION': {
+      const notification: GameNotification = {
+        ...action.payload,
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+        read: false,
+        timestamp: Date.now(),
+      };
+      return {
+        ...state,
+        notifications: [notification, ...state.notifications].slice(0, 50),
+      };
+    }
+
+    case 'MARK_NOTIFICATIONS_READ': {
+      return {
+        ...state,
+        notifications: state.notifications.map(notification => ({ ...notification, read: true })),
+      };
+    }
+
     default:
       return state;
   }
 }
 
+export interface ActionFeedbackEvent {
+  action: string;
+  category?: string;
+  statName?: string;
+  statValue?: number;
+  timestamp: number;
+}
+
 interface GameContextType {
   state: GameState;
+  lastActionFeedback: ActionFeedbackEvent | null;
+  isPlayingMiniGame: boolean;
+  setIsPlayingMiniGame: (playing: boolean) => void;
   createPet: (pet: Omit<Pet, 'id' | 'stats' | 'experience' | 'level' | 'createdAt' | 'lastCaredAt'>) => void;
   updateStats: (stats: Partial<PetStats>) => void;
   addMoney: (amount: number, description?: string) => void;
@@ -305,12 +340,15 @@ interface GameContextType {
   resetGame: () => void;
   performAction: (action: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => void;
   updateHighScore: (gameId: string, score: number) => void;
+  markNotificationsRead: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [lastActionFeedback, setLastActionFeedback] = useState<ActionFeedbackEvent | null>(null);
+  const [isPlayingMiniGame, setIsPlayingMiniGame] = useState(false);
 
   // Auto-save on state changes
   useEffect(() => {
@@ -326,8 +364,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       dispatch({ type: 'DECAY_STATS' });
       dispatch({ type: 'CHECK_GROWTH' });
       
-      // Random event chance (5% every minute)
-      if (Math.random() < 0.05) {
+      // Random event chance (5% every minute) - but not during mini-games
+      if (Math.random() < 0.05 && !isPlayingMiniGame) {
         dispatch({ type: 'TRIGGER_EVENT', payload: getRandomEvent() });
       }
     }, 60000); // Every minute
@@ -352,6 +390,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       lastCaredAt: Date.now(),
     };
     dispatch({ type: 'CREATE_PET', payload: newPet });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Welcome to the family!', description: `${newPet.name} has been adopted!`, icon: '🎉' } });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'achievement', title: 'Achievement Unlocked!', description: 'New Best Friend', icon: '🏆' } });
     toast({
       title: "🎉 Welcome to the family!",
       description: `${newPet.name} has been adopted!`,
@@ -396,14 +436,28 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const useItem = (itemId: string) => {
+    const item = state.inventory.find(i => i.id === itemId);
     dispatch({ type: 'USE_ITEM', payload: itemId });
     dispatch({ type: 'UPDATE_CARE_STREAK' });
+
+    // Emit feed animation if item has hunger effect
+    if (item && item.effects.hunger && state.pet) {
+      const newHunger = clampStat(state.pet.stats.hunger + item.effects.hunger);
+      setLastActionFeedback({
+        action: 'feed',
+        category: item.category,
+        statName: 'hunger',
+        statValue: newHunger,
+        timestamp: Date.now(),
+      });
+    }
   };
 
   const unlockAchievement = (achievementId: string) => {
     const achievement = state.achievements.find(a => a.id === achievementId);
     if (achievement && !achievement.unlocked) {
       dispatch({ type: 'UNLOCK_ACHIEVEMENT', payload: achievementId });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'achievement', title: 'Achievement Unlocked!', description: achievement.name, icon: '🏆' } });
       toast({
         title: `🏆 Achievement Unlocked!`,
         description: achievement.name,
@@ -435,6 +489,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       addMoney(choice.moneyEffect, event.title);
     }
 
+    dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'event', title: event.title, description: choice.message, icon: '⚡' } });
     toast({
       title: event.title,
       description: choice.message,
@@ -491,7 +546,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const actionData = actions[action];
     updateStats(actionData.stats);
-    
+
     if (state.pet) {
       dispatch({
         type: 'UPDATE_STATS',
@@ -499,6 +554,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
     }
 
+    // Emit feedback for PetDisplay animation
+    if (action === 'feed') {
+      const newHunger = clampStat(state.pet.stats.hunger + 20);
+      setLastActionFeedback({
+        action: 'feed',
+        statName: 'hunger',
+        statValue: newHunger,
+        timestamp: Date.now(),
+      });
+    }
+
+    dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Action Complete!', description: actionData.message, icon: '✨' } });
     toast({
       title: "✨ Action Complete!",
       description: actionData.message,
@@ -509,10 +576,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'UPDATE_HIGH_SCORE', payload: { gameId, score } });
   };
 
+  const markNotificationsRead = () => {
+    dispatch({ type: 'MARK_NOTIFICATIONS_READ' });
+  };
+
   return (
     <GameContext.Provider
       value={{
         state,
+        lastActionFeedback,
+        isPlayingMiniGame,
+        setIsPlayingMiniGame,
         createPet,
         updateStats,
         addMoney,
@@ -528,6 +602,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         resetGame,
         performAction,
         updateHighScore,
+        markNotificationsRead,
       }}
     >
       {children}

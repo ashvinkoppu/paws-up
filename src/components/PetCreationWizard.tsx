@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Species, Personality, PetColor, GrowthStage } from '@/types/game';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,16 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
   const [selectedColor, setSelectedColor] = useState<PetColor>('golden');
   const [selectedPersonality, setSelectedPersonality] = useState<Personality | null>(null);
   const [nameError, setNameError] = useState('');
+  const [jumpingSpecies, setJumpingSpecies] = useState<Species | null>(null);
+
+  const handleSpeciesClick = useCallback((species: Species) => {
+    setSelectedSpecies(species);
+    // Reset animation so it replays on every click, even the same pet
+    setJumpingSpecies(null);
+    requestAnimationFrame(() => {
+      setJumpingSpecies(species);
+    });
+  }, []);
 
   const validateName = (name: string): boolean => {
     if (name.trim().length < 2) {
@@ -144,7 +154,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
               {(Object.entries(SPECIES_DATA) as [Species, typeof SPECIES_DATA.dog][]).map(([species, data], index) => (
                 <button
                   key={species}
-                  onClick={() => setSelectedSpecies(species)}
+                  onClick={() => handleSpeciesClick(species)}
                   className={cn(
                     "p-5 rounded-2xl border-2 transition-all duration-300",
                     "hover:scale-[1.02] animate-fade-in-up opacity-0",
@@ -160,7 +170,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
                       alt={data.name}
                       className={cn(
                         "w-24 h-24 mx-auto object-contain transition-transform duration-300",
-                        selectedSpecies === species && "animate-happy-jump"
+                        jumpingSpecies === species && "animate-happy-jump"
                       )}
                     />
                   </div>
@@ -217,14 +227,24 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
               <div className="flex justify-center">
                 {selectedSpecies && (
                   <div
-                    className="w-36 h-36 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 border-4 border-border/30"
-                    style={{ backgroundColor: COLORS.find(color => color.color === selectedColor)?.hex }}
+                    className="w-36 h-36 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 border-4 border-border/30 relative overflow-hidden"
+                    style={{ backgroundColor: '#F5F0EB' }}
                   >
-                    <img
-                      src={SPECIES_DATA[selectedSpecies].image}
-                      alt="Your pet"
-                      className="w-28 h-28 object-contain"
-                    />
+                    <div className="relative w-28 h-28">
+                      <img
+                        src={SPECIES_DATA[selectedSpecies].image}
+                        alt="Your pet"
+                        className="w-28 h-28 object-contain relative"
+                      />
+                      <div
+                        className="absolute inset-0 transition-all duration-300 pointer-events-none"
+                        style={{
+                          backgroundColor: COLORS.find(color => color.color === selectedColor)?.hex,
+                          mixBlendMode: selectedColor === 'black' ? 'multiply' : 'color',
+                          opacity: selectedColor === 'black' ? 0.6 : 0.75,
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>

@@ -14,34 +14,34 @@
   :root {
     /* Cream paper background */
     --background: 40 33% 96%;
-    /* Warm charcoal for text */
-    --foreground: 25 25% 20%;
+    /* Deep warm charcoal for text */
+    --foreground: 25 30% 12%;
 
     /* Warm off-white cards */
     --card: 42 40% 97%;
-    --card-foreground: 25 25% 20%;
+    --card-foreground: 25 30% 12%;
 
     --popover: 40 30% 94%;
-    --popover-foreground: 25 25% 20%;
+    --popover-foreground: 25 30% 12%;
 
-    /* Terracotta - warm coral-orange */
-    --primary: 16 65% 55%;
+    /* Warm coral-orange - more vibrant */
+    --primary: 14 72% 52%;
     --primary-foreground: 40 33% 98%;
 
-    /* Sage green */
-    --secondary: 140 25% 40%;
+    /* Rich emerald green */
+    --secondary: 155 42% 38%;
     --secondary-foreground: 40 33% 98%;
 
     /* Dusty rose muted */
-    --muted: 350 20% 75%;
-    --muted-foreground: 25 20% 40%;
+    --muted: 350 22% 75%;
+    --muted-foreground: 25 28% 26%;
 
-    /* Soft butter yellow accent */
-    --accent: 45 60% 90%;
-    --accent-foreground: 25 30% 30%;
+    /* Warm peach accent */
+    --accent: 38 65% 90%;
+    --accent-foreground: 25 30% 18%;
 
-    /* Soft red for warnings */
-    --destructive: 0 55% 50%;
+    /* Vivid red for warnings */
+    --destructive: 0 72% 42%;
     --destructive-foreground: 40 33% 98%;
 
     /* Warm beige borders */
@@ -60,12 +60,12 @@
     --sidebar-border: 35 25% 80%;
     --sidebar-ring: 16 65% 55%;
 
-    /* Chart colors - earthy palette */
-    --chart-1: 30 70% 55%;  /* Warm amber for hunger */
-    --chart-2: 340 50% 60%; /* Dusty rose for happiness */
-    --chart-3: 45 70% 60%;  /* Golden yellow for energy */
-    --chart-4: 140 30% 50%; /* Sage for cleanliness */
-    --chart-5: 0 50% 55%;   /* Soft coral for health */
+    /* Chart colors - vibrant earthy palette */
+    --chart-1: 28 80% 52%;  /* Rich amber for hunger */
+    --chart-2: 338 60% 56%; /* Rose pink for happiness */
+    --chart-3: 42 85% 55%;  /* Golden yellow for energy */
+    --chart-4: 155 42% 42%; /* Emerald for cleanliness */
+    --chart-5: 4 68% 52%;   /* Coral for health */
 
     --sidebar: 42 40% 97%;
 
@@ -98,12 +98,12 @@
     --popover: 25 25% 18%;
     --popover-foreground: 40 30% 92%;
 
-    /* Lighter terracotta for dark mode */
-    --primary: 18 70% 60%;
+    /* Brighter coral for dark mode */
+    --primary: 16 78% 62%;
     --primary-foreground: 25 30% 12%;
 
-    /* Brighter sage */
-    --secondary: 145 35% 55%;
+    /* Brighter emerald */
+    --secondary: 155 45% 52%;
     --secondary-foreground: 25 30% 12%;
 
     --muted: 25 15% 35%;
@@ -260,6 +260,127 @@
   100% { transform: scale(1) rotate(0deg); }
 }
 
+/* Eating animations */
+@keyframes petEating {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  10% { transform: scale(1.05) rotate(-3deg); }
+  20% { transform: scale(0.95) rotate(3deg); }
+  30% { transform: scale(1.05) rotate(-2deg); }
+  40% { transform: scale(0.98) rotate(2deg); }
+  50% { transform: scale(1.03) rotate(-1deg); }
+  60% { transform: scale(0.97) rotate(1deg); }
+  70% { transform: scale(1.02) rotate(0deg); }
+  80% { transform: scale(0.99) rotate(-1deg); }
+  90% { transform: scale(1.01) rotate(1deg); }
+}
+
+@keyframes foodFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5) rotate(-15deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(20px) scale(1.1) rotate(0deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(60px) scale(0.9) rotate(10deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(90px) scale(0.3) rotate(20deg);
+  }
+}
+
+@keyframes nomText {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.5);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.2);
+  }
+  30% {
+    transform: translateX(-50%) scale(1);
+  }
+  45% {
+    transform: translateX(-50%) scale(1.15);
+  }
+  60% {
+    transform: translateX(-50%) scale(1);
+  }
+  75% {
+    transform: translateX(-50%) scale(1.1);
+  }
+  90%, 100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.8);
+  }
+}
+
+.animate-pet-eating {
+  animation: petEating 1.4s ease-in-out;
+}
+
+.animate-food-float {
+  animation: foodFloat 1s ease-in forwards;
+}
+
+.animate-nom-text {
+  animation: nomText 1.4s ease-in-out forwards;
+}
+
+@keyframes actionFeedbackIn {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.8); }
+  60% { opacity: 1; transform: translateX(-50%) translateY(4px) scale(1.02); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+@keyframes actionFeedbackOut {
+  0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
+}
+
+@keyframes actionEmojiPop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.4); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+@keyframes actionStatBounce {
+  0% { opacity: 0; transform: translateY(10px); }
+  40% { opacity: 1; transform: translateY(-6px); }
+  70% { transform: translateY(2px); }
+  100% { transform: translateY(0); }
+}
+
+/* New Day popup animations */
+@keyframes newDayFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes newDayFadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes newDayPop {
+  0% { transform: scale(0.5); }
+  60% { transform: scale(1.05); }
+  80% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+@keyframes newDaySunSpin {
+  0% { transform: rotate(-180deg) scale(0); }
+  60% { transform: rotate(15deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.5s ease-out forwards;
 }
@@ -274,6 +395,41 @@
 .stagger-3 { animation-delay: 0.15s; }
 .stagger-4 { animation-delay: 0.2s; }
 .stagger-5 { animation-delay: 0.25s; }
+
+/* Money swoop animation */
+@keyframes moneySwoopUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.5);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -10px) scale(1.2);
+  }
+  40% {
+    opacity: 1;
+    transform: translate(-50%, -40px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--swoop-x, 100px), var(--swoop-y, -300px)) scale(0.4);
+  }
+}
+
+.animate-money-swoop {
+  animation: moneySwoopUp 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
+}
+
+@keyframes walletPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.animate-wallet-pulse {
+  animation: walletPulse 0.4s ease-in-out;
+}
 
 /* Paper texture background */
 .paper-texture {
@@ -345,4 +501,14 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted) / 0.7);
+}
+
+/* Notification badge pulse */
+@keyframes notificationBadgePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  50% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+
+.notification-badge-pulse {
+  animation: notificationBadgePulse 2s ease-in-out infinite;
 }

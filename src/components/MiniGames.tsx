@@ -26,10 +26,17 @@ const CatchGame: React.FC<{
   const [timeLeft, setTimeLeft] = useState(15);
   const [gameActive, setGameActive] = useState(true);
   const [isJumping, setIsJumping] = useState(false);
-  const [activeFeedback, setActiveFeedback] = useState<{ id: number; x: number; y: number; text: string }[]>([]);
-  const [currentTreatIndex, setCurrentTreatIndex] = useState(0);
+  const [activeFeedback, setActiveFeedback] = useState<{ id: number; x: number; y: number; text: string; subtext: string }[]>([]);
+  const [currentBoneIndex, setCurrentBoneIndex] = useState(0);
+  const [totalEarned, setTotalEarned] = useState(0);
 
-  const TREATS = ['🦴', '🐟', '🥕', '🧀', '🍪'];
+  const BONES = [
+    { emoji: '🦴', label: 'Bone', value: 5 },
+    { emoji: '🍖', label: 'Meat Bone', value: 8 },
+    { emoji: '🥩', label: 'Steak Bone', value: 10 },
+    { emoji: '🦷', label: 'Rare Bone', value: 15 },
+    { emoji: '💎', label: 'Diamond Bone', value: 20 },
+  ];
 
   const getPetEmoji = (species: string) => {
     switch (species) {
@@ -48,29 +55,34 @@ const CatchGame: React.FC<{
         if (time <= 1) {
           setGameActive(false);
           clearInterval(timer);
-          if (score >= 5) {
-            onWin(10 + score * 2);
-            if (score > highScore) {
-              onNewHighScore(score);
-            }
-          } else {
-            onLose();
-          }
           return 0;
         }
         return time - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [gameActive, score, onWin, onLose, onNewHighScore]);
+  }, [gameActive]);
+
+  // Handle game end when time runs out
+  useEffect(() => {
+    if (timeLeft === 0 && !gameActive) {
+      if (score >= 5) {
+        onWin(totalEarned);
+        if (score > highScore) {
+          onNewHighScore(score);
+        }
+      } else {
+        onLose();
+      }
+    }
+  }, [timeLeft, gameActive, score, totalEarned, highScore, onWin, onLose, onNewHighScore]);
 
   const moveTarget = useCallback(() => {
     setTargetPosition({
       x: Math.random() * 80 + 10,
       y: Math.random() * 80 + 10,
     });
-    // Change treat type
-    setCurrentTreatIndex(Math.floor(Math.random() * TREATS.length));
+    setCurrentBoneIndex(Math.floor(Math.random() * BONES.length));
   }, []);
 
   const handleAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -89,21 +101,21 @@ const CatchGame: React.FC<{
     
     if (distance < 12) {
       setScore((prevScore) => prevScore + 1);
-      
-      // Calculate earnings per catch (approximate logic matching final reward)
-      const earned = 2 + Math.floor(Math.random() * 2); 
-      
+
+      const boneValue = BONES[currentBoneIndex].value;
+      setTotalEarned((previous) => previous + boneValue);
+
       // Add feedback
       const feedbackId = Date.now();
-      setActiveFeedback(prev => [...prev, { id: feedbackId, x: targetPosition.x, y: targetPosition.y, text: `CAUGHT! +$${earned*2}` }]);
-      
+      setActiveFeedback(prev => [...prev, { id: feedbackId, x: targetPosition.x, y: targetPosition.y, text: `CAUGHT!`, subtext: `$${boneValue} earned` }]);
+
       // Remove feedback after animation
       setTimeout(() => {
         setActiveFeedback(prev => prev.filter(f => f.id !== feedbackId));
-      }, 1000);
+      }, 1200);
 
-      // Delay move to allow "catch" visual
-      setTimeout(moveTarget, 150);
+      // Delay move to allow "catch" visual, then spawn new bone
+      setTimeout(moveTarget, 200);
     }
   };
 
@@ -120,6 +132,10 @@ const CatchGame: React.FC<{
             </div>
             <span className="text-xs text-muted-foreground">Best: {highScore}</span>
           </div>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 bg-secondary/10 rounded-xl">
+          <Coins className="w-4 h-4 text-secondary" />
+          <span className="font-mono font-semibold text-secondary">${totalEarned}</span>
         </div>
         <div className={cn(
           "flex items-center gap-2 px-4 py-2 rounded-xl transition-colors duration-300",
@@ -162,17 +178,18 @@ const CatchGame: React.FC<{
               )}
               style={{ left: `${targetPosition.x}%`, top: `${targetPosition.y}%` }}
             >
-              {TREATS[currentTreatIndex]}
+              {BONES[currentBoneIndex].emoji}
             </div>
 
             {/* Feedback Popups */}
             {activeFeedback.map(feedback => (
               <div
                 key={feedback.id}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 font-bold text-green-600 animate-fade-in-up pointer-events-none z-20 whitespace-nowrap"
-                style={{ left: `${feedback.x}%`, top: `${feedback.y - 10}%` }}
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-20 whitespace-nowrap animate-fade-in-up text-center"
+                style={{ left: `${feedback.x}%`, top: `${feedback.y - 12}%` }}
               >
-                {feedback.text}
+                <div className="font-bold text-lg text-foreground">{feedback.text}</div>
+                <div className="font-semibold text-sm text-secondary">{feedback.subtext}</div>
               </div>
             ))}
 
@@ -212,7 +229,7 @@ const CatchGame: React.FC<{
 
       {/* Instructions */}
       <p className="text-sm text-muted-foreground text-center bg-accent/30 p-3 rounded-xl">
-        Click to guide your pet to the treats! Catch <span className="font-semibold text-foreground">5+</span> to win.
+        Click to catch the bones! Each bone is worth different amounts. Catch <span className="font-semibold text-foreground">5+</span> to win.
       </p>
     </div>
   );
@@ -231,6 +248,7 @@ const MemoryGame: React.FC<{
   const [moves, setMoves] = useState(0);
   const [matches, setMatches] = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
+  const [matchMessage, setMatchMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const shuffled = [...emojis, ...emojis]
@@ -252,6 +270,12 @@ const MemoryGame: React.FC<{
         );
         setMatches((currentMatches) => currentMatches + 1);
         setFlippedCards([]);
+
+        // Show match found message briefly
+        const currentMoveCount = moves + 1;
+        const perMatchReward = currentMoveCount <= 10 ? 5 : currentMoveCount <= 15 ? 3 : 2;
+        setMatchMessage(`MATCH FOUND!  +$${perMatchReward}`);
+        setTimeout(() => setMatchMessage(null), 1200);
       } else {
         setTimeout(() => {
           setCards((prevCards) =>
@@ -318,32 +342,45 @@ const MemoryGame: React.FC<{
         </div>
       </div>
 
-      {/* Cards grid */}
-      <div className="grid grid-cols-4 gap-2.5">
-        {cards.map((card, index) => (
-          <button
-            key={card.id}
-            onClick={() => handleCardClick(index)}
-            className={cn(
-              "h-18 rounded-xl transition-all duration-300 text-2xl flex items-center justify-center border-2",
-              "transform hover:scale-105",
-              card.flipped || card.matched
-                ? "bg-primary/15 border-primary shadow-md"
-                : "bg-accent/40 border-border/50 hover:border-primary/50 hover:bg-accent/60"
-            )}
-            disabled={card.matched}
-          >
-            <span className={cn(
-              "transition-all duration-300",
-              card.flipped || card.matched ? "scale-100 opacity-100" : "scale-0 opacity-0"
-            )}>
-              {card.emoji}
-            </span>
-            {!card.flipped && !card.matched && (
-              <span className="text-muted-foreground/50 text-xl">?</span>
-            )}
-          </button>
-        ))}
+      {/* Cards grid with overlay for match message */}
+      <div className="relative">
+        {/* Match found message - overlay on top */}
+        {matchMessage && (
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center pointer-events-none">
+            <div className="flex items-center justify-center gap-3 px-5 py-3 bg-secondary/95 rounded-xl border border-secondary/30 shadow-lg animate-fade-in-up">
+              <span className="text-lg font-serif font-bold text-secondary-foreground">MATCH FOUND!</span>
+              <span className="font-mono font-bold text-white/90">{matchMessage.split('  ')[1]}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Cards grid */}
+        <div className="grid grid-cols-4 gap-2.5">
+          {cards.map((card, index) => (
+            <button
+              key={card.id}
+              onClick={() => handleCardClick(index)}
+              className={cn(
+                "h-18 rounded-xl transition-all duration-300 text-2xl flex items-center justify-center border-2",
+                "transform hover:scale-105",
+                card.flipped || card.matched
+                  ? "bg-primary/15 border-primary shadow-md"
+                  : "bg-accent/40 border-border/50 hover:border-primary/50 hover:bg-accent/60"
+              )}
+              disabled={card.matched}
+            >
+              <span className={cn(
+                "transition-all duration-300",
+                card.flipped || card.matched ? "scale-100 opacity-100" : "scale-0 opacity-0"
+              )}>
+                {card.emoji}
+              </span>
+              {!card.flipped && !card.matched && (
+                <span className="text-muted-foreground/50 text-xl">?</span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Win message */}
@@ -366,9 +403,18 @@ const MemoryGame: React.FC<{
 };
 
 const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
-  const { state, addMoney, updateStats, updateHighScore } = useGame();
+  const { state, addMoney, updateStats, updateHighScore, setIsPlayingMiniGame } = useGame();
   const [selectedGame, setSelectedGame] = useState<MiniGameType>(null);
   const [gameResult, setGameResult] = useState<{ won: boolean; reward: number } | null>(null);
+
+  // Track when we're in an active game (selected game but no result yet)
+  useEffect(() => {
+    const isActive = selectedGame !== null && gameResult === null;
+    setIsPlayingMiniGame(isActive);
+    
+    // Cleanup on unmount
+    return () => setIsPlayingMiniGame(false);
+  }, [selectedGame, gameResult, setIsPlayingMiniGame]);
 
   const handleWin = (reward: number) => {
     addMoney(reward, 'Mini-game reward');
@@ -421,7 +467,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-2 text-secondary">
                   <Coins className="w-4 h-4" />
-                  <span className="font-semibold text-sm">Earn up to $40</span>
+                  <span className="font-semibold text-sm">$5–$20 per catch</span>
                 </div>
                 {state.highScores?.['catch'] !== undefined && (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
@@ -457,7 +503,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                <div className="flex items-center justify-between w-full mt-2">
                 <div className="flex items-center gap-2 text-secondary">
                   <Coins className="w-4 h-4" />
-                  <span className="font-semibold text-sm">Earn up to $30</span>
+                  <span className="font-semibold text-sm">$10–$30 per game</span>
                 </div>
                 {state.highScores?.['memory'] !== undefined && (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">

@@ -17,12 +17,12 @@ const Achievements: React.FC = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl">
-              <Trophy className="w-5 h-5 text-primary" />
+            <div className="p-2 bg-gradient-to-br from-amber-500/15 to-amber-600/5 rounded-xl">
+              <Trophy className="w-5 h-5 text-amber-500" />
             </div>
             <span className="font-serif">Achievements</span>
           </span>
-          <Badge className="bg-secondary/15 text-secondary border-secondary/30 font-mono">
+          <Badge className="bg-sky-500/15 text-sky-600 border-sky-500/30 font-mono">
             {unlockedCount}/{totalCount}
           </Badge>
         </CardTitle>
@@ -33,12 +33,12 @@ const Achievements: React.FC = () => {
             <span className="text-muted-foreground">Progress</span>
             <span className="font-mono font-semibold text-foreground">{Math.round(progressPercent)}%</span>
           </div>
-          <div className="h-2.5 bg-accent/40 rounded-full overflow-hidden">
+          <div className="h-2.5 bg-sky-500/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-secondary rounded-full transition-all duration-500 relative"
+              className="h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500 relative"
               style={{ width: `${progressPercent}%` }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
             </div>
           </div>
         </div>
@@ -52,8 +52,8 @@ const Achievements: React.FC = () => {
                 "relative p-4 rounded-2xl border-2 text-center transition-all duration-300",
                 "animate-fade-in-up opacity-0",
                 achievement.unlocked
-                  ? "bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/40 shadow-md"
-                  : "bg-muted/20 border-dashed border-border/50"
+                  ? "bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-rose-500/10 border-amber-400/40 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                  : "bg-muted/15 border-dashed border-border/40 hover:border-border/60"
               )}
               style={{
                 animationDelay: `${index * 0.03}s`,
@@ -90,9 +90,9 @@ const Achievements: React.FC = () => {
 
               {/* Unlocked badge */}
               {achievement.unlocked && (
-                <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-secondary/15 rounded-full">
-                  <Sparkles className="w-3 h-3 text-secondary" />
-                  <span className="text-xs font-semibold text-secondary">Unlocked</span>
+                <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-amber-500/15 to-orange-500/15 rounded-full border border-amber-400/20">
+                  <Sparkles className="w-3 h-3 text-amber-500" />
+                  <span className="text-xs font-semibold text-amber-600">Unlocked</span>
                 </div>
               )}
             </div>
