@@ -5,7 +5,7 @@ import { getRandomEvent } from '@/data/events';
 import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, MILESTONES, checkMilestone, DEFAULT_DAILY_TRACKING, LifetimeCounters } from '@/data/tasks';
 import { toast } from '@/hooks/use-toast';
 
-const STORAGE_KEY = 'paws-and-prosper-save';
+const STORAGE_KEY = 'paws-up-save';
 
 const initialState: GameState = {
   pet: null,

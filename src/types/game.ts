@@ -1,4 +1,4 @@
-// Game Types for Paws & Prosper
+// Game Types for Paws Up
 
 export type Species = 'dog' | 'cat' | 'rabbit' | 'hamster';
 export type Personality = 'playful' | 'calm' | 'curious' | 'lazy';

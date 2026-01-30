@@ -1,10 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PetDisplay from '@/components/PetDisplay';
-import PetStats from '@/components/PetStats';
-import ActionButtons from '@/components/ActionButtons';
 import Shop from '@/components/Shop';
 import FinancePanel from '@/components/FinancePanel';
 import MiniGames from '@/components/MiniGames';
@@ -12,13 +10,12 @@ import Achievements from '@/components/Achievements';
 import Tasks from '@/components/Tasks';
 import EventModal from '@/components/EventModal';
 import NotificationsPanel from '@/components/NotificationsPanel';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, ChevronDown, ChevronUp, X, Sun, DollarSign, ClipboardCheck } from 'lucide-react';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const GameDashboard: React.FC = () => {
   const { state, saveGame, resetGame, triggerRandomEvent, markNotificationsRead } = useGame();
-  const [showPetDetails, setShowPetDetails] = useState(false);
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [showNewDayPopup, setShowNewDayPopup] = useState(false);
   const previousDaysPlayed = useRef(state.totalDaysPlayed);
@@ -292,37 +289,6 @@ const GameDashboard: React.FC = () => {
               <PetDisplay />
             </div>
 
-            {/* See More / See Less toggle */}
-            <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-              <Button
-                variant="ghost"
-                onClick={() => setShowPetDetails(!showPetDetails)}
-                className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground border-2 border-dashed border-border/50 hover:border-primary/30 rounded-xl py-3"
-              >
-                {showPetDetails ? (
-                  <>
-                    <ChevronUp className="w-4 h-4" />
-                    <span>See less</span>
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="w-4 h-4" />
-                    <span>See more</span>
-                  </>
-                )}
-              </Button>
-            </div>
-
-            {showPetDetails && (
-              <>
-                <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                  <PetStats />
-                </div>
-                <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                  <ActionButtons />
-                </div>
-              </>
-            )}
           </div>
 
           {/* Right Column - Tabs */}
@@ -433,7 +399,8 @@ const GameDashboard: React.FC = () => {
       {/* New Day Popup Overlay */}
       {showNewDayPopup && (
         <div
-          className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-[2px] cursor-pointer"
+          onClick={() => setShowNewDayPopup(false)}
           style={{
             animation: 'newDayFadeIn 0.5s ease-out, newDayFadeOut 0.5s ease-in 3.5s forwards',
           }}

@@ -14,7 +14,7 @@ const Index: React.FC = () => {
   const [showTips, setShowTips] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('paws-and-prosper-save');
+    const saved = localStorage.getItem('paws-up-save');
     setHasSave(!!saved);
   }, []);
 

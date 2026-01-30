@@ -403,7 +403,7 @@ const MemoryGame: React.FC<{
 };
 
 const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
-  const { state, addMoney, updateStats, updateHighScore, setIsPlayingMiniGame } = useGame();
+  const { state, addMoney, updateStats, updateHighScore, setIsPlayingMiniGame, trackGamePlayed } = useGame();
   const [selectedGame, setSelectedGame] = useState<MiniGameType>(null);
   const [gameResult, setGameResult] = useState<{ won: boolean; reward: number } | null>(null);
 
@@ -419,6 +419,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
   const handleWin = (reward: number) => {
     addMoney(reward, 'Mini-game reward');
     updateStats({ happiness: 10 });
+    trackGamePlayed();
     setGameResult({ won: true, reward });
   };
 
