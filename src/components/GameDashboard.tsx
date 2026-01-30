@@ -9,9 +9,10 @@ import Shop from '@/components/Shop';
 import FinancePanel from '@/components/FinancePanel';
 import MiniGames from '@/components/MiniGames';
 import Achievements from '@/components/Achievements';
+import Tasks from '@/components/Tasks';
 import EventModal from '@/components/EventModal';
 import NotificationsPanel from '@/components/NotificationsPanel';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, ChevronDown, ChevronUp, X, Sun, DollarSign } from 'lucide-react';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, ChevronDown, ChevronUp, X, Sun, DollarSign, ClipboardCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -327,7 +328,7 @@ const GameDashboard: React.FC = () => {
           {/* Right Column - Tabs */}
           <div className="lg:col-span-2 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
             <Tabs defaultValue="alerts" className="h-full">
-              <TabsList className="grid w-full grid-cols-5 mb-5 bg-card/80 border-2 border-border/40 p-1.5 rounded-2xl h-auto shadow-sm">
+              <TabsList className="grid w-full grid-cols-6 mb-5 bg-card/80 border-2 border-border/40 p-1.5 rounded-2xl h-auto shadow-sm">
                 <TabsTrigger
                   value="alerts"
                   className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3 relative"
@@ -355,6 +356,16 @@ const GameDashboard: React.FC = () => {
                   <span className="hidden md:inline font-medium">Games</span>
                 </TabsTrigger>
                 <TabsTrigger
+                  value="tasks"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3 relative"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  <span className="hidden md:inline font-medium">Tasks</span>
+                  {state.dailyTasks.some(task => task.completed) && !state.dailyBonusClaimed && (
+                    <span className="absolute -top-1.5 -right-1 w-2.5 h-2.5 rounded-full bg-orange-500 ring-2 ring-card" />
+                  )}
+                </TabsTrigger>
+                <TabsTrigger
                   value="finance"
                   className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
@@ -380,6 +391,10 @@ const GameDashboard: React.FC = () => {
 
               <TabsContent value="games" className="mt-0">
                 <MiniGames />
+              </TabsContent>
+
+              <TabsContent value="tasks" className="mt-0">
+                <Tasks />
               </TabsContent>
 
               <TabsContent value="finance" className="mt-0">

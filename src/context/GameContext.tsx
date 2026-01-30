@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback, useState, ReactNode } from 'react';
-import { GameState, Pet, PetStats, Transaction, Achievement, RandomEvent, InventoryItem, GameNotification, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS } from '@/types/game';
+import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
+import { GameState, Pet, PetStats, Transaction, Achievement, RandomEvent, InventoryItem, GameNotification, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, DailyTask, DailyTracking, MilestoneState } from '@/types/game';
 import { INITIAL_ACHIEVEMENTS } from '@/data/achievements';
 import { getRandomEvent } from '@/data/events';
+import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, MILESTONES, checkMilestone, DEFAULT_DAILY_TRACKING, LifetimeCounters } from '@/data/tasks';
 import { toast } from '@/hooks/use-toast';
 
 const STORAGE_KEY = 'paws-and-prosper-save';
@@ -21,6 +22,11 @@ const initialState: GameState = {
   gameStarted: false,
   currentEvent: null,
   highScores: {},
+  dailyTasks: [],
+  dailyTracking: { ...DEFAULT_DAILY_TRACKING },
+  milestones: [],
+  dailyBonusClaimed: false,
+  lifetimeCounters: { totalFeeds: 0, totalPlays: 0 },
 };
 
 type GameAction =
@@ -41,9 +47,81 @@ type GameAction =
   | { type: 'UPDATE_HIGH_SCORE'; payload: { gameId: string; score: number } }
   | { type: 'ADD_NOTIFICATION'; payload: Omit<GameNotification, 'id' | 'read' | 'timestamp'> }
   | { type: 'MARK_NOTIFICATIONS_READ' }
-  | { type: 'DECAY_STATS' };
+  | { type: 'DECAY_STATS' }
+  | { type: 'TRACK_ACTION'; payload: { key: keyof DailyTracking; amount?: number } }
+  | { type: 'CLAIM_DAILY_BONUS' }
+  | { type: 'RESET_DAILY_TASKS' }
+  | { type: 'CHECK_MILESTONES' }
+  | { type: 'ADD_XP'; payload: number }
+  | { type: 'INCREMENT_LIFETIME_COUNTER'; payload: { counter: 'totalFeeds' | 'totalPlays'; amount?: number } };
 
 const clampStat = (value: number): number => Math.max(0, Math.min(100, value));
+
+function ensureDailyTracking(state: GameState): DailyTracking {
+  const today = new Date().toDateString();
+  if (state.dailyTracking && state.dailyTracking.date === today) {
+    return state.dailyTracking;
+  }
+  return { ...DEFAULT_DAILY_TRACKING, date: today };
+}
+
+function ensureDailyTasks(state: GameState): DailyTask[] {
+  const today = new Date().toDateString();
+  if (state.dailyTasks.length > 0 && state.dailyTracking?.date === today) {
+    return state.dailyTasks;
+  }
+  const taskIds = selectDailyTasks(today);
+  return taskIds.map(id => ({ id, progress: 0, completed: false }));
+}
+
+function ensureMilestones(state: GameState): MilestoneState[] {
+  if (state.milestones && state.milestones.length > 0) {
+    // Add any new milestones that might have been added to MILESTONES
+    const existingIds = new Set(state.milestones.map(milestone => milestone.id));
+    const missing = MILESTONES
+      .filter(milestone => !existingIds.has(milestone.id))
+      .map(milestone => ({ id: milestone.id, completed: false }));
+    return [...state.milestones, ...missing];
+  }
+  return MILESTONES.map(milestone => ({ id: milestone.id, completed: false }));
+}
+
+function addXpToPet(state: GameState, xpAmount: number): GameState {
+  if (!state.pet || xpAmount <= 0) return state;
+
+  const oldLevel = calculateLevel(state.pet.experience).level;
+  const newExperience = state.pet.experience + xpAmount;
+  const { level: newLevel } = calculateLevel(newExperience);
+  const leveledUp = newLevel > oldLevel;
+
+  let newState: GameState = {
+    ...state,
+    pet: { ...state.pet, experience: newExperience, level: newLevel },
+  };
+
+  if (leveledUp) {
+    newState = {
+      ...newState,
+      money: newState.money + 25,
+    };
+    // Add level-up notification
+    const notification: GameNotification = {
+      id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+      type: 'levelup',
+      title: `Level Up! Level ${newLevel}`,
+      description: `Your pet reached level ${newLevel}! +$25 bonus!`,
+      icon: '🎉',
+      read: false,
+      timestamp: Date.now(),
+    };
+    newState = {
+      ...newState,
+      notifications: [notification, ...newState.notifications].slice(0, 50),
+    };
+  }
+
+  return newState;
+}
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -136,9 +214,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       });
 
+      // Grant 5 XP for using items
+      const newExperience = state.pet.experience + 5;
+      const { level: newLevel } = calculateLevel(newExperience);
+
       return {
         ...state,
-        pet: { ...state.pet, stats: newStats, experience: state.pet.experience + 5 },
+        pet: { ...state.pet, stats: newStats, experience: newExperience, level: newLevel },
         inventory: state.inventory
           .map(i => i.id === action.payload ? { ...i, quantity: i.quantity - 1 } : i)
           .filter(i => i.quantity > 0),
@@ -165,10 +247,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'UPDATE_CARE_STREAK': {
       const today = new Date().toDateString();
       if (state.lastCareDate === today) return state;
-      
+
       const yesterday = new Date(Date.now() - 86400000).toDateString();
       const newStreak = state.lastCareDate === yesterday ? state.careStreak + 1 : 1;
-      
+
       let achievements = state.achievements;
       if (newStreak >= 3) {
         achievements = achievements.map(a =>
@@ -181,21 +263,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         );
       }
 
+      // Also reset daily tasks if it's a new day
+      const dailyTracking = ensureDailyTracking({ ...state, lastCareDate: today });
+      const dailyTasks = ensureDailyTasks({ ...state, dailyTracking });
+
       return {
         ...state,
         careStreak: newStreak,
         lastCareDate: today,
         totalDaysPlayed: state.totalDaysPlayed + (state.lastCareDate !== today ? 1 : 0),
         achievements,
+        dailyTracking,
+        dailyTasks,
+        dailyBonusClaimed: state.dailyTracking?.date === today ? state.dailyBonusClaimed : false,
       };
     }
 
     case 'CHECK_GROWTH': {
       if (!state.pet) return state;
-      
+
       let newStage = state.pet.stage;
       let achievements = state.achievements;
-      
+
       if (state.pet.experience >= GROWTH_THRESHOLDS.adult && state.pet.stage !== 'adult') {
         newStage = 'adult';
         achievements = achievements.map(a =>
@@ -208,7 +297,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         );
       }
 
-      // Check for perfect stats achievement
       const stats = state.pet.stats;
       if (Object.values(stats).every(v => v >= 90)) {
         achievements = achievements.map(a =>
@@ -225,16 +313,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'DECAY_STATS': {
       if (!state.pet) return state;
-      
+
       const personality = state.pet.personality;
       const modifiers = PERSONALITY_MODIFIERS[personality];
-      
+
       const decay: Partial<PetStats> = {
-        hunger: -5 + (modifiers.hunger || 0),
-        happiness: -4 + (modifiers.happiness || 0),
-        energy: -3 + (modifiers.energy || 0),
-        cleanliness: -4 + (modifiers.cleanliness || 0),
-        health: state.pet.stats.hunger < 20 || state.pet.stats.cleanliness < 20 ? -5 : -1,
+        hunger: -8 + (modifiers.hunger || 0),
+        happiness: -6 + (modifiers.happiness || 0),
+        energy: -5 + (modifiers.energy || 0),
+        cleanliness: -6 + (modifiers.cleanliness || 0),
+        health: state.pet.stats.hunger < 20 || state.pet.stats.cleanliness < 20 ? -8 : -2,
       };
 
       const newStats = { ...state.pet.stats };
@@ -254,17 +342,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...initialState,
         ...action.payload,
-        // Ensure nested objects are merged correctly if needed, but for top-level new fields like highScores,
-        // spreading payload after initialState is enough IF payload doesn't have the key.
-        // If payload has the key but it's undefined (unlikely from JSON), the spread might need care,
-        // but typically JSON.parse won't have the key if it wasn't there.
-        // However, deeper merge for highScores might be safer if we add more keys later.
         notifications: action.payload.notifications || initialState.notifications,
         highScores: {
           ...initialState.highScores,
           ...(action.payload.highScores || {}),
         },
-      };
+        // Migration: ensure new fields exist for old saves
+        dailyTasks: action.payload.dailyTasks || [],
+        dailyTracking: action.payload.dailyTracking || { ...DEFAULT_DAILY_TRACKING },
+        milestones: action.payload.milestones || [],
+        dailyBonusClaimed: action.payload.dailyBonusClaimed || false,
+        lifetimeCounters: action.payload.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 },
+      } as GameState;
     }
 
     case 'RESET_WEEKLY_BUDGET': {
@@ -274,7 +363,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'UPDATE_HIGH_SCORE': {
       const { gameId, score } = action.payload;
       const currentHigh = state.highScores[gameId];
-      // Update if no score exists yet OR if new score is higher
       if (currentHigh === undefined || score > currentHigh) {
         return {
           ...state,
@@ -307,6 +395,130 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'TRACK_ACTION': {
+      const { key, amount = 1 } = action.payload;
+      const tracking = ensureDailyTracking(state);
+      const newTracking = {
+        ...tracking,
+        [key]: (tracking[key] as number) + amount,
+      };
+
+      // Check daily tasks for completion
+      let dailyTasks = ensureDailyTasks({ ...state, dailyTracking: newTracking });
+      let resultState: GameState = { ...state, dailyTracking: newTracking, dailyTasks };
+
+      dailyTasks = dailyTasks.map(task => {
+        if (task.completed) return task;
+        const taskDef = DAILY_TASK_POOL.find(definition => definition.id === task.id);
+        if (!taskDef) return task;
+        const currentProgress = newTracking[taskDef.trackingKey as keyof DailyTracking] as number;
+        const completed = currentProgress >= taskDef.target;
+        if (completed && !task.completed) {
+          // Grant XP for completing daily task
+          resultState = addXpToPet(resultState, taskDef.xpReward);
+        }
+        return {
+          ...task,
+          progress: Math.min(currentProgress, taskDef.target),
+          completed,
+        };
+      });
+
+      return { ...resultState, dailyTasks };
+    }
+
+    case 'CLAIM_DAILY_BONUS': {
+      if (state.dailyBonusClaimed) return state;
+      const allComplete = state.dailyTasks.length > 0 && state.dailyTasks.every(task => task.completed);
+      if (!allComplete) return state;
+
+      let resultState = addXpToPet(state, 30);
+      resultState = {
+        ...resultState,
+        money: resultState.money + 20,
+        dailyBonusClaimed: true,
+      };
+      const notification: GameNotification = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+        type: 'milestone',
+        title: 'Daily Bonus Claimed!',
+        description: 'All daily tasks complete! +30 XP, +$20',
+        icon: '🎁',
+        read: false,
+        timestamp: Date.now(),
+      };
+      return {
+        ...resultState,
+        notifications: [notification, ...resultState.notifications].slice(0, 50),
+      };
+    }
+
+    case 'RESET_DAILY_TASKS': {
+      const today = new Date().toDateString();
+      const taskIds = selectDailyTasks(today);
+      return {
+        ...state,
+        dailyTasks: taskIds.map(id => ({ id, progress: 0, completed: false })),
+        dailyTracking: { ...DEFAULT_DAILY_TRACKING, date: today },
+        dailyBonusClaimed: false,
+        milestones: ensureMilestones(state),
+      };
+    }
+
+    case 'CHECK_MILESTONES': {
+      const milestones = ensureMilestones(state);
+      const counters: LifetimeCounters = state.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 };
+      let resultState = { ...state };
+
+      const updatedMilestones = milestones.map(milestone => {
+        if (milestone.completed) return milestone;
+        const milestoneDef = MILESTONES.find(definition => definition.id === milestone.id);
+        if (!milestoneDef) return milestone;
+
+        const passed = checkMilestone(milestoneDef.checkFn, resultState, counters);
+        if (passed) {
+          resultState = addXpToPet(resultState, milestoneDef.xpReward);
+          resultState = {
+            ...resultState,
+            money: resultState.money + milestoneDef.moneyReward,
+          };
+          const notification: GameNotification = {
+            id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+            type: 'milestone',
+            title: 'Milestone Complete!',
+            description: `${milestoneDef.name}: +${milestoneDef.xpReward} XP, +$${milestoneDef.moneyReward}`,
+            icon: milestoneDef.icon,
+            read: false,
+            timestamp: Date.now(),
+          };
+          resultState = {
+            ...resultState,
+            notifications: [notification, ...resultState.notifications].slice(0, 50),
+          };
+          return { ...milestone, completed: true, completedAt: Date.now() };
+        }
+        return milestone;
+      });
+
+      return { ...resultState, milestones: updatedMilestones };
+    }
+
+    case 'ADD_XP': {
+      return addXpToPet(state, action.payload);
+    }
+
+    case 'INCREMENT_LIFETIME_COUNTER': {
+      const { counter, amount = 1 } = action.payload;
+      const counters = state.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 };
+      return {
+        ...state,
+        lifetimeCounters: {
+          ...counters,
+          [counter]: (counters[counter] || 0) + amount,
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -317,6 +529,8 @@ export interface ActionFeedbackEvent {
   category?: string;
   statName?: string;
   statValue?: number;
+  itemIcon?: string;
+  itemName?: string;
   timestamp: number;
 }
 
@@ -341,6 +555,8 @@ interface GameContextType {
   performAction: (action: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => void;
   updateHighScore: (gameId: string, score: number) => void;
   markNotificationsRead: () => void;
+  trackGamePlayed: () => void;
+  claimDailyBonus: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -357,18 +573,31 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [state]);
 
+  // Initialize daily tasks and milestones on load
+  useEffect(() => {
+    if (state.gameStarted && state.pet) {
+      const today = new Date().toDateString();
+      if (!state.dailyTracking?.date || state.dailyTracking.date !== today || state.dailyTasks.length === 0) {
+        dispatch({ type: 'RESET_DAILY_TASKS' });
+      }
+      if (!state.milestones || state.milestones.length === 0) {
+        dispatch({ type: 'CHECK_MILESTONES' });
+      }
+    }
+  }, [state.gameStarted, state.pet?.id]);
+
   // Stat decay timer
   useEffect(() => {
     if (!state.pet) return;
     const interval = setInterval(() => {
       dispatch({ type: 'DECAY_STATS' });
       dispatch({ type: 'CHECK_GROWTH' });
-      
+
       // Random event chance (5% every minute) - but not during mini-games
       if (Math.random() < 0.05 && !isPlayingMiniGame) {
         dispatch({ type: 'TRIGGER_EVENT', payload: getRandomEvent() });
       }
-    }, 60000); // Every minute
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [state.pet]);
@@ -428,6 +657,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return false;
     }
     dispatch({ type: 'SPEND_MONEY', payload: { amount, category, description } });
+    // Track spending for daily tasks
+    dispatch({ type: 'TRACK_ACTION', payload: { key: 'moneySpent', amount } });
+    dispatch({ type: 'TRACK_ACTION', payload: { key: 'itemsBought' } });
+    dispatch({ type: 'CHECK_MILESTONES' });
     return true;
   };
 
@@ -439,18 +672,38 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const item = state.inventory.find(i => i.id === itemId);
     dispatch({ type: 'USE_ITEM', payload: itemId });
     dispatch({ type: 'UPDATE_CARE_STREAK' });
+    // Track item usage for daily tasks
+    dispatch({ type: 'TRACK_ACTION', payload: { key: 'itemsUsed' } });
 
-    // Emit feed animation if item has hunger effect
-    if (item && item.effects.hunger && state.pet) {
-      const newHunger = clampStat(state.pet.stats.hunger + item.effects.hunger);
-      setLastActionFeedback({
-        action: 'feed',
-        category: item.category,
-        statName: 'hunger',
-        statValue: newHunger,
-        timestamp: Date.now(),
-      });
+    if (item && state.pet) {
+      // Track feed if food item
+      if (item.effects.hunger) {
+        dispatch({ type: 'TRACK_ACTION', payload: { key: 'feedCount' } });
+        dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: 'totalFeeds' } });
+      }
+
+      if (item.effects.hunger) {
+        const newHunger = clampStat(state.pet.stats.hunger + item.effects.hunger);
+        setLastActionFeedback({
+          action: 'feed',
+          category: item.category,
+          statName: 'hunger',
+          statValue: newHunger,
+          itemIcon: item.icon,
+          itemName: item.name,
+          timestamp: Date.now(),
+        });
+      } else {
+        setLastActionFeedback({
+          action: 'use-item',
+          category: item.category,
+          itemIcon: item.icon,
+          itemName: item.name,
+          timestamp: Date.now(),
+        });
+      }
     }
+    dispatch({ type: 'CHECK_MILESTONES' });
   };
 
   const unlockAchievement = (achievementId: string) => {
@@ -474,7 +727,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!event) return;
 
     const choice = event.choices[choiceIndex];
-    
+
     if (choice.cost) {
       if (!spendMoney(choice.cost, 'event', event.title)) {
         return;
@@ -537,34 +790,57 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!state.pet) return;
 
     const actions: Record<string, { stats: Partial<PetStats>; exp: number; message: string }> = {
-      feed: { stats: { hunger: 20 }, exp: 5, message: `${state.pet.name} enjoyed a quick snack!` },
-      play: { stats: { happiness: 25, energy: -15 }, exp: 10, message: `${state.pet.name} had so much fun playing!` },
-      rest: { stats: { energy: 30, happiness: 5 }, exp: 3, message: `${state.pet.name} had a refreshing rest!` },
-      clean: { stats: { cleanliness: 25, happiness: -5 }, exp: 5, message: `${state.pet.name} is squeaky clean now!` },
-      vet: { stats: { health: 20 }, exp: 5, message: `${state.pet.name} got a health checkup!` },
+      feed: { stats: { hunger: 0 }, exp: 0, message: '' },
+      play: { stats: { happiness: 15, energy: -10 }, exp: 8, message: `${state.pet.name} had fun playing!` },
+      rest: { stats: { energy: 20, happiness: 3 }, exp: 2, message: `${state.pet.name} had a rest!` },
+      clean: { stats: { cleanliness: 15, happiness: -5 }, exp: 4, message: `${state.pet.name} is clean now!` },
+      vet: { stats: { health: 15 }, exp: 4, message: `${state.pet.name} got a health checkup!` },
     };
+
+    // Feed requires food items from inventory
+    if (action === 'feed') {
+      const foodItem = state.inventory.find(item => item.category === 'food' && item.quantity > 0);
+      if (foodItem) {
+        useItem(foodItem.id);
+        toast({
+          title: "🍖 Fed " + state.pet.name + "!",
+          description: `Used ${foodItem.name} from your inventory.`,
+        });
+      } else {
+        toast({
+          title: "❌ No food in inventory!",
+          description: "Buy food from the Shop to feed your pet.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
 
     const actionData = actions[action];
     updateStats(actionData.stats);
 
-    if (state.pet) {
-      dispatch({
-        type: 'UPDATE_STATS',
-        payload: {},
-      });
+    // Grant XP for the action (fixing the XP bug - exp was defined but never added)
+    if (actionData.exp > 0) {
+      dispatch({ type: 'ADD_XP', payload: actionData.exp });
     }
 
-    // Emit feedback for PetDisplay animation
-    if (action === 'feed') {
-      const newHunger = clampStat(state.pet.stats.hunger + 20);
-      setLastActionFeedback({
-        action: 'feed',
-        statName: 'hunger',
-        statValue: newHunger,
-        timestamp: Date.now(),
-      });
+    // Track the action for daily tasks
+    const trackingMap: Record<string, keyof DailyTracking> = {
+      play: 'playCount',
+      rest: 'restCount',
+      clean: 'cleanCount',
+      vet: 'vetCount',
+    };
+    if (trackingMap[action]) {
+      dispatch({ type: 'TRACK_ACTION', payload: { key: trackingMap[action] } });
     }
 
+    // Track lifetime plays for milestones
+    if (action === 'play') {
+      dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: 'totalPlays' } });
+    }
+
+    dispatch({ type: 'CHECK_MILESTONES' });
     dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Action Complete!', description: actionData.message, icon: '✨' } });
     toast({
       title: "✨ Action Complete!",
@@ -578,6 +854,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const markNotificationsRead = () => {
     dispatch({ type: 'MARK_NOTIFICATIONS_READ' });
+  };
+
+  const trackGamePlayed = () => {
+    dispatch({ type: 'TRACK_ACTION', payload: { key: 'gamesPlayed' } });
+    dispatch({ type: 'CHECK_MILESTONES' });
+  };
+
+  const claimDailyBonus = () => {
+    dispatch({ type: 'CLAIM_DAILY_BONUS' });
   };
 
   return (
@@ -603,6 +888,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         performAction,
         updateHighScore,
         markNotificationsRead,
+        trackGamePlayed,
+        claimDailyBonus,
       }}
     >
       {children}

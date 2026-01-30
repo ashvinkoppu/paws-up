@@ -3,6 +3,7 @@ import { useGame } from '@/context/GameContext';
 import { Species, GrowthStage, PetColor } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { Flame, Calendar } from 'lucide-react';
+import { calculateLevel } from '@/data/tasks';
 
 import petDog from '@/assets/pet-dog.png';
 import petCat from '@/assets/pet-cat.png';
@@ -36,6 +37,23 @@ const STAGE_CONFIG: Record<GrowthStage, { scale: string; label: string; icon: st
 
 const EATING_FOOD_EMOJIS = ['🍖', '🥣', '🍗', '🥩', '🧆'];
 
+// Category-specific particle emojis for item use animations
+const CATEGORY_PARTICLES: Record<string, string[]> = {
+  toy: ['⚽', '🎾', '🏀', '🔴', '🟡'],
+  grooming: ['✨', '💫', '🫧', '🧼', '💧'],
+  medicine: ['💊', '💖', '❤️', '🩹', '💗'],
+  accessory: ['⭐', '🌟', '✨', '💎', '🎀'],
+};
+
+interface ItemUseParticle {
+  id: number;
+  emoji: string;
+  x: number;
+  delay: number;
+  duration: number;
+  category: string;
+}
+
 const PetDisplay: React.FC = () => {
   const { state, lastActionFeedback } = useGame();
 
@@ -45,8 +63,13 @@ const PetDisplay: React.FC = () => {
   const [eatingState, setEatingState] = useState<'idle' | 'eating' | 'done'>('idle');
   const [eatingEmoji, setEatingEmoji] = useState('🍖');
   const [hungerAfter, setHungerAfter] = useState<number | null>(null);
+  const [itemUseParticles, setItemUseParticles] = useState<ItemUseParticle[]>([]);
+  const [itemUseLabel, setItemUseLabel] = useState<string | null>(null);
   const lastFeedTimestamp = useRef<number>(0);
+  const lastItemUseTimestamp = useRef<number>(0);
+  const particleIdRef = useRef(0);
 
+  // Handle eating animation (food items)
   useEffect(() => {
     if (
       lastActionFeedback &&
@@ -76,16 +99,60 @@ const PetDisplay: React.FC = () => {
     }
   }, [lastActionFeedback]);
 
+  // Handle item-use animation (toys, grooming, medicine, accessories)
+  useEffect(() => {
+    if (
+      lastActionFeedback &&
+      lastActionFeedback.action === 'use-item' &&
+      lastActionFeedback.timestamp !== lastItemUseTimestamp.current
+    ) {
+      lastItemUseTimestamp.current = lastActionFeedback.timestamp;
+      const category = lastActionFeedback.category || 'toy';
+      const particleEmojis = CATEGORY_PARTICLES[category] || CATEGORY_PARTICLES.toy;
+      const itemIcon = lastActionFeedback.itemIcon || particleEmojis[0];
+
+      // Generate particles - use the item's own icon plus category particles
+      const particles: ItemUseParticle[] = [];
+      const particleCount = category === 'toy' ? 8 : 6;
+
+      for (let index = 0; index < particleCount; index++) {
+        const emoji = index < 3 ? itemIcon : particleEmojis[Math.floor(Math.random() * particleEmojis.length)];
+        particles.push({
+          id: particleIdRef.current++,
+          emoji,
+          x: 10 + Math.random() * 80,
+          delay: index * 0.12,
+          duration: 1.2 + Math.random() * 0.6,
+          category,
+        });
+      }
+
+      setItemUseParticles(particles);
+      setItemUseLabel(lastActionFeedback.itemName || null);
+
+      // Trigger happy reaction on pet
+      setInteraction('happy');
+      setTimeout(() => setInteraction('none'), 1000);
+
+      // Clear particles after animation
+      const clearTimer = setTimeout(() => {
+        setItemUseParticles([]);
+        setItemUseLabel(null);
+      }, 2500);
+
+      return () => clearTimeout(clearTimer);
+    }
+  }, [lastActionFeedback]);
+
   const { pet } = state;
   const avgHealth = Object.values(pet.stats).reduce((sum, value) => sum + value, 0) / 5;
 
   const handlePetClick = () => {
     if (interaction !== 'none') return;
 
-    // Determine mood based on health
-    // Happy if average health is 40 or above (Okay, Happy, Thriving)
-    const isHappy = avgHealth >= 40;
-    
+    const lowestStat = Math.min(...Object.values(pet.stats));
+    const isHappy = lowestStat >= 20 && avgHealth >= 40;
+
     setInteraction(isHappy ? 'happy' : 'sad');
     
     // Reset animation state after it completes
@@ -95,6 +162,13 @@ const PetDisplay: React.FC = () => {
   };
 
   const getMood = () => {
+    const lowestStat = Math.min(...Object.values(pet.stats));
+
+    // If any single stat is critically low, mood reflects that
+    if (lowestStat < 10) return { emoji: '😢', text: 'Critical!', color: 'text-destructive' };
+    if (lowestStat < 20) return { emoji: '😔', text: 'Needs attention', color: 'text-chart-2' };
+
+    // Otherwise use average health
     if (avgHealth >= 80) return { emoji: '😄', text: 'Thriving!', color: 'text-secondary' };
     if (avgHealth >= 60) return { emoji: '😊', text: 'Happy', color: 'text-chart-3' };
     if (avgHealth >= 40) return { emoji: '😐', text: 'Okay', color: 'text-chart-1' };
@@ -124,11 +198,20 @@ const PetDisplay: React.FC = () => {
             </span>
           </div>
 
-          {/* Level Badge */}
-          <div className="px-3 py-1.5 bg-secondary/10 rounded-full border border-secondary/20">
-            <span className="text-xs font-semibold text-secondary">
-              Level {pet.level} · {pet.experience} XP
-            </span>
+          {/* Level Badge with XP Progress */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-secondary/10 rounded-full border border-secondary/20">
+            <span className="text-xs font-semibold text-secondary">Lv {pet.level}</span>
+            <div className="flex items-center gap-1.5">
+              <div className="w-16 h-1.5 bg-secondary/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-secondary rounded-full transition-all duration-500"
+                  style={{ width: `${(calculateLevel(pet.experience).currentXp / calculateLevel(pet.experience).xpForNext) * 100}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-mono text-secondary/70">
+                {calculateLevel(pet.experience).currentXp}/{calculateLevel(pet.experience).xpForNext}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -191,6 +274,40 @@ const PetDisplay: React.FC = () => {
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-nom-text">
                   <span className="font-serif font-bold text-lg text-primary">nom nom nom</span>
                 </div>
+              </>
+            )}
+
+            {/* Item use particle animation (toys, grooming, medicine, accessories) */}
+            {itemUseParticles.length > 0 && (
+              <>
+                {itemUseParticles.map((particle) => (
+                  <div
+                    key={particle.id}
+                    className={cn(
+                      "absolute pointer-events-none z-10 text-2xl",
+                      particle.category === 'toy' ? "animate-item-bounce" :
+                      particle.category === 'grooming' ? "animate-item-sparkle" :
+                      particle.category === 'medicine' ? "animate-item-float-up" :
+                      "animate-item-twinkle"
+                    )}
+                    style={{
+                      left: `${particle.x}%`,
+                      top: particle.category === 'medicine' ? '80%' : '5%',
+                      animationDelay: `${particle.delay}s`,
+                      animationDuration: `${particle.duration}s`,
+                    }}
+                  >
+                    {particle.emoji}
+                  </div>
+                ))}
+                {/* Item use label */}
+                {itemUseLabel && (
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-item-label">
+                    <span className="font-serif font-bold text-lg text-secondary whitespace-nowrap">
+                      {itemUseLabel}!
+                    </span>
+                  </div>
+                )}
               </>
             )}
 

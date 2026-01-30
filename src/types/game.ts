@@ -76,7 +76,60 @@ export interface EventChoice {
   message: string;
 }
 
-export type NotificationType = 'achievement' | 'alert' | 'purchase' | 'event' | 'milestone';
+// Daily task definition (the pool template)
+export interface DailyTaskDef {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  trackingKey: string;
+  target: number;
+  xpReward: number;
+  difficulty: 'easy' | 'hard';
+}
+
+// Active daily task instance (in game state)
+export interface DailyTask {
+  id: string;
+  progress: number;
+  completed: boolean;
+}
+
+// Milestone definition
+export interface MilestoneDef {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  tier: 1 | 2 | 3;
+  xpReward: number;
+  moneyReward: number;
+  checkFn: string;
+}
+
+// Milestone state (in game state)
+export interface MilestoneState {
+  id: string;
+  completed: boolean;
+  completedAt?: number;
+}
+
+// Task tracking counters (reset daily)
+export interface DailyTracking {
+  date: string;
+  feedCount: number;
+  playCount: number;
+  cleanCount: number;
+  restCount: number;
+  vetCount: number;
+  itemsBought: number;
+  moneySpent: number;
+  gamesPlayed: number;
+  highScore: number;
+  itemsUsed: number;
+}
+
+export type NotificationType = 'achievement' | 'alert' | 'purchase' | 'event' | 'milestone' | 'levelup';
 
 export interface GameNotification {
   id: string;
@@ -103,6 +156,14 @@ export interface GameState {
   gameStarted: boolean;
   currentEvent: RandomEvent | null;
   highScores: Record<string, number>;
+  dailyTasks: DailyTask[];
+  dailyTracking: DailyTracking;
+  milestones: MilestoneState[];
+  dailyBonusClaimed: boolean;
+  lifetimeCounters: {
+    totalFeeds: number;
+    totalPlays: number;
+  };
 }
 
 // Personality modifiers
@@ -119,3 +180,6 @@ export const GROWTH_THRESHOLDS = {
   teen: 100,
   adult: 300,
 };
+
+// XP needed to reach a given level: 50 * level
+export const XP_PER_LEVEL = (level: number): number => 50 * level;

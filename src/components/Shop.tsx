@@ -16,6 +16,7 @@ const CATEGORIES = [
   { id: 'toy', label: 'Toys', icon: '🎾' },
   { id: 'grooming', label: 'Grooming', icon: '✨' },
   { id: 'medicine', label: 'Medicine', icon: '💊' },
+  { id: 'accessory', label: 'Accessories', icon: '🎀' },
 ];
 
 const Shop: React.FC = () => {

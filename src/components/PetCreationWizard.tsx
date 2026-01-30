@@ -89,7 +89,11 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
   };
 
   const handleBack = () => {
-    setStep(step - 1);
+    if (step === 1) {
+      onComplete(); // Return to start screen
+    } else {
+      setStep(step - 1);
+    }
   };
 
   const handleCreate = () => {
@@ -309,11 +313,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
             <Button
               variant="outline"
               onClick={handleBack}
-              disabled={step === 1}
-              className={cn(
-                "rounded-xl border-2 px-6",
-                step === 1 && "opacity-0"
-              )}
+              className="rounded-xl border-2 px-6"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back

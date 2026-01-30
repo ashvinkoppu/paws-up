@@ -131,6 +131,12 @@ const PetStats: React.FC = () => {
   const avgStats = Object.values(stats).reduce((sum, value) => sum + value, 0) / 5;
 
   const getOverallStatus = () => {
+    const lowestStat = Math.min(...Object.values(stats));
+
+    // A critically low stat overrides the average-based label
+    if (lowestStat <= 10) return { label: 'Needs Care', color: 'bg-destructive/15 text-destructive border-destructive/30' };
+    if (lowestStat <= 25) return { label: 'Fair', color: 'bg-chart-1/15 text-chart-1 border-chart-1/30' };
+
     if (avgStats >= 70) return { label: 'Excellent', color: 'bg-secondary/15 text-secondary border-secondary/30' };
     if (avgStats >= 50) return { label: 'Good', color: 'bg-chart-3/15 text-chart-3 border-chart-3/30' };
     if (avgStats >= 30) return { label: 'Fair', color: 'bg-chart-1/15 text-chart-1 border-chart-1/30' };
