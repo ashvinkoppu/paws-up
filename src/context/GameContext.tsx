@@ -49,6 +49,7 @@ type GameAction =
   | { type: 'UPDATE_HIGH_SCORE'; payload: { gameId: string; score: number } }
   | { type: 'ADD_NOTIFICATION'; payload: Omit<GameNotification, 'id' | 'read' | 'timestamp'> }
   | { type: 'MARK_NOTIFICATIONS_READ' }
+  | { type: 'CLEAR_NOTIFICATIONS' }
   | { type: 'DECAY_STATS' }
   | { type: 'TRACK_ACTION'; payload: { key: keyof DailyTracking; amount?: number } }
   | { type: 'CLAIM_DAILY_BONUS' }
@@ -435,6 +436,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'CLEAR_NOTIFICATIONS': {
+      return {
+        ...state,
+        notifications: [],
+      };
+    }
+
     case 'TRACK_ACTION': {
       const { key, amount = 1 } = action.payload;
       const tracking = ensureDailyTracking(state);
@@ -667,6 +675,7 @@ interface GameContextType {
   performAction: (action: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => void;
   updateHighScore: (gameId: string, score: number) => void;
   markNotificationsRead: () => void;
+  clearNotifications: () => void;
   trackGamePlayed: () => void;
   claimDailyBonus: () => void;
   claimDailyTask: (taskId: string) => void;
@@ -973,6 +982,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'MARK_NOTIFICATIONS_READ' });
   };
 
+  const clearNotifications = () => {
+    dispatch({ type: 'CLEAR_NOTIFICATIONS' });
+  };
+
   const trackGamePlayed = () => {
     dispatch({ type: 'TRACK_ACTION', payload: { key: 'gamesPlayed' } });
     dispatch({ type: 'CHECK_MILESTONES' });
@@ -1043,6 +1056,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         performAction,
         updateHighScore,
         markNotificationsRead,
+        clearNotifications,
         trackGamePlayed,
         claimDailyBonus,
         claimDailyTask,

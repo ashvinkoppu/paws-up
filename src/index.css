@@ -714,56 +714,66 @@
   animation: notificationBadgePulse 2s ease-in-out infinite;
 }
 
-/* Mood emoji floating animations */
-@keyframes moodThriving {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
-  25% { transform: translate(-50%, calc(-50% - 8px)) scale(1.2); opacity: 1; }
-  50% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
-  75% { transform: translate(-50%, calc(-50% + 4px)) scale(1.1); opacity: 1; }
+/* Pet mood body-language animations */
+@keyframes petDroopy {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(4px) rotate(-1deg); }
+  60% { transform: translateY(6px) rotate(1deg); }
+  80% { transform: translateY(3px) rotate(0deg); }
 }
 
-@keyframes moodHappy {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; }
-  50% { transform: translate(-50%, calc(-50% - 6px)) scale(1.15); opacity: 1; }
+@keyframes petShiver {
+  0%, 100% { transform: translateX(0) scale(1); }
+  10% { transform: translateX(-2px) scale(0.98); }
+  20% { transform: translateX(2px) scale(0.98); }
+  30% { transform: translateX(-1.5px) scale(0.99); }
+  40% { transform: translateX(1.5px) scale(0.99); }
+  50% { transform: translateX(-1px) scale(1); }
+  60% { transform: translateX(1px); }
+  70% { transform: translateX(0); }
 }
 
-@keyframes moodNeutral {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-  50% { transform: translate(-50%, calc(-50% - 3px)) scale(1.05); opacity: 0.75; }
+.animate-pet-droopy {
+  animation: petDroopy 3.5s ease-in-out infinite;
 }
 
-@keyframes moodSad {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
-  50% { transform: translate(-50%, calc(-50% + 5px)) scale(0.9); opacity: 0.5; }
+.animate-pet-shiver {
+  animation: petShiver 2s ease-in-out infinite;
 }
 
-@keyframes moodCritical {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-  15% { transform: translate(calc(-50% - 3px), -50%) scale(1.1); }
-  30% { transform: translate(calc(-50% + 3px), -50%) scale(1.1); }
-  45% { transform: translate(calc(-50% - 2px), -50%) scale(1); }
-  60% { transform: translate(calc(-50% + 2px), -50%) scale(1); opacity: 0.6; }
-  75% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.9; }
+/* Ambient mood particles (CSS-based, no emojis) */
+@keyframes petSparkle {
+  0% { opacity: 0; transform: scale(0) translateY(0); }
+  20% { opacity: 1; transform: scale(1.2) translateY(-4px); }
+  50% { opacity: 1; transform: scale(0.8) translateY(-10px); }
+  80% { opacity: 0.5; transform: scale(1) translateY(-18px); }
+  100% { opacity: 0; transform: scale(0.3) translateY(-24px); }
 }
 
-.animate-mood-thriving {
-  animation: moodThriving 2.5s ease-in-out infinite;
+@keyframes petHeartFloat {
+  0% { opacity: 0; transform: scale(0) translateY(0); }
+  15% { opacity: 0.8; transform: scale(1.1) translateY(-6px); }
+  50% { opacity: 0.6; transform: scale(0.9) translateY(-20px); }
+  100% { opacity: 0; transform: scale(0.5) translateY(-36px); }
 }
 
-.animate-mood-happy {
-  animation: moodHappy 3s ease-in-out infinite;
+@keyframes petSweatDrop {
+  0% { opacity: 0; transform: translateY(-4px) scaleY(0.5); }
+  20% { opacity: 0.7; transform: translateY(0) scaleY(1); }
+  70% { opacity: 0.5; transform: translateY(16px) scaleY(1.2); }
+  100% { opacity: 0; transform: translateY(28px) scaleY(0.3); }
 }
 
-.animate-mood-neutral {
-  animation: moodNeutral 4s ease-in-out infinite;
+.animate-pet-sparkle {
+  animation: petSparkle 2s ease-out infinite;
 }
 
-.animate-mood-sad {
-  animation: moodSad 3s ease-in-out infinite;
+.animate-pet-heart-float {
+  animation: petHeartFloat 3s ease-out infinite;
 }
 
-.animate-mood-critical {
-  animation: moodCritical 1.5s ease-in-out infinite;
+.animate-pet-sweat-drop {
+  animation: petSweatDrop 2.5s ease-in infinite;
 }
 
 /* Sleeping animations */

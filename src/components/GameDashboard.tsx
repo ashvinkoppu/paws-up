@@ -16,7 +16,7 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const GameDashboard: React.FC = () => {
-  const { state, saveGame, resetGame, triggerRandomEvent, markNotificationsRead } = useGame();
+  const { state, saveGame, resetGame, triggerRandomEvent, markNotificationsRead, clearNotifications } = useGame();
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [showNewDayPopup, setShowNewDayPopup] = useState(false);
   const previousDaysPlayed = useRef(state.totalDaysPlayed);
@@ -202,9 +202,16 @@ const GameDashboard: React.FC = () => {
                 <div className="absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in-up bg-card border border-border/50">
                   <div className="sticky top-0 bg-card/90 backdrop-blur-md border-b border-border/40 px-4 py-3 flex items-center justify-between">
                     <h3 className="font-serif font-semibold text-sm">Notifications</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setShowNotificationPanel(false)} className="h-6 w-6 p-0">
-                      <X className="w-3.5 h-3.5" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      {state.notifications.length > 0 && (
+                        <Button variant="ghost" size="sm" onClick={clearNotifications} className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive">
+                          Clear all
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="sm" onClick={() => setShowNotificationPanel(false)} className="h-6 w-6 p-0">
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </div>
                   <div className="overflow-y-auto max-h-80">
                     {state.notifications.length === 0 ? (

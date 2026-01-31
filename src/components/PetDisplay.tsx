@@ -2,9 +2,56 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Species, GrowthStage, PetColor, AccessorySlot } from '@/types/game';
 import { cn } from '@/lib/utils';
-import { Flame, Calendar } from 'lucide-react';
+import { Flame, Calendar, AlertTriangle, Heart } from 'lucide-react';
 import { calculateLevel } from '@/data/tasks';
 import { getAccessoryById, ACCESSORY_POSITIONS } from '@/data/accessories';
+
+// Mood visual config — controls aura, pet animation, and ambient particles
+type MoodVisual = {
+  auraColor: string;
+  auraIntensity: string;
+  petAnimation: string;
+  particles: 'sparkle' | 'hearts' | 'sweat' | 'alert' | 'none';
+  petFilter: string;
+};
+
+const MOOD_VISUALS: Record<string, MoodVisual> = {
+  thriving: {
+    auraColor: 'from-emerald-400/25 via-yellow-300/15 to-emerald-400/25',
+    auraIntensity: 'shadow-[0_0_30px_hsl(152,45%,36%,0.2),0_0_60px_hsl(40,88%,52%,0.1)]',
+    petAnimation: 'animate-float',
+    particles: 'sparkle',
+    petFilter: '',
+  },
+  happy: {
+    auraColor: 'from-green-400/15 via-emerald-300/10 to-green-400/15',
+    auraIntensity: 'shadow-[0_0_20px_hsl(152,45%,36%,0.15)]',
+    petAnimation: 'animate-float',
+    particles: 'hearts',
+    petFilter: '',
+  },
+  okay: {
+    auraColor: 'from-amber-300/10 via-orange-200/5 to-amber-300/10',
+    auraIntensity: '',
+    petAnimation: 'animate-breathe',
+    particles: 'none',
+    petFilter: '',
+  },
+  needsAttention: {
+    auraColor: 'from-orange-400/15 via-amber-300/10 to-orange-400/15',
+    auraIntensity: 'shadow-[0_0_20px_hsl(24,82%,50%,0.15)]',
+    petAnimation: 'animate-pet-droopy',
+    particles: 'sweat',
+    petFilter: 'saturate(0.8)',
+  },
+  critical: {
+    auraColor: 'from-red-400/20 via-rose-300/15 to-red-400/20',
+    auraIntensity: 'shadow-[0_0_25px_hsl(355,75%,44%,0.2)]',
+    petAnimation: 'animate-pet-shiver',
+    particles: 'alert',
+    petFilter: 'saturate(0.5) brightness(0.9)',
+  },
+};
 
 import petDog from '@/assets/pet-dog.png';
 import petCat from '@/assets/pet-cat.png';
@@ -38,22 +85,13 @@ const PET_COLOR_FILTERS: Record<PetColor, string> = {
   cream: 'sepia(0.15) saturate(0.9) brightness(1.02)',
 };
 
-const STAGE_CONFIG: Record<GrowthStage, { scale: string; label: string; icon: string }> = {
-  baby: { scale: 'scale-75', label: 'Baby', icon: '🍼' },
-  teen: { scale: 'scale-90', label: 'Growing', icon: '🌱' },
-  adult: { scale: 'scale-100', label: 'Adult', icon: '🌟' },
+const STAGE_CONFIG: Record<GrowthStage, { scale: string; label: string }> = {
+  baby: { scale: 'scale-75', label: 'Baby' },
+  teen: { scale: 'scale-90', label: 'Growing' },
+  adult: { scale: 'scale-100', label: 'Adult' },
 };
 
 const EATING_FOOD_EMOJIS = ['🍖', '🥣', '🍗', '🥩', '🧆'];
-
-// Mood-based floating emojis that orbit around the pet
-const MOOD_EMOJIS: Record<string, string[]> = {
-  thriving: ['😄', '🌟', '💛', '✨', '🎉'],
-  happy: ['😊', '💚', '🌸', '✨'],
-  okay: ['😐', '💭', '🍃'],
-  needsAttention: ['😔', '💧', '🥺', '💔'],
-  critical: ['😢', '💔', '🆘', '❗', '💧'],
-};
 
 // Category-specific particle emojis for item use animations
 const CATEGORY_PARTICLES: Record<string, string[]> = {
@@ -61,39 +99,6 @@ const CATEGORY_PARTICLES: Record<string, string[]> = {
   grooming: ['✨', '💫', '🫧', '🧼', '💧'],
   medicine: ['💊', '💖', '❤️', '🩹', '💗'],
   accessory: ['⭐', '🌟', '✨', '💎', '🎀'],
-};
-
-// Pet expression types based on stats and actions
-type PetExpression = 'normal' | 'tired' | 'excited' | 'hungry' | 'sick' | 'dirty' | 'sad' | 'sleepy' | 'eating';
-
-// Expression emojis that appear near the pet's face
-const EXPRESSION_EMOJIS: Record<PetExpression, { emoji: string; position: string; animation: string }> = {
-  normal: { emoji: '😊', position: 'bottom-0 right-0', animation: '' },
-  tired: { emoji: '😪', position: 'bottom-0 right-0', animation: 'animate-mood-sad' },
-  excited: { emoji: '🤩', position: 'bottom-0 right-0', animation: 'animate-mood-thriving' },
-  hungry: { emoji: '🤤', position: 'bottom-0 right-0', animation: 'animate-wiggle' },
-  sick: { emoji: '🤒', position: 'bottom-0 right-0', animation: 'animate-mood-critical' },
-  dirty: { emoji: '😷', position: 'bottom-0 right-0', animation: 'animate-wiggle' },
-  sad: { emoji: '😢', position: 'bottom-0 right-0', animation: 'animate-mood-sad' },
-  sleepy: { emoji: '😴', position: 'bottom-0 right-0', animation: 'animate-breathe' },
-  eating: { emoji: '😋', position: 'bottom-0 right-0', animation: 'animate-mood-thriving' },
-};
-
-// Get the dominant expression based on pet stats
-const getDominantExpression = (stats: { hunger: number; happiness: number; energy: number; cleanliness: number; health: number }): PetExpression => {
-  // Check for critical conditions first (value <= 15)
-  if (stats.health <= 15) return 'sick';
-  if (stats.energy <= 15) return 'sleepy';
-  if (stats.hunger <= 15) return 'hungry';
-  if (stats.cleanliness <= 15) return 'dirty';
-  if (stats.happiness <= 15) return 'sad';
-  
-  // Check for warning conditions (value <= 30)
-  if (stats.energy <= 30) return 'tired';
-  if (stats.hunger <= 30) return 'hungry';
-  if (stats.health <= 30) return 'sick';
-  
-  return 'normal';
 };
 
 interface ItemUseParticle {
@@ -121,14 +126,9 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
   const [hungerAfter, setHungerAfter] = useState<number | null>(null);
   const [itemUseParticles, setItemUseParticles] = useState<ItemUseParticle[]>([]);
   const [itemUseLabel, setItemUseLabel] = useState<string | null>(null);
-  const [temporaryExpression, setTemporaryExpression] = useState<PetExpression | null>(null);
   const lastFeedTimestamp = useRef<number>(0);
   const lastItemUseTimestamp = useRef<number>(0);
   const particleIdRef = useRef(0);
-
-  // Get current expression based on stats or temporary override
-  const currentExpression: PetExpression = temporaryExpression || 
-    (eatingState === 'eating' ? 'excited' : getDominantExpression(state.pet.stats));
 
   // Handle eating animation (food items)
   useEffect(() => {
@@ -141,9 +141,6 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
       setEatingEmoji(EATING_FOOD_EMOJIS[Math.floor(Math.random() * EATING_FOOD_EMOJIS.length)]);
       setEatingState('eating');
       setHungerAfter(lastActionFeedback.statValue ?? null);
-      
-      // Trigger excited expression when eating
-      setTemporaryExpression('excited');
 
       // After eating animation, show the stat result
       const doneTimer = setTimeout(() => {
@@ -154,7 +151,6 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
       const clearTimer = setTimeout(() => {
         setEatingState('idle');
         setHungerAfter(null);
-        setTemporaryExpression(null); // Reset expression back to normal
       }, 3200);
 
       return () => {
@@ -260,9 +256,8 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
         <div className="w-full flex justify-between items-center mb-4 gap-2 px-1">
           {/* Stage Badge */}
           <div className="px-3 py-2 bg-accent/60 rounded-full border border-border/50">
-            <span className="text-xs font-semibold text-accent-foreground flex items-center gap-1.5">
-              <span className="text-sm leading-none">{stageConfig.icon}</span>
-              <span className="capitalize">{stageConfig.label}</span>
+            <span className="text-xs font-semibold text-accent-foreground capitalize">
+              {stageConfig.label}
             </span>
           </div>
 
@@ -288,213 +283,218 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
         </div>
 
         {/* Pet Image Container */}
-        <div className={cn(
-          "relative mt-2 mb-6 transition-all duration-500",
-          stageConfig.scale,
-          avgHealth < 30 && "opacity-75"
-        )}>
-          {/* Outer glow ring */}
-          <div className={cn(
-            "absolute inset-0 rounded-full transition-all duration-500",
-            avgHealth >= 60 ? "bg-secondary/10 warm-glow" :
-            avgHealth >= 30 ? "bg-chart-3/10" :
-            "bg-destructive/10"
-          )} style={{ transform: 'scale(1.1)' }} />
+        {(() => {
+          const moodVisual = MOOD_VISUALS[mood.key] || MOOD_VISUALS.okay;
+          return (
+            <div className={cn(
+              "relative mt-2 mb-6 transition-all duration-500",
+              stageConfig.scale,
+            )}>
+              {/* Mood aura — pulsing gradient ring behind the pet circle */}
+              <div className={cn(
+                "absolute inset-0 rounded-full transition-all duration-700",
+                `bg-gradient-to-br ${moodVisual.auraColor}`,
+                moodVisual.auraIntensity,
+                mood.key === 'critical' && "animate-pulse",
+                mood.key === 'needsAttention' && "animate-breathe",
+              )} style={{ transform: 'scale(1.15)' }} />
 
-          {/* Inner circle with gradient */}
-          <div className={cn(
-            "w-48 h-48 rounded-full flex items-center justify-center relative",
-            "bg-gradient-to-br from-accent/80 via-card to-card/60",
-            "border-2 border-border/20 shadow-xl ring-4 ring-white/10"
-          )}>
-            {/* Pet image */}
-            <img
-              src={PET_IMAGES[pet.species]}
-              alt={pet.name}
-              onClick={handlePetClick}
-              className={cn(
-                "w-36 h-36 object-contain transition-all duration-300 drop-shadow-lg cursor-pointer hover:scale-105 active:scale-95",
-                petAsleep ? "animate-pet-sleeping opacity-80" :
-                eatingState === 'eating' ? "animate-pet-eating" :
-                interaction === 'happy' ? "animate-happy-jump" :
-                interaction === 'sad' ? "animate-sad-shake" :
-                avgHealth >= 60 ? "animate-float" : "",
-                avgHealth < 30 && interaction === 'none' && eatingState === 'idle' && !petAsleep && "grayscale-[40%] opacity-90",
-              )}
-              style={{
-                filter: petAsleep ? `${PET_COLOR_FILTERS[pet.color] || ''} brightness(0.85)` : PET_COLOR_FILTERS[pet.color] || undefined,
-              }}
-            />
-
-            {/* Equipped accessory overlays */}
-            {pet.equippedAccessories && (Object.entries(pet.equippedAccessories) as [AccessorySlot, string][]).map(([slot, accessoryId]) => {
-              if (!accessoryId) return null;
-              const accessory = getAccessoryById(accessoryId);
-              if (!accessory) return null;
-              // Check conditional visibility
-              if (accessory.condition) {
-                const statValue = pet.stats[accessory.condition.stat];
-                if (statValue < accessory.condition.min) return null;
-              }
-              const position = ACCESSORY_POSITIONS[pet.species]?.[slot];
-              if (!position) return null;
-              return (
-                <div
-                  key={slot}
-                  className="absolute pointer-events-none z-10 transition-all duration-300"
+              {/* Inner circle */}
+              <div className={cn(
+                "w-48 h-48 rounded-full flex items-center justify-center relative overflow-hidden",
+                "bg-gradient-to-br from-accent/80 via-card to-card/60",
+                "border-2 border-border/20 shadow-xl ring-4 ring-white/10"
+              )}>
+                {/* Pet image — the pet itself animates based on mood */}
+                <img
+                  src={PET_IMAGES[pet.species]}
+                  alt={pet.name}
+                  onClick={handlePetClick}
+                  className={cn(
+                    "w-36 h-36 object-contain transition-all duration-500 drop-shadow-lg cursor-pointer hover:scale-105 active:scale-95",
+                    petAsleep ? "animate-pet-sleeping opacity-80" :
+                    eatingState === 'eating' ? "animate-pet-eating" :
+                    interaction === 'happy' ? "animate-happy-jump" :
+                    interaction === 'sad' ? "animate-sad-shake" :
+                    moodVisual.petAnimation,
+                  )}
                   style={{
-                    top: position.top,
-                    left: position.left,
-                    fontSize: position.fontSize,
-                    transform: 'translate(-50%, -50%)',
+                    filter: [
+                      petAsleep ? `${PET_COLOR_FILTERS[pet.color] || ''} brightness(0.85)` : PET_COLOR_FILTERS[pet.color] || '',
+                      moodVisual.petFilter,
+                    ].filter(Boolean).join(' ') || undefined,
                   }}
-                >
-                  <span className="drop-shadow-md animate-wiggle" style={{ animationDuration: '3s' }}>
-                    {accessory.emoji}
-                  </span>
-                </div>
-              );
-            })}
+                />
 
-            {/* Pet Expression Overlay - shows current pet expression */}
-            {currentExpression !== 'normal' && eatingState !== 'eating' && (
-              <div
-                className={cn(
-                  "absolute bottom-1 right-1 text-3xl pointer-events-none z-20 transition-all duration-300",
-                  EXPRESSION_EMOJIS[currentExpression]?.animation || ''
+                {/* CSS-based ambient particles instead of emoji clusters */}
+                {!petAsleep && eatingState === 'idle' && moodVisual.particles === 'sparkle' && (
+                  <>
+                    {[...Array(5)].map((_, index) => (
+                      <div
+                        key={`sparkle-${index}`}
+                        className="absolute w-1.5 h-1.5 rounded-full bg-yellow-400/70 pointer-events-none animate-pet-sparkle"
+                        style={{
+                          left: `${15 + index * 17}%`,
+                          top: `${10 + (index % 3) * 25}%`,
+                          animationDelay: `${index * 0.6}s`,
+                        }}
+                      />
+                    ))}
+                  </>
                 )}
-                style={{
-                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                  transform: 'translate(25%, 25%)',
-                }}
-              >
-                {EXPRESSION_EMOJIS[currentExpression]?.emoji}
-              </div>
-            )}
 
-            {/* Eating animation overlay */}
-            {eatingState === 'eating' && (
-              <>
-                {/* Food items floating toward pet */}
-                {[0, 1, 2].map((index) => (
-                  <div
-                    key={index}
-                    className="absolute pointer-events-none z-10 text-3xl animate-food-float"
-                    style={{
-                      left: `${20 + index * 25}%`,
-                      top: '10%',
-                      animationDelay: `${index * 0.25}s`,
-                    }}
-                  >
-                    {eatingEmoji}
+                {!petAsleep && eatingState === 'idle' && moodVisual.particles === 'hearts' && (
+                  <>
+                    {[...Array(3)].map((_, index) => (
+                      <Heart
+                        key={`heart-${index}`}
+                        className="absolute w-3 h-3 text-rose-400/60 pointer-events-none animate-pet-heart-float fill-rose-400/40"
+                        style={{
+                          left: `${20 + index * 25}%`,
+                          top: '15%',
+                          animationDelay: `${index * 1.2}s`,
+                        }}
+                      />
+                    ))}
+                  </>
+                )}
+
+                {!petAsleep && eatingState === 'idle' && moodVisual.particles === 'sweat' && (
+                  <>
+                    {[...Array(2)].map((_, index) => (
+                      <div
+                        key={`sweat-${index}`}
+                        className="absolute w-1.5 h-2.5 rounded-b-full bg-blue-400/50 pointer-events-none animate-pet-sweat-drop"
+                        style={{
+                          right: `${18 + index * 12}%`,
+                          top: '20%',
+                          animationDelay: `${index * 1.5}s`,
+                        }}
+                      />
+                    ))}
+                  </>
+                )}
+
+                {!petAsleep && eatingState === 'idle' && moodVisual.particles === 'alert' && (
+                  <div className="absolute top-2 right-4 pointer-events-none z-20 animate-pulse">
+                    <AlertTriangle className="w-5 h-5 text-red-500 drop-shadow-md" />
                   </div>
-                ))}
-                {/* Nom nom text */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-nom-text">
-                  <span className="font-serif font-bold text-lg text-primary">nom nom nom</span>
-                </div>
-              </>
-            )}
+                )}
 
-            {/* Item use particle animation (toys, grooming, medicine, accessories) */}
-            {itemUseParticles.length > 0 && (
-              <>
-                {itemUseParticles.map((particle) => (
-                  <div
-                    key={particle.id}
-                    className={cn(
-                      "absolute pointer-events-none z-10 text-2xl",
-                      particle.category === 'toy' ? "animate-item-bounce" :
-                      particle.category === 'grooming' ? "animate-item-sparkle" :
-                      particle.category === 'medicine' ? "animate-item-float-up" :
-                      "animate-item-twinkle"
+                {/* Equipped accessory overlays */}
+                {pet.equippedAccessories && (Object.entries(pet.equippedAccessories) as [AccessorySlot, string][]).map(([slot, accessoryId]) => {
+                  if (!accessoryId) return null;
+                  const accessory = getAccessoryById(accessoryId);
+                  if (!accessory) return null;
+                  if (accessory.condition) {
+                    const statValue = pet.stats[accessory.condition.stat];
+                    if (statValue < accessory.condition.min) return null;
+                  }
+                  const position = ACCESSORY_POSITIONS[pet.species]?.[slot];
+                  if (!position) return null;
+                  return (
+                    <div
+                      key={slot}
+                      className="absolute pointer-events-none z-10 transition-all duration-300"
+                      style={{
+                        top: position.top,
+                        left: position.left,
+                        fontSize: position.fontSize,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      <span className="drop-shadow-md">
+                        {accessory.emoji}
+                      </span>
+                    </div>
+                  );
+                })}
+
+                {/* Eating animation overlay */}
+                {eatingState === 'eating' && (
+                  <>
+                    {[0, 1, 2].map((index) => (
+                      <div
+                        key={index}
+                        className="absolute pointer-events-none z-10 text-3xl animate-food-float"
+                        style={{
+                          left: `${20 + index * 25}%`,
+                          top: '10%',
+                          animationDelay: `${index * 0.25}s`,
+                        }}
+                      >
+                        {eatingEmoji}
+                      </div>
+                    ))}
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-nom-text">
+                      <span className="font-serif font-bold text-lg text-primary">nom nom</span>
+                    </div>
+                  </>
+                )}
+
+                {/* Item use particle animation */}
+                {itemUseParticles.length > 0 && (
+                  <>
+                    {itemUseParticles.map((particle) => (
+                      <div
+                        key={particle.id}
+                        className={cn(
+                          "absolute pointer-events-none z-10 text-2xl",
+                          particle.category === 'toy' ? "animate-item-bounce" :
+                          particle.category === 'grooming' ? "animate-item-sparkle" :
+                          particle.category === 'medicine' ? "animate-item-float-up" :
+                          "animate-item-twinkle"
+                        )}
+                        style={{
+                          left: `${particle.x}%`,
+                          top: particle.category === 'medicine' ? '80%' : '5%',
+                          animationDelay: `${particle.delay}s`,
+                          animationDuration: `${particle.duration}s`,
+                        }}
+                      >
+                        {particle.emoji}
+                      </div>
+                    ))}
+                    {itemUseLabel && (
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-item-label">
+                        <span className="font-serif font-bold text-lg text-secondary whitespace-nowrap">
+                          {itemUseLabel}!
+                        </span>
+                      </div>
                     )}
-                    style={{
-                      left: `${particle.x}%`,
-                      top: particle.category === 'medicine' ? '80%' : '5%',
-                      animationDelay: `${particle.delay}s`,
-                      animationDuration: `${particle.duration}s`,
-                    }}
-                  >
-                    {particle.emoji}
+                  </>
+                )}
+
+              </div>
+
+              {/* Hunger result after eating — positioned above the circle */}
+              {eatingState === 'done' && hungerAfter !== null && (
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-fade-in-up">
+                  <div className="bg-card border-2 border-secondary/40 rounded-xl px-4 py-2 shadow-lg text-center whitespace-nowrap">
+                    <div className="text-xs text-muted-foreground">Hunger</div>
+                    <div className="font-mono font-bold text-lg text-secondary">{Math.round(hungerAfter)}%</div>
                   </div>
-                ))}
-                {/* Item use label */}
-                {itemUseLabel && (
-                  <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-item-label">
-                    <span className="font-serif font-bold text-lg text-secondary whitespace-nowrap">
-                      {itemUseLabel}!
+                </div>
+              )}
+
+              {/* Sleeping overlay */}
+              {petAsleep && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                  <div className="absolute top-8 right-6 flex flex-col items-end gap-0">
+                    <span className="text-xs font-bold text-indigo-500/80 animate-float-zzz" style={{ animationDelay: '0s' }}>z</span>
+                    <span className="text-sm font-bold text-indigo-500/60 animate-float-zzz" style={{ animationDelay: '0.5s' }}>z</span>
+                    <span className="text-base font-bold text-indigo-500/40 animate-float-zzz" style={{ animationDelay: '1s' }}>z</span>
+                  </div>
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+                    <span className="text-xs bg-indigo-500/15 text-indigo-600 px-3 py-1 rounded-full font-medium border border-indigo-500/20">
+                      Sleeping
                     </span>
                   </div>
-                )}
-              </>
-            )}
-
-            {/* Hunger result after eating */}
-            {eatingState === 'done' && hungerAfter !== null && (
-              <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-fade-in-up">
-                <div className="bg-card border-2 border-secondary/40 rounded-xl px-4 py-2 shadow-lg text-center whitespace-nowrap">
-                  <div className="text-xs text-muted-foreground">Hunger now</div>
-                  <div className="font-mono font-bold text-lg text-secondary">{Math.round(hungerAfter)}%</div>
                 </div>
-              </div>
-            )}
-
-            {/* Floating mood emojis orbiting around pet */}
-            {eatingState === 'eating' ? (
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-4xl pointer-events-none">
-                😋
-              </div>
-            ) : (
-              (MOOD_EMOJIS[mood.key] || [mood.emoji]).map((moodEmoji, index, array) => {
-                // Position emojis in a circle around the pet
-                const angle = (index / array.length) * 360;
-                const radius = 108; // px from center
-                const radians = (angle * Math.PI) / 180;
-                const xPosition = Math.cos(radians) * radius;
-                const yPosition = Math.sin(radians) * radius;
-                return (
-                  <div
-                    key={`mood-${index}`}
-                    className={cn(
-                      "absolute pointer-events-none z-10",
-                      mood.key === 'critical' ? "animate-mood-critical" :
-                      mood.key === 'needsAttention' ? "animate-mood-sad" :
-                      mood.key === 'thriving' ? "animate-mood-thriving" :
-                      mood.key === 'happy' ? "animate-mood-happy" :
-                      "animate-mood-neutral"
-                    )}
-                    style={{
-                      left: `calc(50% + ${xPosition}px)`,
-                      top: `calc(50% + ${yPosition}px)`,
-                      transform: 'translate(-50%, -50%)',
-                      fontSize: index === 0 ? '1.75rem' : '1.25rem',
-                      animationDelay: `${index * 0.4}s`,
-                    }}
-                  >
-                    {moodEmoji}
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Sleeping overlay with floating zzz's */}
-          {petAsleep && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-              <div className="absolute top-2 right-8 flex flex-col gap-1">
-                <span className="text-2xl animate-float-zzz" style={{ animationDelay: '0s' }}>💤</span>
-                <span className="text-xl animate-float-zzz" style={{ animationDelay: '0.5s' }}>💤</span>
-                <span className="text-lg animate-float-zzz" style={{ animationDelay: '1s' }}>💤</span>
-              </div>
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                <span className="text-xs bg-indigo-500/20 text-indigo-700 px-3 py-1 rounded-full font-medium border border-indigo-500/30">
-                  Sleeping soundly...
-                </span>
-              </div>
+              )}
             </div>
-          )}
-        </div>
+          );
+        })()}
 
         {/* Pet Info */}
         <div className="text-center mb-5">
