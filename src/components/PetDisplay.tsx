@@ -245,39 +245,42 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
   const stageConfig = STAGE_CONFIG[pet.stage];
 
   return (
-    <div className="relative p-6 bg-card rounded-3xl border-2 border-border/50 shadow-lg overflow-hidden">
-      {/* Decorative background */}
+    <div className="relative p-6 glass-card rounded-3xl shadow-lg overflow-hidden">
+      {/* Scenic room background */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-[-50%] left-[-25%] w-[80%] h-[80%] bg-primary/5 blob-shape" />
-        <div className="absolute bottom-[-30%] right-[-20%] w-[60%] h-[60%] bg-secondary/5 blob-shape" />
+        <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-gradient-to-t from-accent/20 via-accent/8 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[50%] bg-gradient-to-b from-primary/4 via-transparent to-transparent" />
+        <div className="absolute top-[10%] left-[8%] w-3 h-3 rounded-full bg-chart-3/20 animate-sparkle" style={{ animationDelay: '0s' }} />
+        <div className="absolute top-[20%] right-[12%] w-2 h-2 rounded-full bg-primary/20 animate-sparkle" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute top-[5%] right-[30%] w-2.5 h-2.5 rounded-full bg-secondary/15 animate-sparkle" style={{ animationDelay: '3s' }} />
       </div>
 
       <div className="relative flex flex-col items-center">
         {/* Top badges row */}
-        <div className="w-full flex justify-between items-center mb-4">
+        <div className="w-full flex justify-between items-center mb-4 gap-2 px-1">
           {/* Stage Badge */}
-          <div className="px-3 py-1.5 bg-accent/60 rounded-full border border-border/50">
+          <div className="px-3 py-2 bg-accent/60 rounded-full border border-border/50">
             <span className="text-xs font-semibold text-accent-foreground flex items-center gap-1.5">
-              <span>{stageConfig.icon}</span>
+              <span className="text-sm leading-none">{stageConfig.icon}</span>
               <span className="capitalize">{stageConfig.label}</span>
             </span>
           </div>
 
           {/* Level Badge with XP Progress */}
           <div
-            className="flex items-center gap-2 px-3 py-1.5 bg-secondary/10 rounded-full border border-secondary/20 cursor-pointer hover:bg-secondary/20 transition-colors duration-200"
+            className="flex items-center gap-1.5 px-3 py-2 bg-secondary/10 rounded-xl border border-secondary/20 cursor-pointer hover:bg-secondary/20 transition-colors duration-200"
             onClick={onXpClick}
             title="View daily tasks"
           >
             <span className="text-xs font-semibold text-secondary">Lv {pet.level}</span>
             <div className="flex items-center gap-1.5">
-              <div className="w-16 h-1.5 bg-secondary/20 rounded-full overflow-hidden">
+              <div className="w-12 h-1.5 bg-secondary/20 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-secondary rounded-full transition-all duration-500"
                   style={{ width: `${(calculateLevel(pet.experience).currentXp / calculateLevel(pet.experience).xpForNext) * 100}%` }}
                 />
               </div>
-              <span className="text-[10px] font-mono text-secondary/70">
+              <span className="text-[10px] font-mono text-secondary/70 whitespace-nowrap flex-shrink-0">
                 {calculateLevel(pet.experience).currentXp}/{calculateLevel(pet.experience).xpForNext}
               </span>
             </div>
@@ -301,8 +304,8 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
           {/* Inner circle with gradient */}
           <div className={cn(
             "w-48 h-48 rounded-full flex items-center justify-center relative",
-            "bg-gradient-to-br from-accent via-card to-muted/20",
-            "border-4 border-border/30 shadow-xl"
+            "bg-gradient-to-br from-accent/80 via-card to-card/60",
+            "border-2 border-border/20 shadow-xl ring-4 ring-white/10"
           )}>
             {/* Pet image */}
             <img
@@ -495,8 +498,8 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
 
         {/* Pet Info */}
         <div className="text-center mb-5">
-          <h2 className="text-3xl font-serif font-bold text-foreground mb-1">{pet.name}</h2>
-          <p className="text-sm text-muted-foreground capitalize mb-2">
+          <h2 className="text-3xl font-serif font-bold text-foreground mb-1.5 tracking-tight">{pet.name}</h2>
+          <p className="text-sm text-muted-foreground capitalize mb-2.5">
             {pet.gender && pet.gender !== 'neutral' ? `${pet.gender} ` : ''}{pet.color} {pet.species} · {pet.personality}
           </p>
           <div className={cn(
@@ -510,16 +513,16 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
         </div>
 
         {/* Stats Row */}
-        <div className="flex gap-6 text-sm">
-          <div className="flex items-center gap-2 px-4 py-2 bg-accent/40 rounded-xl border border-border/30">
+        <div className="flex gap-3 text-sm">
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary/8 to-primary/4 rounded-xl border border-primary/10">
             <Flame className="w-4 h-4 text-primary" />
-            <span className="font-bold text-foreground">{state.careStreak}</span>
-            <span className="text-muted-foreground">day streak</span>
+            <span className="font-bold text-foreground font-mono">{state.careStreak}</span>
+            <span className="text-muted-foreground text-xs">day streak</span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-accent/40 rounded-xl border border-border/30">
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-secondary/8 to-secondary/4 rounded-xl border border-secondary/10">
             <Calendar className="w-4 h-4 text-secondary" />
-            <span className="font-bold text-foreground">{state.totalDaysPlayed}</span>
-            <span className="text-muted-foreground">days</span>
+            <span className="font-bold text-foreground font-mono">{state.totalDaysPlayed}</span>
+            <span className="text-muted-foreground text-xs">days</span>
           </div>
         </div>
       </div>

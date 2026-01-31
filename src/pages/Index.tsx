@@ -44,57 +44,65 @@ const Index: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 paper-texture relative overflow-hidden">
-      {/* Decorative background blobs */}
-      <div className="absolute top-[-10%] left-[-5%] w-[40vw] h-[40vw] bg-primary/5 blob-shape animate-breathe" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] bg-secondary/5 blob-shape animate-breathe" style={{ animationDelay: '2s' }} />
-      <div className="absolute top-[30%] right-[5%] w-[20vw] h-[20vw] bg-accent/40 blob-shape animate-breathe" style={{ animationDelay: '1s' }} />
+      {/* Atmospheric background layers */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Large ambient gradient orbs */}
+        <div className="absolute top-[-15%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-br from-primary/8 via-primary/4 to-transparent blur-3xl animate-breathe" />
+        <div className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-secondary/8 via-secondary/4 to-transparent blur-3xl animate-breathe" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-[20%] right-[0%] w-[30vw] h-[30vw] rounded-full bg-gradient-to-bl from-accent/30 via-accent/10 to-transparent blur-2xl animate-breathe" style={{ animationDelay: '1s' }} />
 
-      {/* Mini circles matching button colors */}
-      <div className="absolute top-[18%] left-[15%] w-16 h-16 rounded-full bg-chart-2/20 blur-[1px] animate-float" style={{ animationDelay: '0.5s' }} />
-      <div className="absolute top-[12%] right-[18%] w-20 h-20 rounded-full bg-chart-1/20 blur-[1px] animate-float" style={{ animationDelay: '1.5s' }} />
-      <div className="absolute bottom-[20%] left-[8%] w-24 h-24 rounded-full bg-chart-3/20 blur-[1px] animate-float" style={{ animationDelay: '2.5s' }} />
-      <div className="absolute bottom-[15%] right-[25%] w-14 h-14 rounded-full bg-secondary/20 blur-[1px] animate-float" style={{ animationDelay: '3.5s' }} />
-      
-      {/* Smaller accents */}
-      <div className="absolute top-[40%] left-[5%] w-8 h-8 rounded-full bg-chart-1/30 animate-float" style={{ animationDelay: '4s' }} />
-      <div className="absolute top-[60%] right-[8%] w-10 h-10 rounded-full bg-chart-2/30 animate-float" style={{ animationDelay: '2s' }} />
-      <div className="absolute bottom-[35%] left-[20%] w-6 h-6 rounded-full bg-secondary/30 animate-float" style={{ animationDelay: '1s' }} />
+        {/* Floating paw print particles */}
+        <div className="absolute top-[15%] left-[12%] text-primary/10 text-3xl animate-gentle-drift" style={{ animationDelay: '0s' }}>🐾</div>
+        <div className="absolute top-[25%] right-[15%] text-secondary/10 text-2xl animate-gentle-drift" style={{ animationDelay: '2s' }}>🐾</div>
+        <div className="absolute bottom-[25%] left-[8%] text-chart-1/10 text-4xl animate-gentle-drift" style={{ animationDelay: '4s' }}>🐾</div>
+        <div className="absolute bottom-[20%] right-[20%] text-chart-2/10 text-2xl animate-gentle-drift" style={{ animationDelay: '6s' }}>🐾</div>
+
+        {/* Sparkle dots */}
+        <div className="absolute top-[30%] left-[25%] w-2 h-2 rounded-full bg-primary/40 animate-sparkle" style={{ animationDelay: '0s' }} />
+        <div className="absolute top-[18%] right-[30%] w-1.5 h-1.5 rounded-full bg-chart-3/50 animate-sparkle" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-[35%] left-[18%] w-2.5 h-2.5 rounded-full bg-secondary/40 animate-sparkle" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-[50%] right-[12%] w-2 h-2 rounded-full bg-chart-2/40 animate-sparkle" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute bottom-[15%] right-[35%] w-1.5 h-1.5 rounded-full bg-accent-foreground/20 animate-sparkle" style={{ animationDelay: '0.5s' }} />
+      </div>
 
       <div className="max-w-2xl w-full text-center relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
-        {/* Title with decorative elements */}
-        <div className="mb-8 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/60 rounded-full text-sm font-medium text-accent-foreground mb-4">
-            <PawPrint className="w-4 h-4" />
+        {/* Hero title section */}
+        <div className="mb-10 animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 glass-card rounded-full text-sm font-medium text-accent-foreground mb-6 shadow-sm">
+            <PawPrint className="w-4 h-4 text-primary" />
             <span>A cozy pet care adventure</span>
+            <span className="animate-sparkle inline-block">✨</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-serif font-bold mb-4 tracking-tight text-primary">
-            Paws Up
+          <h1 className="text-6xl md:text-8xl font-serif font-bold mb-5 tracking-tight">
+            <span className="bg-gradient-to-br from-primary via-primary to-chart-5 bg-clip-text text-transparent drop-shadow-sm">
+              Paws Up
+            </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-md mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto leading-relaxed font-light">
             Adopt a furry friend and learn the art of caring while managing your budget wisely.
           </p>
         </div>
 
-        {/* Feature Buttons - Uniform Size & Colored */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 w-full">
+        {/* Feature cards - elevated glass style */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-10 w-full">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <div
                 key={index}
                 className="animate-fade-in-up h-full"
-                style={{ animationDelay: `${0.1 + index * 0.1}s` }}
+                style={{ animationDelay: `${0.15 + index * 0.08}s` }}
               >
-                <Card className={`h-full border-2 ${feature.bg} ${feature.border} hover:scale-105 transition-all duration-300 cursor-default`}>
-                  <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center gap-2">
-                    <div className={`p-2.5 rounded-full bg-white/60 shadow-sm ${feature.text}`}>
-                      <Icon className="w-6 h-6" />
+                <Card className={`h-full border ${feature.border} ${feature.bg} backdrop-blur-sm hover:scale-[1.04] hover:-translate-y-1 transition-all duration-300 cursor-default shadow-sm hover:shadow-lg rounded-2xl`}>
+                  <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center gap-2.5">
+                    <div className={`p-3 rounded-2xl bg-white/50 shadow-sm ${feature.text} ring-1 ring-white/20`}>
+                      <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className={`font-bold ${feature.text}`}>{feature.label}</p>
-                      <p className="text-xs text-muted-foreground/80 leading-tight">{feature.description}</p>
+                      <p className={`font-semibold text-sm ${feature.text}`}>{feature.label}</p>
+                      <p className="text-[11px] text-muted-foreground/80 leading-snug mt-0.5">{feature.description}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -103,14 +111,14 @@ const Index: React.FC = () => {
           })}
         </div>
 
-        {/* Centered Action Section */}
-        <div className="w-full max-w-md space-y-4 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+        {/* Action buttons - prominent and warm */}
+        <div className="w-full max-w-md space-y-3 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
           <Button
             size="lg"
-            className="w-full text-lg h-16 rounded-2xl bg-primary hover:bg-primary/90 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group"
+            className="w-full text-lg h-16 rounded-2xl bg-gradient-to-r from-primary to-chart-5 hover:from-primary/90 hover:to-chart-5/90 shadow-xl hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group btn-press font-semibold tracking-wide"
             onClick={handleNewGame}
           >
-            <Sparkles className="w-6 h-6 mr-2 group-hover:animate-pulse" />
+            <Sparkles className="w-5 h-5 mr-2.5 group-hover:animate-pulse" />
             Start New Adventure
           </Button>
 
@@ -118,7 +126,7 @@ const Index: React.FC = () => {
             <Button
               size="lg"
               variant="outline"
-              className="w-full text-lg h-14 rounded-2xl border-2 hover:bg-accent/50 transition-all duration-300"
+              className="w-full text-lg h-14 rounded-2xl border-2 border-border/60 hover:border-primary/40 hover:bg-accent/40 transition-all duration-300 btn-press backdrop-blur-sm"
               onClick={handleContinue}
             >
               <Play className="w-5 h-5 mr-2" />
@@ -126,9 +134,6 @@ const Index: React.FC = () => {
             </Button>
           )}
         </div>
-
-
-        
       </div>
     </div>
   );

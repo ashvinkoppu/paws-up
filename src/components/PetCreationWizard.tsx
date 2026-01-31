@@ -119,31 +119,42 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 paper-texture relative overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] bg-primary/5 blob-shape animate-breathe" />
-      <div className="absolute bottom-[-20%] right-[-15%] w-[45vw] h-[45vw] bg-secondary/5 blob-shape animate-breathe" style={{ animationDelay: '2s' }} />
+      {/* Atmospheric background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-br from-primary/7 to-transparent blur-3xl animate-breathe" />
+        <div className="absolute bottom-[-20%] right-[-15%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-tl from-secondary/7 to-transparent blur-3xl animate-breathe" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-[10%] right-[20%] w-2 h-2 rounded-full bg-chart-3/30 animate-sparkle" style={{ animationDelay: '0s' }} />
+        <div className="absolute bottom-[30%] left-[15%] w-2.5 h-2.5 rounded-full bg-primary/25 animate-sparkle" style={{ animationDelay: '1.5s' }} />
+      </div>
 
-      <Card className="w-full max-w-2xl shadow-2xl border-2 border-border/50 rounded-3xl bg-card/95 backdrop-blur-sm animate-fade-in-up relative">
+      <Card className="w-full max-w-2xl shadow-2xl border border-border/40 rounded-3xl glass-card animate-fade-in-up relative">
         <CardHeader className="text-center pb-4">
-          {/* Progress indicators */}
-          <div className="flex justify-center gap-2 mb-6">
-            {[1, 2, 3, 4].map((stepNumber) => (
-              <div
-                key={stepNumber}
-                className={cn(
-                  "w-3 h-3 rounded-full transition-all duration-300",
-                  stepNumber === step
-                    ? "bg-primary scale-125 shadow-md"
-                    : stepNumber < step
-                    ? "bg-secondary"
-                    : "bg-border"
+          {/* Progress indicators - connected dots */}
+          <div className="flex justify-center items-center gap-1.5 mb-6">
+            {[1, 2, 3, 4].map((stepNumber, index) => (
+              <React.Fragment key={stepNumber}>
+                <div
+                  className={cn(
+                    "w-3 h-3 rounded-full transition-all duration-400",
+                    stepNumber === step
+                      ? "bg-primary scale-125 shadow-md shadow-primary/30 ring-4 ring-primary/15"
+                      : stepNumber < step
+                      ? "bg-secondary shadow-sm"
+                      : "bg-border/60"
+                  )}
+                />
+                {index < 3 && (
+                  <div className={cn(
+                    "w-8 h-0.5 rounded-full transition-all duration-400",
+                    stepNumber < step ? "bg-secondary/40" : "bg-border/30"
+                  )} />
                 )}
-              />
+              </React.Fragment>
             ))}
           </div>
 
           {/* Step header */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/50 rounded-full mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/40 backdrop-blur-sm rounded-full mb-4 border border-accent-foreground/5">
             <StepIcon className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-accent-foreground">Step {step} of 4</span>
           </div>
@@ -274,6 +285,14 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
                           backgroundColor: currentColorHex,
                           mixBlendMode: 'color',
                           opacity: 0.75,
+                          WebkitMaskImage: `url(${SPECIES_DATA[selectedSpecies].image})`,
+                          WebkitMaskSize: 'contain',
+                          WebkitMaskRepeat: 'no-repeat',
+                          WebkitMaskPosition: 'center',
+                          maskImage: `url(${SPECIES_DATA[selectedSpecies].image})`,
+                          maskSize: 'contain',
+                          maskRepeat: 'no-repeat',
+                          maskPosition: 'center',
                         }}
                       />
                     </div>
@@ -343,7 +362,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
             <Button
               variant="outline"
               onClick={handleBack}
-              className="rounded-xl border-2 px-6"
+              className="rounded-xl border-2 border-border/50 px-6 btn-press hover:border-border"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
@@ -356,7 +375,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
                   (step === 1 && !selectedSpecies) ||
                   (step === 2 && petName.trim().length < 2)
                 }
-                className="rounded-xl px-6 bg-primary hover:bg-primary/90"
+                className="rounded-xl px-6 bg-gradient-to-r from-primary to-primary/85 hover:from-primary/90 hover:to-primary/80 shadow-md hover:shadow-lg btn-press transition-all duration-200"
               >
                 Next
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -365,7 +384,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
               <Button
                 onClick={handleCreate}
                 disabled={!selectedPersonality}
-                className="rounded-xl px-8 bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+                className="rounded-xl px-8 bg-gradient-to-r from-secondary to-secondary/85 hover:from-secondary/90 hover:to-secondary/80 text-secondary-foreground shadow-md hover:shadow-lg btn-press transition-all duration-200"
               >
                 <Check className="w-4 h-4 mr-2" />
                 Adopt {petName || 'Pet'}!

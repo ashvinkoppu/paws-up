@@ -13,7 +13,7 @@ const Achievements: React.FC = () => {
   const progressPercent = (unlockedCount / totalCount) * 100;
 
   return (
-    <Card className="h-full bg-card/80 border-2 border-border/50 shadow-lg rounded-2xl">
+    <Card className="h-full glass-card shadow-lg rounded-2xl">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-3">

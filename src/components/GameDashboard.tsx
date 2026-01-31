@@ -136,27 +136,27 @@ const GameDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen paper-texture relative">
-      {/* Subtle decorative elements */}
+      {/* Atmospheric background */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[40vw] h-[40vw] bg-primary/5 blob-shape" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[45vw] h-[45vw] bg-secondary/5 blob-shape" />
-        <div className="absolute top-[30%] right-[5%] w-[25vw] h-[25vw] bg-violet-500/3 blob-shape" />
+        <div className="absolute top-[-20%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-br from-primary/6 to-transparent blur-3xl" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-tl from-secondary/6 to-transparent blur-3xl" />
+        <div className="absolute top-[25%] right-[2%] w-[28vw] h-[28vw] rounded-full bg-gradient-to-bl from-violet-500/4 to-transparent blur-2xl" />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-card/90 via-card/85 to-card/90 backdrop-blur-md border-b-2 border-border/40 shadow-md">
+      {/* Header - Glass morphism */}
+      <header className="sticky top-0 z-40 glass-card border-b border-border/30 shadow-lg">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl shadow-sm">
+              <div className="p-2 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-xl shadow-sm ring-1 ring-primary/10">
                 <PawPrint className="w-5 h-5 text-primary" />
               </div>
               <h1 className="text-xl md:text-2xl font-serif font-bold tracking-tight">
-                <span className="text-primary">Paws Up</span>
+                <span className="bg-gradient-to-r from-primary to-chart-5 bg-clip-text text-transparent">Paws Up</span>
               </h1>
             </div>
             {state.pet && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-accent/60 to-accent/30 rounded-full border border-accent-foreground/10">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-accent/40 backdrop-blur-sm rounded-full border border-accent-foreground/8">
                 <span className="text-sm text-muted-foreground">Caring for</span>
                 <span className="text-sm font-semibold text-foreground">{state.pet.name}</span>
               </div>
@@ -168,12 +168,12 @@ const GameDashboard: React.FC = () => {
             <div
               ref={walletRef}
               className={cn(
-                "hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 rounded-xl border border-emerald-500/20",
+                "hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/12 via-emerald-500/8 to-emerald-500/4 rounded-xl border border-emerald-500/20 shadow-sm",
                 walletPulsing && "animate-wallet-pulse"
               )}
             >
               <Wallet className="w-4 h-4 text-emerald-600" />
-              <span className="font-mono font-bold text-emerald-700">${state.money.toFixed(0)}</span>
+              <span className="font-mono font-bold text-emerald-700 tracking-wide">${state.money.toFixed(0)}</span>
             </div>
 
             {/* Notification Bell */}
@@ -199,8 +199,8 @@ const GameDashboard: React.FC = () => {
 
               {/* Notification Dropdown */}
               {showNotificationPanel && (
-                <div className="absolute right-0 top-full mt-2 w-80 max-h-96 bg-card rounded-2xl border-2 border-border/50 shadow-2xl overflow-hidden z-50 animate-fade-in-up">
-                  <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border/50 px-4 py-3 flex items-center justify-between">
+                <div className="absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in-up bg-card border border-border/50">
+                  <div className="sticky top-0 bg-card/90 backdrop-blur-md border-b border-border/40 px-4 py-3 flex items-center justify-between">
                     <h3 className="font-serif font-semibold text-sm">Notifications</h3>
                     <Button variant="ghost" size="sm" onClick={() => setShowNotificationPanel(false)} className="h-6 w-6 p-0">
                       <X className="w-3.5 h-3.5" />
@@ -282,21 +282,27 @@ const GameDashboard: React.FC = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Pet & Stats (always visible) */}
-          <div className="lg:col-span-1 space-y-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          {/* Pet Status - left of pet on xl, above pet on lg */}
+          <div className="hidden xl:block xl:col-span-1 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <SidePanel />
+          </div>
+
+          {/* Pet Display */}
+          <div className="lg:col-span-1 xl:col-span-1">
             <div className="animate-fade-in-up">
               <PetDisplay onXpClick={() => setActiveTab('tasks')} />
             </div>
-            <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            {/* SidePanel below pet on lg, hidden on xl (shown in its own column) */}
+            <div className="mt-5 xl:hidden animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
               <SidePanel />
             </div>
           </div>
 
           {/* Right Column - Tabs */}
-          <div className="lg:col-span-2 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
+          <div className="lg:col-span-2 xl:col-span-3 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-              <TabsList className="grid w-full grid-cols-6 mb-5 bg-card/80 border-2 border-border/40 p-1.5 rounded-2xl h-auto shadow-sm">
+              <TabsList className="grid w-full grid-cols-6 mb-5 glass-card p-1.5 rounded-2xl h-auto shadow-md">
                 <TabsTrigger
                   value="alerts"
                   className="group w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
@@ -408,28 +414,30 @@ const GameDashboard: React.FC = () => {
           }}
         >
           <div
-            className="bg-gradient-to-br from-amber-400 via-orange-400 to-rose-400 p-1 rounded-3xl shadow-2xl"
+            className="bg-card rounded-2xl shadow-xl border border-border/60 overflow-hidden"
             style={{
               animation: 'newDayPop 0.6s ease-out',
-              boxShadow: '0 0 60px rgba(251, 191, 36, 0.4), 0 10px 40px rgba(0,0,0,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+              maxWidth: '320px',
+              width: '90vw',
             }}
           >
-            <div className="bg-card/95 backdrop-blur-sm px-12 py-8 rounded-[22px] flex flex-col items-center gap-4">
+            <div className="bg-gradient-to-b from-amber-50 to-transparent px-10 py-8 flex flex-col items-center gap-5">
               <div
-                className="text-6xl"
+                className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center"
                 style={{ animation: 'newDaySunSpin 1s ease-out' }}
               >
-                <Sun className="w-16 h-16 text-amber-500" />
+                <Sun className="w-7 h-7 text-amber-500" />
               </div>
               <div className="text-center">
-                <h2 className="font-serif font-bold text-2xl text-foreground mb-1">
+                <h2 className="font-serif font-bold text-xl text-foreground mb-1">
                   A New Day Dawns!
                 </h2>
-                <p className="text-lg text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Day <span className="font-mono font-bold text-amber-600">{state.totalDaysPlayed}</span> of your adventure
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium">
+              <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-4 py-2 rounded-full">
                 <span>💰</span>
                 <span>Daily allowance received!</span>
               </div>
@@ -442,24 +450,24 @@ const GameDashboard: React.FC = () => {
       <EventModal />
 
       {/* Footer */}
-      <footer className="border-t-2 border-border/40 bg-gradient-to-r from-card/60 via-card/40 to-card/60 backdrop-blur-sm mt-8">
-        <div className="container mx-auto px-4 py-5">
+      <footer className="border-t border-border/30 glass-card mt-8">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+            <div className="flex items-center gap-5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-rose-400 shadow-sm shadow-rose-400/40" />
                 <span>Stats above 30%</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-violet-400" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-violet-400 shadow-sm shadow-violet-400/40" />
                 <span>Play games for money</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/40" />
                 <span>Streaks = bonuses</span>
               </div>
             </div>
-            <div className="text-xs text-muted-foreground/60 font-mono">
+            <div className="text-[11px] text-muted-foreground/50 font-mono tracking-wide">
               Day {state.totalDaysPlayed} of your adventure
             </div>
           </div>

@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Gamepad2, Target, Brain, ArrowLeft, Trophy, Coins } from 'lucide-react';
+import { Gamepad2, Target, Brain, ArrowLeft, Trophy, Coins, HelpCircle, Zap } from 'lucide-react';
 
-type MiniGameType = 'catch' | 'memory' | null;
+type MiniGameType = 'catch' | 'memory' | 'quiz' | 'whack' | null;
 
 interface MiniGamesProps {
   onClose?: () => void;
@@ -402,6 +402,371 @@ const MemoryGame: React.FC<{
   );
 };
 
+// Pet Quiz Game
+const QuizGame: React.FC<{
+  onWin: (reward: number) => void;
+  onLose: () => void;
+  highScore: number;
+  onNewHighScore: (score: number) => void;
+}> = ({ onWin, onLose, highScore, onNewHighScore }) => {
+  const QUESTIONS = [
+    { question: "How many hours a day do cats sleep on average?", options: ["8 hours", "12-16 hours", "20 hours", "6 hours"], correct: 1 },
+    { question: "What is a group of kittens called?", options: ["A pack", "A kindle", "A flock", "A herd"], correct: 1 },
+    { question: "Which dog breed is the smallest?", options: ["Pomeranian", "Yorkie", "Chihuahua", "Dachshund"], correct: 2 },
+    { question: "How many teeth does an adult dog have?", options: ["28", "32", "42", "36"], correct: 2 },
+    { question: "What is a rabbit's favorite time of day?", options: ["Noon", "Midnight", "Dawn & dusk", "Afternoon"], correct: 2 },
+    { question: "Which animal can rotate its ears 180°?", options: ["Dog", "Cat", "Hamster", "Rabbit"], correct: 3 },
+    { question: "How fast can a hamster run?", options: ["2 mph", "5 mph", "8 mph", "12 mph"], correct: 2 },
+    { question: "What is a baby rabbit called?", options: ["Pup", "Kit", "Cub", "Joey"], correct: 1 },
+    { question: "How many whiskers does a cat typically have?", options: ["12", "24", "36", "48"], correct: 1 },
+    { question: "Which pet can be trained to use a litter box?", options: ["Only cats", "Cats & rabbits", "Only dogs", "All pets"], correct: 1 },
+  ];
+
+  const [shuffledQuestions] = useState(() =>
+    [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 5)
+  );
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [streak, setStreak] = useState(0);
+
+  const handleAnswer = (answerIndex: number) => {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(answerIndex);
+    setShowResult(true);
+
+    const isCorrect = answerIndex === shuffledQuestions[currentQuestion].correct;
+    const newCorrectCount = isCorrect ? correctCount + 1 : correctCount;
+    const newStreak = isCorrect ? streak + 1 : 0;
+
+    if (isCorrect) {
+      setCorrectCount(newCorrectCount);
+      setStreak(newStreak);
+    } else {
+      setStreak(0);
+    }
+
+    setTimeout(() => {
+      if (currentQuestion + 1 >= shuffledQuestions.length) {
+        setGameComplete(true);
+        if (newCorrectCount >= 3) {
+          const reward = newCorrectCount === 5 ? 15 : newCorrectCount === 4 ? 10 : 6;
+          onWin(reward);
+          if (newCorrectCount > highScore) {
+            onNewHighScore(newCorrectCount);
+          }
+        } else {
+          onLose();
+        }
+      } else {
+        setCurrentQuestion(currentQuestion + 1);
+        setSelectedAnswer(null);
+        setShowResult(false);
+      }
+    }, 1200);
+  };
+
+  const question = shuffledQuestions[currentQuestion];
+
+  return (
+    <div className="space-y-5">
+      {/* Game stats */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2 px-4 py-2 bg-accent/50 rounded-xl">
+          <span className="text-sm text-muted-foreground">Question:</span>
+          <span className="font-mono font-semibold text-foreground">{currentQuestion + 1}/{shuffledQuestions.length}</span>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-xl">
+          <span className="text-sm text-muted-foreground">Score:</span>
+          <span className="font-mono font-semibold text-secondary">{correctCount}</span>
+        </div>
+        {streak >= 2 && (
+          <div className="flex items-center gap-1 px-3 py-2 bg-primary/15 rounded-xl animate-pulse">
+            <Zap className="w-4 h-4 text-primary" />
+            <span className="font-mono font-semibold text-primary text-sm">{streak}x</span>
+          </div>
+        )}
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-2.5 bg-accent/30 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full bg-[#8B5E3C] transition-all duration-500 ease-out"
+          style={{ width: `${((currentQuestion + (showResult ? 1 : 0)) / shuffledQuestions.length) * 100}%` }}
+        />
+      </div>
+
+      {!gameComplete && (
+        <>
+          {/* Question */}
+          <div className="p-5 bg-accent/30 rounded-2xl border border-border/30">
+            <p className="font-serif font-semibold text-lg text-foreground text-center">
+              {question.question}
+            </p>
+          </div>
+
+          {/* Answer options */}
+          <div className="grid grid-cols-1 gap-2.5">
+            {question.options.map((option, index) => {
+              const isCorrect = index === question.correct;
+              const isSelected = selectedAnswer === index;
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(index)}
+                  disabled={selectedAnswer !== null}
+                  className={cn(
+                    "p-4 rounded-xl border-2 text-left transition-all duration-300",
+                    "hover:border-primary/50 hover:bg-primary/5",
+                    selectedAnswer === null && "border-border/50 bg-card",
+                    showResult && isCorrect && "border-secondary bg-secondary/15",
+                    showResult && isSelected && !isCorrect && "border-destructive bg-destructive/10",
+                    showResult && !isSelected && !isCorrect && "opacity-50"
+                  )}
+                >
+                  <span className="font-medium">{option}</span>
+                  {showResult && isCorrect && <span className="ml-2">✓</span>}
+                  {showResult && isSelected && !isCorrect && <span className="ml-2">✗</span>}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {gameComplete && (
+        <div className="text-center py-8 animate-fade-in-up">
+          <div className={cn("text-6xl mb-4", correctCount >= 3 ? "animate-wiggle" : "")}>
+            {correctCount >= 4 ? '🧠' : correctCount >= 3 ? '🎉' : '📚'}
+          </div>
+          <p className="text-2xl font-serif font-bold text-foreground mb-2">
+            {correctCount >= 4 ? 'Pet Expert!' : correctCount >= 3 ? 'Well Done!' : 'Keep Learning!'}
+          </p>
+          <p className="text-muted-foreground">
+            {correctCount}/{shuffledQuestions.length} correct answers
+          </p>
+        </div>
+      )}
+
+      {/* Instructions */}
+      <p className="text-sm text-muted-foreground text-center bg-accent/30 p-3 rounded-xl">
+        Answer pet trivia! Get <span className="font-semibold text-foreground">3+ correct</span> to earn rewards.
+      </p>
+    </div>
+  );
+};
+
+// Whack-a-Mole Game
+const WhackGame: React.FC<{
+  onWin: (reward: number) => void;
+  onLose: () => void;
+  highScore: number;
+  onNewHighScore: (score: number) => void;
+}> = ({ onWin, onLose, highScore, onNewHighScore }) => {
+  const [moles, setMoles] = useState<boolean[]>(Array(9).fill(false));
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(20);
+  const [gameActive, setGameActive] = useState(true);
+  const [totalEarned, setTotalEarned] = useState(0);
+  const [whackedCells, setWhackedCells] = useState<Set<number>>(new Set());
+  const [goldenMole, setGoldenMole] = useState<number | null>(null);
+
+  const MOLE_EMOJIS = ['🐹', '🐭', '🐿️'];
+  const [moleTypes, setMoleTypes] = useState<number[]>(Array(9).fill(0));
+
+  // Timer
+  useEffect(() => {
+    if (!gameActive) return;
+    const timer = setInterval(() => {
+      setTimeLeft((time) => {
+        if (time <= 1) {
+          setGameActive(false);
+          clearInterval(timer);
+          return 0;
+        }
+        return time - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [gameActive]);
+
+  // Mole spawning
+  useEffect(() => {
+    if (!gameActive) return;
+    const spawnInterval = setInterval(() => {
+      setMoles(previous => {
+        const newMoles = [...previous];
+        // Hide some existing moles
+        newMoles.forEach((mole, index) => {
+          if (mole && Math.random() < 0.4) newMoles[index] = false;
+        });
+        // Spawn 1-2 new moles
+        const spawnCount = Math.random() < 0.3 ? 2 : 1;
+        for (let i = 0; i < spawnCount; i++) {
+          const emptySlots = newMoles.map((m, idx) => !m ? idx : -1).filter(idx => idx >= 0);
+          if (emptySlots.length > 0) {
+            const slot = emptySlots[Math.floor(Math.random() * emptySlots.length)];
+            newMoles[slot] = true;
+            setMoleTypes(previous => {
+              const updated = [...previous];
+              updated[slot] = Math.floor(Math.random() * MOLE_EMOJIS.length);
+              return updated;
+            });
+          }
+        }
+        return newMoles;
+      });
+
+      // Chance for golden mole
+      if (Math.random() < 0.15) {
+        const slot = Math.floor(Math.random() * 9);
+        setGoldenMole(slot);
+        setTimeout(() => setGoldenMole(null), 1500);
+      }
+    }, 800);
+    return () => clearInterval(spawnInterval);
+  }, [gameActive]);
+
+  // Handle game end
+  useEffect(() => {
+    if (timeLeft === 0 && !gameActive) {
+      if (score >= 8) {
+        onWin(totalEarned);
+        if (score > highScore) {
+          onNewHighScore(score);
+        }
+      } else {
+        onLose();
+      }
+    }
+  }, [timeLeft, gameActive, score, totalEarned, highScore, onWin, onLose, onNewHighScore]);
+
+  const handleWhack = (index: number) => {
+    if (!gameActive || !moles[index]) return;
+
+    const isGolden = goldenMole === index;
+    const reward = isGolden ? 5 : 2;
+
+    setScore(previous => previous + 1);
+    setTotalEarned(previous => previous + reward);
+    setMoles(previous => {
+      const updated = [...previous];
+      updated[index] = false;
+      return updated;
+    });
+
+    if (isGolden) setGoldenMole(null);
+
+    // Visual feedback
+    setWhackedCells(previous => new Set(previous).add(index));
+    setTimeout(() => {
+      setWhackedCells(previous => {
+        const updated = new Set(previous);
+        updated.delete(index);
+        return updated;
+      });
+    }, 300);
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Game stats */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-xl">
+          <Zap className="w-4 h-4 text-secondary" />
+          <div className="flex flex-col items-start leading-none">
+            <div>
+              <span className="font-mono font-semibold text-foreground">{score}</span>
+              <span className="text-sm text-muted-foreground ml-1">whacked</span>
+            </div>
+            <span className="text-xs text-muted-foreground">Best: {highScore}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 bg-secondary/10 rounded-xl">
+          <Coins className="w-4 h-4 text-secondary" />
+          <span className="font-mono font-semibold text-secondary">${totalEarned}</span>
+        </div>
+        <div className={cn(
+          "flex items-center gap-2 px-4 py-2 rounded-xl transition-colors duration-300",
+          timeLeft <= 5 ? "bg-destructive/15 text-destructive" : "bg-accent/50"
+        )}>
+          <span className="font-mono font-semibold">{timeLeft}s</span>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-2.5 bg-accent/30 rounded-full overflow-hidden">
+        <div
+          className={cn(
+            "h-full rounded-full transition-all duration-1000 ease-linear",
+            timeLeft <= 5 ? "bg-destructive" : "bg-secondary"
+          )}
+          style={{ width: `${(timeLeft / 20) * 100}%` }}
+        />
+      </div>
+
+      {/* Game grid */}
+      <div className="relative">
+        <div className="grid grid-cols-3 gap-3">
+          {moles.map((hasMole, index) => (
+            <button
+              key={index}
+              onClick={() => handleWhack(index)}
+              className={cn(
+                "h-20 rounded-2xl border-2 transition-all duration-200 flex items-center justify-center text-3xl",
+                "bg-gradient-to-br from-accent/40 to-accent/20",
+                hasMole ? "border-primary/50 cursor-pointer hover:scale-105 active:scale-95" : "border-border/30 cursor-default",
+                whackedCells.has(index) && "bg-secondary/20 border-secondary scale-95",
+                goldenMole === index && hasMole && "border-yellow-400 bg-yellow-50/30 shadow-lg shadow-yellow-200/30"
+              )}
+              disabled={!gameActive || !hasMole}
+            >
+              {hasMole && (
+                <span className={cn(
+                  "transition-all duration-200",
+                  "animate-bounce",
+                  goldenMole === index && "drop-shadow-[0_0_8px_rgba(234,179,8,0.6)]"
+                )}>
+                  {goldenMole === index ? '⭐' : MOLE_EMOJIS[moleTypes[index]]}
+                </span>
+              )}
+              {!hasMole && whackedCells.has(index) && (
+                <span className="text-sm font-bold text-secondary animate-fade-in-up">+$2</span>
+              )}
+              {!hasMole && !whackedCells.has(index) && (
+                <div className="w-8 h-2 bg-accent/40 rounded-full" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {!gameActive && (
+          <div className="absolute inset-0 flex items-center justify-center bg-card/90 backdrop-blur-sm z-10 rounded-2xl">
+            <div className="text-center p-6 animate-fade-in-up">
+              <div className={cn("text-6xl mb-4", score >= 8 ? "animate-wiggle" : "")}>
+                {score >= 8 ? '🎉' : '😔'}
+              </div>
+              <p className="text-2xl font-serif font-bold text-foreground mb-2">
+                {score >= 8 ? 'Great Reflexes!' : 'Too Slow!'}
+              </p>
+              <p className="text-muted-foreground">
+                You whacked {score} critters
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Instructions */}
+      <p className="text-sm text-muted-foreground text-center bg-accent/30 p-3 rounded-xl">
+        Tap critters as they pop up! ⭐ Golden ones are worth more. Whack <span className="font-semibold text-foreground">8+</span> to win.
+      </p>
+    </div>
+  );
+};
+
 const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
   const { state, addMoney, updateStats, updateHighScore, setIsPlayingMiniGame, trackGamePlayed } = useGame();
   const [selectedGame, setSelectedGame] = useState<MiniGameType>(null);
@@ -433,7 +798,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
   };
 
   return (
-    <Card className="h-full bg-card/80 border-2 border-border/50 shadow-lg rounded-2xl">
+    <Card className="h-full glass-card shadow-lg rounded-2xl">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-xl">
@@ -498,7 +863,6 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
               </p>
               <div className="flex items-center justify-between w-full mt-auto">
                  <div className="flex items-center gap-2 text-secondary justify-center w-full relative">
-                   {/* Centered earnings, absolute positioned high score? Or just flex row */}
                  </div>
               </div>
                <div className="flex items-center justify-between w-full mt-2">
@@ -514,6 +878,68 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 )}
               </div>
             </button>
+
+            {/* Quiz Game Card */}
+            <button
+              onClick={() => setSelectedGame('quiz')}
+              className={cn(
+                "p-6 rounded-2xl border-2 border-dashed border-border/50",
+                "bg-gradient-to-br from-card to-[#8B5E3C]/5",
+                "hover:border-[#8B5E3C]/50 hover:shadow-lg",
+                "transition-all duration-300 text-center group card-hover"
+              )}
+            >
+              <div className="p-4 bg-[#8B5E3C]/10 rounded-2xl inline-flex mb-4 group-hover:scale-110 transition-transform duration-300">
+                <HelpCircle className="w-10 h-10 text-[#8B5E3C]" />
+              </div>
+              <h3 className="font-serif font-semibold text-xl text-foreground mb-2">Pet Trivia</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Test your pet knowledge!
+              </p>
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center gap-2 text-secondary">
+                  <Coins className="w-4 h-4" />
+                  <span className="font-semibold text-sm">$6–$15 per game</span>
+                </div>
+                {state.highScores?.['quiz'] !== undefined && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
+                    <Trophy className="w-3 h-3 text-[#8B5E3C]" />
+                    <span>Best: {state.highScores['quiz']}/5</span>
+                  </div>
+                )}
+              </div>
+            </button>
+
+            {/* Whack Game Card */}
+            <button
+              onClick={() => setSelectedGame('whack')}
+              className={cn(
+                "p-6 rounded-2xl border-2 border-dashed border-border/50",
+                "bg-gradient-to-br from-card to-primary/5",
+                "hover:border-primary/50 hover:shadow-lg",
+                "transition-all duration-300 text-center group card-hover"
+              )}
+            >
+              <div className="p-4 bg-primary/10 rounded-2xl inline-flex mb-4 group-hover:scale-110 transition-transform duration-300">
+                <Zap className="w-10 h-10 text-primary" />
+              </div>
+              <h3 className="font-serif font-semibold text-xl text-foreground mb-2">Whack-a-Critter</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Tap critters before they hide!
+              </p>
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center gap-2 text-secondary">
+                  <Coins className="w-4 h-4" />
+                  <span className="font-semibold text-sm">$2–$5 per whack</span>
+                </div>
+                {state.highScores?.['whack'] !== undefined && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
+                    <Trophy className="w-3 h-3 text-primary" />
+                    <span>Best: {state.highScores['whack']}</span>
+                  </div>
+                )}
+              </div>
+            </button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -525,10 +951,20 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                     <Target className="w-5 h-5 text-primary" />
                     <span>Catch the Treat</span>
                   </>
-                ) : (
+                ) : selectedGame === 'memory' ? (
                   <>
                     <Brain className="w-5 h-5 text-secondary" />
                     <span>Memory Match</span>
+                  </>
+                ) : selectedGame === 'quiz' ? (
+                  <>
+                    <HelpCircle className="w-5 h-5 text-[#8B5E3C]" />
+                    <span>Pet Trivia</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-5 h-5 text-primary" />
+                    <span>Whack-a-Critter</span>
                   </>
                 )}
               </h3>
@@ -578,11 +1014,27 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                   />
                 )}
                 {selectedGame === 'memory' && (
-                  <MemoryGame 
-                    onWin={handleWin} 
+                  <MemoryGame
+                    onWin={handleWin}
                     onLose={handleLose}
                     highScore={state.highScores?.['memory'] || 0}
                     onNewHighScore={(score) => updateHighScore('memory', score)}
+                  />
+                )}
+                {selectedGame === 'quiz' && (
+                  <QuizGame
+                    onWin={handleWin}
+                    onLose={handleLose}
+                    highScore={state.highScores?.['quiz'] || 0}
+                    onNewHighScore={(score) => updateHighScore('quiz', score)}
+                  />
+                )}
+                {selectedGame === 'whack' && (
+                  <WhackGame
+                    onWin={handleWin}
+                    onLose={handleLose}
+                    highScore={state.highScores?.['whack'] || 0}
+                    onNewHighScore={(score) => updateHighScore('whack', score)}
                   />
                 )}
               </>

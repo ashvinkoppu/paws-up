@@ -129,7 +129,7 @@ interface SidePanelProps {
 const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle }) => {
   const { state, performAction } = useGame();
   const { pet } = state;
-  const [isMinimized, setIsMinimized] = useState(true);
+  const [isMinimized, setIsMinimized] = useState(false);
 
   if (!pet) return null;
 
@@ -209,7 +209,7 @@ const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle }) =>
 
         {/* Progress bar */}
         <div className={cn(
-          "h-2.5 rounded-full overflow-hidden transition-all duration-300",
+          "h-2 rounded-full overflow-hidden transition-all duration-300",
           colors.bgColor
         )}>
           <div
@@ -220,8 +220,9 @@ const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle }) =>
             )}
             style={{ width: `${Math.max(value, 2)}%` }}
           >
-            {value > 30 && (
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+            {value > 50 && (
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-r from-transparent to-white/15" />
             )}
           </div>
         </div>
@@ -241,10 +242,10 @@ const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle }) =>
   };
 
   return (
-    <div className="bg-card rounded-2xl border-2 border-border/50 shadow-md overflow-hidden transition-all duration-300">
+    <div className="glass-card rounded-2xl shadow-md overflow-hidden transition-all duration-300">
       {/* Header - Clickable to toggle */}
       <div 
-        className="px-4 py-3 border-b border-border/50 bg-gradient-to-r from-accent/40 to-accent/20 cursor-pointer hover:from-accent/50 hover:to-accent/30 transition-colors"
+        className="px-4 py-3 border-b border-border/30 bg-gradient-to-r from-accent/30 via-accent/15 to-transparent cursor-pointer hover:from-accent/40 hover:via-accent/20 transition-colors"
         onClick={() => setIsMinimized(!isMinimized)}
       >
         <div className="flex justify-between items-center">

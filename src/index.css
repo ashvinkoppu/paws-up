@@ -1,77 +1,77 @@
-@import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Cozy Cottage Core Design System
-   A warm, hand-crafted aesthetic inspired by storybook illustrations
-   Soft textures, earthy tones, organic shapes
+/* Enchanted Storybook Design System
+   A warm, immersive aesthetic inspired by illustrated children's books
+   Rich textures, atmospheric lighting, organic warmth
 */
 
 @layer base {
   :root {
-    /* Cream paper background */
-    --background: 40 33% 96%;
-    /* Deep warm charcoal for text */
-    --foreground: 25 30% 12%;
+    /* Warm parchment background */
+    --background: 38 40% 95%;
+    /* Deep ink for text */
+    --foreground: 20 35% 10%;
 
-    /* Warm off-white cards */
-    --card: 42 40% 97%;
-    --card-foreground: 25 30% 12%;
+    /* Soft vellum cards with warmth */
+    --card: 40 45% 97%;
+    --card-foreground: 20 35% 10%;
 
-    --popover: 40 30% 94%;
-    --popover-foreground: 25 30% 12%;
+    --popover: 38 35% 93%;
+    --popover-foreground: 20 35% 10%;
 
-    /* Warm coral-orange - more vibrant */
-    --primary: 14 72% 52%;
-    --primary-foreground: 40 33% 98%;
+    /* Terracotta rose - warm and inviting */
+    --primary: 12 76% 50%;
+    --primary-foreground: 40 40% 98%;
 
-    /* Rich emerald green */
-    --secondary: 155 42% 38%;
-    --secondary-foreground: 40 33% 98%;
+    /* Deep forest sage */
+    --secondary: 152 45% 36%;
+    --secondary-foreground: 40 40% 98%;
 
-    /* Dusty rose muted */
-    --muted: 350 22% 75%;
-    --muted-foreground: 25 28% 26%;
+    /* Dusty mauve muted */
+    --muted: 345 18% 72%;
+    --muted-foreground: 20 25% 30%;
 
-    /* Warm peach accent */
-    --accent: 38 65% 90%;
-    --accent-foreground: 25 30% 18%;
+    /* Warm honey accent */
+    --accent: 36 70% 88%;
+    --accent-foreground: 25 35% 16%;
 
-    /* Vivid red for warnings */
-    --destructive: 0 72% 42%;
-    --destructive-foreground: 40 33% 98%;
+    /* Vivid crimson for warnings */
+    --destructive: 355 75% 44%;
+    --destructive-foreground: 40 40% 98%;
 
-    /* Warm beige borders */
-    --border: 35 25% 80%;
-    --input: 35 25% 85%;
-    --ring: 16 65% 55%;
+    /* Warm sand borders */
+    --border: 33 28% 78%;
+    --input: 33 28% 83%;
+    --ring: 12 70% 52%;
 
     --radius: 1rem;
 
-    --sidebar-background: 42 40% 97%;
-    --sidebar-foreground: 25 25% 20%;
-    --sidebar-primary: 16 65% 55%;
-    --sidebar-primary-foreground: 40 33% 98%;
-    --sidebar-accent: 140 25% 40%;
-    --sidebar-accent-foreground: 40 33% 98%;
-    --sidebar-border: 35 25% 80%;
-    --sidebar-ring: 16 65% 55%;
+    --sidebar-background: 40 45% 97%;
+    --sidebar-foreground: 20 25% 18%;
+    --sidebar-primary: 12 70% 52%;
+    --sidebar-primary-foreground: 40 40% 98%;
+    --sidebar-accent: 145 30% 40%;
+    --sidebar-accent-foreground: 40 40% 98%;
+    --sidebar-border: 33 28% 78%;
+    --sidebar-ring: 12 70% 52%;
 
-    /* Chart colors - vibrant earthy palette */
-    --chart-1: 28 80% 52%;  /* Rich amber for hunger */
-    --chart-2: 338 60% 56%; /* Rose pink for happiness */
-    --chart-3: 42 85% 55%;  /* Golden yellow for energy */
-    --chart-4: 155 42% 42%; /* Emerald for cleanliness */
-    --chart-5: 4 68% 52%;   /* Coral for health */
+    /* Chart colors - rich storybook palette */
+    --chart-1: 24 82% 50%;  /* Burnt amber for hunger */
+    --chart-2: 335 62% 54%; /* Rose madder for happiness */
+    --chart-3: 40 88% 52%;  /* Saffron gold for energy */
+    --chart-4: 152 45% 40%; /* Forest sage for cleanliness */
+    --chart-5: 2 70% 50%;   /* Vermillion for health */
 
-    --sidebar: 42 40% 97%;
+    --sidebar: 40 45% 97%;
 
-    --font-sans: 'Quicksand', ui-sans-serif, system-ui, sans-serif;
-    --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-sans: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Fraunces', ui-serif, Georgia, serif;
+    --font-mono: 'Inconsolata', ui-monospace, monospace;
 
     /* Warm, soft shadows */
     --shadow-2xs: 0 1px 2px 0px hsl(25 30% 30% / 0.04);
@@ -88,53 +88,53 @@
   }
 
   .dark {
-    /* Deep warm brown background */
-    --background: 25 30% 12%;
-    --foreground: 40 30% 92%;
+    /* Deep walnut background */
+    --background: 22 32% 11%;
+    --foreground: 38 35% 92%;
 
-    --card: 25 25% 16%;
-    --card-foreground: 40 30% 92%;
+    --card: 22 28% 15%;
+    --card-foreground: 38 35% 92%;
 
-    --popover: 25 25% 18%;
-    --popover-foreground: 40 30% 92%;
+    --popover: 22 28% 17%;
+    --popover-foreground: 38 35% 92%;
 
-    /* Brighter coral for dark mode */
-    --primary: 16 78% 62%;
-    --primary-foreground: 25 30% 12%;
+    /* Warm coral for dark mode */
+    --primary: 14 80% 60%;
+    --primary-foreground: 22 32% 10%;
 
-    /* Brighter emerald */
-    --secondary: 155 45% 52%;
-    --secondary-foreground: 25 30% 12%;
+    /* Bright sage */
+    --secondary: 152 48% 50%;
+    --secondary-foreground: 22 32% 10%;
 
-    --muted: 25 15% 35%;
-    --muted-foreground: 40 25% 75%;
+    --muted: 22 16% 32%;
+    --muted-foreground: 38 28% 72%;
 
-    --accent: 25 20% 22%;
-    --accent-foreground: 40 30% 85%;
+    --accent: 22 22% 20%;
+    --accent-foreground: 38 35% 84%;
 
-    --destructive: 0 60% 55%;
-    --destructive-foreground: 40 30% 95%;
+    --destructive: 355 62% 54%;
+    --destructive-foreground: 38 35% 95%;
 
-    --border: 25 20% 25%;
-    --input: 25 20% 25%;
-    --ring: 18 70% 60%;
+    --border: 22 22% 23%;
+    --input: 22 22% 23%;
+    --ring: 14 72% 58%;
 
-    --sidebar-background: 25 25% 14%;
-    --sidebar-foreground: 40 30% 92%;
-    --sidebar-primary: 18 70% 60%;
-    --sidebar-primary-foreground: 25 30% 12%;
-    --sidebar-accent: 145 35% 55%;
-    --sidebar-accent-foreground: 25 30% 12%;
-    --sidebar-border: 25 20% 25%;
-    --sidebar-ring: 18 70% 60%;
+    --sidebar-background: 22 28% 13%;
+    --sidebar-foreground: 38 35% 92%;
+    --sidebar-primary: 14 72% 58%;
+    --sidebar-primary-foreground: 22 32% 10%;
+    --sidebar-accent: 148 38% 52%;
+    --sidebar-accent-foreground: 22 32% 10%;
+    --sidebar-border: 22 22% 23%;
+    --sidebar-ring: 14 72% 58%;
 
-    --chart-1: 32 75% 60%;
-    --chart-2: 345 55% 65%;
-    --chart-3: 48 75% 65%;
-    --chart-4: 145 35% 55%;
-    --chart-5: 5 55% 60%;
+    --chart-1: 28 78% 58%;
+    --chart-2: 340 58% 62%;
+    --chart-3: 44 78% 62%;
+    --chart-4: 148 38% 52%;
+    --chart-5: 4 58% 58%;
 
-    --sidebar: 25 25% 16%;
+    --sidebar: 22 28% 15%;
 
     --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.15);
     --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.2);
@@ -582,10 +582,59 @@
   animation: walletPulse 0.4s ease-in-out;
 }
 
-/* Paper texture background */
+/* Paper texture background - layered parchment effect */
 .paper-texture {
   background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    radial-gradient(ellipse at 20% 50%, hsl(var(--primary) / 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, hsl(var(--secondary) / 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, hsl(var(--accent) / 0.06) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* Glass-morphism card style */
+.glass-card {
+  background: hsl(var(--card) / 0.7);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow:
+    0 4px 24px -4px hsl(25 30% 30% / 0.08),
+    0 0 0 1px hsl(var(--card) / 0.5) inset;
+}
+
+/* Ambient glow for important elements */
+.ambient-glow {
+  position: relative;
+}
+.ambient-glow::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--secondary) / 0.15));
+  z-index: -1;
+  filter: blur(16px);
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+.ambient-glow:hover::after {
+  opacity: 1;
+}
+
+/* Storybook page edge effect */
+.page-edge {
+  border-left: 4px solid transparent;
+  border-image: linear-gradient(
+    to bottom,
+    hsl(var(--primary) / 0.3),
+    hsl(var(--accent) / 0.5),
+    hsl(var(--secondary) / 0.3)
+  ) 1;
+}
+
+/* Glowing stat bar effect */
+.stat-bar-glow {
+  box-shadow: 0 0 10px currentColor, 0 0 4px currentColor;
 }
 
 /* Decorative border style */
@@ -597,23 +646,25 @@
     inset 0 0 0 3px hsl(var(--border) / 0.3);
 }
 
-/* Warm glow effect */
+/* Warm glow effect - richer ambient light */
 .warm-glow {
   box-shadow:
-    0 0 20px hsl(var(--primary) / 0.15),
-    0 0 40px hsl(var(--primary) / 0.08);
+    0 0 24px hsl(var(--primary) / 0.18),
+    0 0 48px hsl(var(--primary) / 0.08),
+    0 0 80px hsl(var(--primary) / 0.04);
 }
 
-/* Soft card hover effect */
+/* Soft card hover effect - more depth */
 .card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .card-hover:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.005);
   box-shadow:
-    0 12px 24px -8px hsl(25 30% 30% / 0.15),
-    0 4px 8px -4px hsl(25 30% 30% / 0.1);
+    0 16px 32px -8px hsl(25 30% 30% / 0.18),
+    0 8px 16px -4px hsl(25 30% 30% / 0.1),
+    0 0 0 1px hsl(var(--primary) / 0.08);
 }
 
 /* Progress bar glow */
@@ -634,24 +685,23 @@
   border-radius: 60% 40% 50% 70% / 70% 50% 60% 40%;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - thin and elegant */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--muted) / 0.2);
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted) / 0.5);
-  border-radius: 4px;
+  background: hsl(var(--muted) / 0.35);
+  border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted) / 0.7);
+  background: hsl(var(--muted) / 0.55);
 }
 
 /* Notification badge pulse */
@@ -761,4 +811,49 @@
 
 .animate-fade-in {
   animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Sparkle twinkle for ambient decoration */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes gentleDrift {
+  0% { transform: translateY(0) translateX(0); }
+  25% { transform: translateY(-12px) translateX(6px); }
+  50% { transform: translateY(-6px) translateX(-4px); }
+  75% { transform: translateY(-18px) translateX(8px); }
+  100% { transform: translateY(0) translateX(0); }
+}
+
+.animate-sparkle {
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+.animate-gentle-drift {
+  animation: gentleDrift 8s ease-in-out infinite;
+}
+
+/* Enhanced button press effect */
+.btn-press {
+  transition: all 0.15s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.btn-press:active {
+  transform: scale(0.95);
+}
+
+/* Gradient border for featured elements */
+.gradient-border {
+  position: relative;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--secondary)));
+  z-index: -1;
 }

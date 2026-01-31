@@ -150,7 +150,7 @@ const NotificationsPanel: React.FC = () => {
   const status = getOverallStatus();
 
   return (
-    <div className="p-5 bg-card rounded-2xl border-2 border-border/50 shadow-md">
+    <div className="p-5 glass-card rounded-2xl shadow-md">
       {/* Header */}
       <div className="flex justify-between items-center mb-5">
         <div className="flex items-center gap-2">

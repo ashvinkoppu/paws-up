@@ -92,7 +92,7 @@ const Tasks: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* XP Summary Bar */}
-      <Card className="rounded-2xl border-2 border-border/50 overflow-hidden relative">
+      <Card className="rounded-2xl glass-card overflow-hidden relative">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -150,25 +150,23 @@ const Tasks: React.FC = () => {
         @keyframes taskSlideOut {
           0% {
             opacity: 1;
-            max-height: 100px;
-            transform: translateX(0);
+            transform: translateX(0) scaleY(1);
           }
-          60% {
+          50% {
             opacity: 0;
-            transform: translateX(40px);
+            transform: translateX(40px) scaleY(1);
           }
           100% {
             opacity: 0;
-            max-height: 0;
-            margin: 0;
-            padding: 0;
-            transform: translateX(40px);
+            transform: translateX(40px) scaleY(0);
+            margin-top: 0;
+            margin-bottom: 0;
           }
         }
       `}</style>
 
       {/* Daily Tasks Card */}
-      <Card className="rounded-2xl border-2 border-border/50 overflow-hidden">
+      <Card className="rounded-2xl glass-card overflow-hidden">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-serif flex items-center gap-2">
@@ -205,7 +203,11 @@ const Tasks: React.FC = () => {
                     ? "bg-amber-500/5 border-amber-500/20"
                     : "bg-card border-border/30"
                 )}
-                style={isClaiming ? { animation: 'taskSlideOut 0.4s ease-out forwards' } : undefined}
+                style={isClaiming ? {
+                  animation: 'taskSlideOut 0.4s ease-out forwards',
+                  transformOrigin: 'top center',
+                  willChange: 'transform, opacity',
+                } : undefined}
               >
                 <span className="text-xl flex-shrink-0">{taskDef.icon}</span>
                 <div className="flex-1 min-w-0">
@@ -295,7 +297,7 @@ const Tasks: React.FC = () => {
       </Card>
 
       {/* Milestones Card */}
-      <Card className="rounded-2xl border-2 border-border/50 overflow-hidden">
+      <Card className="rounded-2xl glass-card overflow-hidden">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-serif flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-500" />

@@ -113,7 +113,7 @@ const Shop: React.FC = () => {
   const consumableInventory = state.inventory.filter(item => !item.id.startsWith('acc-'));
 
   return (
-    <Card className="h-full bg-card/80 border-2 border-border/50 shadow-lg rounded-2xl">
+    <Card className="h-full glass-card shadow-lg rounded-2xl">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-xl">
@@ -127,7 +127,7 @@ const Shop: React.FC = () => {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-5 bg-accent/30 p-1 rounded-xl">
+          <TabsList className="grid w-full grid-cols-3 mb-5 bg-accent/20 backdrop-blur-sm p-1 rounded-xl border border-border/20">
             <TabsTrigger
               value="shop"
               className="flex items-center gap-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"

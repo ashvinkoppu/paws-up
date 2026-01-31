@@ -33,8 +33,8 @@ const FinancePanel: React.FC = () => {
     <div className="space-y-5">
       {/* Balance Card */}
       <Card className={cn(
-        "bg-card/80 border-2 rounded-2xl transition-all duration-300 overflow-hidden",
-        state.money < 20 ? "border-destructive/50" : "border-border/50"
+        "glass-card rounded-2xl transition-all duration-300 overflow-hidden",
+        state.money < 20 ? "ring-2 ring-destructive/30" : ""
       )}>
         {/* Decorative background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -71,7 +71,7 @@ const FinancePanel: React.FC = () => {
       </Card>
 
       {/* Budget Progress */}
-      <Card className="bg-card/80 border-2 border-border/50 rounded-2xl">
+      <Card className="glass-card rounded-2xl">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 bg-chart-1/10 rounded-xl">
@@ -118,7 +118,7 @@ const FinancePanel: React.FC = () => {
 
       {/* Spending Breakdown */}
       {Object.keys(spendingByCategory).length > 0 && (
-        <Card className="bg-card/80 border-2 border-border/50 rounded-2xl">
+        <Card className="glass-card rounded-2xl">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
               <div className="p-2 bg-secondary/10 rounded-xl">
@@ -149,7 +149,7 @@ const FinancePanel: React.FC = () => {
 
       {/* Recent Transactions */}
       {recentTransactions.length > 0 && (
-        <Card className="bg-card/80 border-2 border-border/50 rounded-2xl">
+        <Card className="glass-card rounded-2xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-serif">Recent Transactions</CardTitle>
           </CardHeader>

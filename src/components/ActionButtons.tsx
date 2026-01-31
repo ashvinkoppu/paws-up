@@ -91,7 +91,7 @@ const ActionButtons: React.FC = () => {
   const activeFeedbackMeta = feedback ? ACTION_FEEDBACK[feedback.actionId] : null;
 
   return (
-    <div className="bg-card rounded-2xl border-2 border-border/50 shadow-md p-5 relative">
+    <div className="glass-card rounded-2xl shadow-md p-5 relative">
       {/* Prominent action feedback overlay */}
       {feedback && activeFeedback && activeFeedbackMeta && (
         <div
@@ -104,12 +104,11 @@ const ActionButtons: React.FC = () => {
         >
           <div
             className={cn(
-              "flex items-center gap-4 px-8 py-5 rounded-2xl shadow-2xl border-2",
-              "bg-card border-border/60"
+              "flex items-center gap-4 px-8 py-5 rounded-2xl shadow-2xl glass-card",
             )}
             style={{
               minWidth: '320px',
-              boxShadow: '0 8px 40px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1)',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.1) inset',
             }}
           >
             <div className={cn(
@@ -155,9 +154,9 @@ const ActionButtons: React.FC = () => {
               variant="outline"
               className={cn(
                 "flex flex-col items-center justify-center h-auto py-4 px-2",
-                "border-2 border-border/50 rounded-xl",
-                "transition-all duration-200 transform",
-                "hover:scale-105 hover:-translate-y-1",
+                "border border-border/40 rounded-xl",
+                "transition-all duration-200 transform btn-press",
+                "hover:scale-105 hover:-translate-y-1 hover:shadow-md",
                 action.bgColor,
                 action.hoverColor,
                 action.activeColor,
