@@ -67,6 +67,65 @@ const STAT_CONFIG: Record<keyof PetStats, {
   },
 };
 
+const SleepAction: React.FC = () => {
+  const { state, putPetToSleep, wakePetUp } = useGame();
+  const { pet, petAsleep, lastSleepDate } = state;
+  
+  if (!pet) return null;
+  
+  const today = new Date().toDateString();
+  const hasSleptToday = lastSleepDate === today;
+  
+  return (
+    <div className="mt-5 pt-4 border-t border-border/50">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🌙</span>
+          <span className="text-sm font-medium text-foreground">Nightly Rest</span>
+        </div>
+        
+        {petAsleep ? (
+          <Button
+            size="sm"
+            onClick={wakePetUp}
+            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center gap-2"
+          >
+            <span className="animate-pulse">☀️</span>
+            Wake Up
+          </Button>
+        ) : hasSleptToday ? (
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+            <span className="text-xs">💤</span>
+            <span className="text-xs font-medium text-indigo-600">Rested today</span>
+          </div>
+        ) : (
+          <Button
+            size="sm"
+            onClick={putPetToSleep}
+            className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 group"
+          >
+            <span className="group-hover:animate-bounce">🌙</span>
+            Put to Sleep
+          </Button>
+        )}
+      </div>
+      
+      {petAsleep && (
+        <div className="mt-3 p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 flex items-center gap-3 animate-fade-in">
+          <div className="relative">
+            <span className="text-2xl">😴</span>
+            <span className="absolute -top-1 -right-1 text-sm animate-float-zzz">💤</span>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-indigo-700">{pet.name} is sleeping soundly...</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Stats restored! ⚡+15 💕+8 ✨+5 ❤️+5 🍖-10</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const NotificationsPanel: React.FC = () => {
   const { state, performAction } = useGame();
   const { pet } = state;
@@ -216,6 +275,9 @@ const NotificationsPanel: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* Sleep Action */}
+      <SleepAction />
     </div>
   );
 };

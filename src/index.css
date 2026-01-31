@@ -663,3 +663,102 @@
 .notification-badge-pulse {
   animation: notificationBadgePulse 2s ease-in-out infinite;
 }
+
+/* Mood emoji floating animations */
+@keyframes moodThriving {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  25% { transform: translate(-50%, calc(-50% - 8px)) scale(1.2); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  75% { transform: translate(-50%, calc(-50% + 4px)) scale(1.1); opacity: 1; }
+}
+
+@keyframes moodHappy {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; }
+  50% { transform: translate(-50%, calc(-50% - 6px)) scale(1.15); opacity: 1; }
+}
+
+@keyframes moodNeutral {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%, calc(-50% - 3px)) scale(1.05); opacity: 0.75; }
+}
+
+@keyframes moodSad {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+  50% { transform: translate(-50%, calc(-50% + 5px)) scale(0.9); opacity: 0.5; }
+}
+
+@keyframes moodCritical {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+  15% { transform: translate(calc(-50% - 3px), -50%) scale(1.1); }
+  30% { transform: translate(calc(-50% + 3px), -50%) scale(1.1); }
+  45% { transform: translate(calc(-50% - 2px), -50%) scale(1); }
+  60% { transform: translate(calc(-50% + 2px), -50%) scale(1); opacity: 0.6; }
+  75% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.9; }
+}
+
+.animate-mood-thriving {
+  animation: moodThriving 2.5s ease-in-out infinite;
+}
+
+.animate-mood-happy {
+  animation: moodHappy 3s ease-in-out infinite;
+}
+
+.animate-mood-neutral {
+  animation: moodNeutral 4s ease-in-out infinite;
+}
+
+.animate-mood-sad {
+  animation: moodSad 3s ease-in-out infinite;
+}
+
+.animate-mood-critical {
+  animation: moodCritical 1.5s ease-in-out infinite;
+}
+
+/* Sleeping animations */
+@keyframes floatZzz {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(-15px) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-25px) scale(0.8);
+  }
+}
+
+@keyframes petSleeping {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.02) rotate(-1deg);
+  }
+  50% {
+    transform: scale(1) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.02) rotate(1deg);
+  }
+}
+
+.animate-float-zzz {
+  animation: floatZzz 2s ease-in-out infinite;
+}
+
+.animate-pet-sleeping {
+  animation: petSleeping 4s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.3s ease-out forwards;
+}

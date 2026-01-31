@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,15 +27,52 @@ function useCountdownToMidnight() {
   return timeLeft;
 }
 
+interface XpFloater {
+  id: number;
+  amount: number;
+}
+
 const Tasks: React.FC = () => {
-  const { state, claimDailyBonus } = useGame();
+  const { state, claimDailyBonus, claimDailyTask } = useGame();
   const countdown = useCountdownToMidnight();
+  const [xpFloaters, setXpFloaters] = useState<XpFloater[]>([]);
+  const [claimingTasks, setClaimingTasks] = useState<Set<string>>(new Set());
+
+  const triggerXpAnimation = useCallback((amount: number) => {
+    const floaterId = Date.now();
+    setXpFloaters(previous => [...previous, { id: floaterId, amount }]);
+    setTimeout(() => {
+      setXpFloaters(previous => previous.filter(floater => floater.id !== floaterId));
+    }, 1200);
+  }, []);
+
+  const handleClaimTask = useCallback((taskId: string, xpReward: number) => {
+    triggerXpAnimation(xpReward);
+    // Delay the actual claim slightly so the animation starts before the task disappears
+    setTimeout(() => {
+      setClaimingTasks(previous => {
+        const next = new Set(previous);
+        next.add(taskId);
+        return next;
+      });
+      setTimeout(() => {
+        claimDailyTask(taskId);
+        setClaimingTasks(previous => {
+          const next = new Set(previous);
+          next.delete(taskId);
+          return next;
+        });
+      }, 400);
+    }, 200);
+  }, [claimDailyTask, triggerXpAnimation]);
 
   if (!state.pet) return null;
 
   const { level, currentXp, xpForNext } = calculateLevel(state.pet.experience);
   const xpPercent = (currentXp / xpForNext) * 100;
+  const visibleTasks = state.dailyTasks.filter(task => !task.claimed);
   const completedDailyCount = state.dailyTasks.filter(task => task.completed).length;
+  const claimedCount = state.dailyTasks.filter(task => task.claimed).length;
   const allDailyComplete = state.dailyTasks.length > 0 && completedDailyCount === state.dailyTasks.length;
 
   // Group milestones by tier
@@ -55,7 +92,7 @@ const Tasks: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* XP Summary Bar */}
-      <Card className="rounded-2xl border-2 border-border/50 overflow-hidden">
+      <Card className="rounded-2xl border-2 border-border/50 overflow-hidden relative">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -76,8 +113,59 @@ const Tasks: React.FC = () => {
             <span>{currentXp} XP</span>
             <span>{xpForNext} XP to level {level + 1}</span>
           </div>
+
+          {/* XP Floaters */}
+          {xpFloaters.map(floater => (
+            <div
+              key={floater.id}
+              className="absolute left-1/2 -translate-x-1/2 pointer-events-none z-20"
+              style={{
+                bottom: '1rem',
+                animation: 'xpFloat 1.2s ease-out forwards',
+              }}
+            >
+              <span className="text-lg font-bold text-amber-500 drop-shadow-md">
+                +{floater.amount} XP
+              </span>
+            </div>
+          ))}
         </CardContent>
       </Card>
+
+      <style>{`
+        @keyframes xpFloat {
+          0% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-30px) scale(1.2);
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-60px) scale(0.8);
+          }
+        }
+        @keyframes taskSlideOut {
+          0% {
+            opacity: 1;
+            max-height: 100px;
+            transform: translateX(0);
+          }
+          60% {
+            opacity: 0;
+            transform: translateX(40px);
+          }
+          100% {
+            opacity: 0;
+            max-height: 0;
+            margin: 0;
+            padding: 0;
+            transform: translateX(40px);
+          }
+        }
+      `}</style>
 
       {/* Daily Tasks Card */}
       <Card className="rounded-2xl border-2 border-border/50 overflow-hidden">
@@ -89,7 +177,7 @@ const Tasks: React.FC = () => {
             </CardTitle>
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground">
-                {completedDailyCount}/{state.dailyTasks.length} done
+                {claimedCount}/{state.dailyTasks.length} done
               </span>
               <span className="text-xs text-muted-foreground/60 font-mono">
                 {countdown} left
@@ -98,24 +186,26 @@ const Tasks: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent className="pt-0 space-y-2">
-          {state.dailyTasks.map(task => {
+          {visibleTasks.map(task => {
             const taskDef = DAILY_TASK_POOL.find(definition => definition.id === task.id);
             if (!taskDef) return null;
             const trackingValue = (state.dailyTracking?.[taskDef.trackingKey as keyof typeof state.dailyTracking] as number) || 0;
             const progress = Math.min(trackingValue, taskDef.target);
             const progressPercent = (progress / taskDef.target) * 100;
+            const isClaiming = claimingTasks.has(task.id);
 
             return (
               <div
                 key={task.id}
                 className={cn(
-                  "flex items-center gap-3 p-3 rounded-xl border transition-colors",
+                  "flex items-center gap-3 p-3 rounded-xl border transition-all overflow-hidden",
                   task.completed
                     ? "bg-emerald-500/5 border-emerald-500/20"
                     : progress > 0
                     ? "bg-amber-500/5 border-amber-500/20"
                     : "bg-card border-border/30"
                 )}
+                style={isClaiming ? { animation: 'taskSlideOut 0.4s ease-out forwards' } : undefined}
               >
                 <span className="text-xl flex-shrink-0">{taskDef.icon}</span>
                 <div className="flex-1 min-w-0">
@@ -146,12 +236,24 @@ const Tasks: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                {task.completed && (
-                  <Check className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                {task.completed && !task.claimed && (
+                  <Button
+                    size="sm"
+                    onClick={() => handleClaimTask(task.id, taskDef.xpReward)}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white flex-shrink-0 text-xs px-3"
+                  >
+                    Claim
+                  </Button>
                 )}
               </div>
             );
           })}
+
+          {visibleTasks.length === 0 && state.dailyTasks.length > 0 && (
+            <div className="text-center py-4 text-sm text-muted-foreground">
+              All tasks claimed for today!
+            </div>
+          )}
 
           {/* Daily Bonus Row */}
           <div className={cn(

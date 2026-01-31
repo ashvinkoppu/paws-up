@@ -31,11 +31,11 @@ const CatchGame: React.FC<{
   const [totalEarned, setTotalEarned] = useState(0);
 
   const BONES = [
-    { emoji: '🦴', label: 'Bone', value: 5 },
-    { emoji: '🍖', label: 'Meat Bone', value: 8 },
-    { emoji: '🥩', label: 'Steak Bone', value: 10 },
-    { emoji: '🦷', label: 'Rare Bone', value: 15 },
-    { emoji: '💎', label: 'Diamond Bone', value: 20 },
+    { emoji: '🦴', label: 'Bone', value: 2 },
+    { emoji: '🍖', label: 'Meat Bone', value: 3 },
+    { emoji: '🥩', label: 'Steak Bone', value: 4 },
+    { emoji: '🦷', label: 'Rare Bone', value: 6 },
+    { emoji: '💎', label: 'Diamond Bone', value: 8 },
   ];
 
   const getPetEmoji = (species: string) => {
@@ -273,7 +273,7 @@ const MemoryGame: React.FC<{
 
         // Show match found message briefly
         const currentMoveCount = moves + 1;
-        const perMatchReward = currentMoveCount <= 10 ? 5 : currentMoveCount <= 15 ? 3 : 2;
+        const perMatchReward = currentMoveCount <= 10 ? 2 : currentMoveCount <= 15 ? 1 : 1;
         setMatchMessage(`MATCH FOUND!  +$${perMatchReward}`);
         setTimeout(() => setMatchMessage(null), 1200);
       } else {
@@ -292,7 +292,7 @@ const MemoryGame: React.FC<{
   useEffect(() => {
     if (matches === 6) {
       setGameComplete(true);
-      const reward = moves <= 10 ? 30 : moves <= 15 ? 20 : 10;
+      const reward = moves <= 10 ? 12 : moves <= 15 ? 8 : 5;
       onWin(reward);
       
       // For memory game, lower moves is better. We store as negative for the "higher is better" reducer logic.
@@ -418,7 +418,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
 
   const handleWin = (reward: number) => {
     addMoney(reward, 'Mini-game reward');
-    updateStats({ happiness: 10 });
+    updateStats({ happiness: 5 });
     trackGamePlayed();
     setGameResult({ won: true, reward });
   };
@@ -468,7 +468,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-2 text-secondary">
                   <Coins className="w-4 h-4" />
-                  <span className="font-semibold text-sm">$5–$20 per catch</span>
+                  <span className="font-semibold text-sm">$2–$8 per catch</span>
                 </div>
                 {state.highScores?.['catch'] !== undefined && (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
@@ -504,7 +504,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                <div className="flex items-center justify-between w-full mt-2">
                 <div className="flex items-center gap-2 text-secondary">
                   <Coins className="w-4 h-4" />
-                  <span className="font-semibold text-sm">$10–$30 per game</span>
+                  <span className="font-semibold text-sm">$5–$12 per game</span>
                 </div>
                 {state.highScores?.['memory'] !== undefined && (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">

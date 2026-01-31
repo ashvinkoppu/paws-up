@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
-import { Species, Personality, PetColor, GrowthStage } from '@/types/game';
+import { Species, Personality, PetColor, PetGender, GrowthStage, GENDER_COLORS } from '@/types/game';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,20 +26,16 @@ const PERSONALITIES: { type: Personality; name: string; description: string; ico
   { type: 'lazy', name: 'Lazy', description: 'Regains energy faster, gets hungry slower', icon: '😴' },
 ];
 
-const COLORS: { color: PetColor; name: string; hex: string }[] = [
-  { color: 'golden', name: 'Golden', hex: '#D4A574' },
-  { color: 'cream', name: 'Cream', hex: '#F5E6D3' },
-  { color: 'gray', name: 'Gray', hex: '#8B9A8E' },
-  { color: 'brown', name: 'Brown', hex: '#8B6F5C' },
-  { color: 'white', name: 'White', hex: '#FAF8F5' },
-  { color: 'black', name: 'Black', hex: '#3D3D3D' },
-  { color: 'orange', name: 'Orange', hex: '#D4845C' },
+const GENDERS: { type: PetGender; label: string; icon: string; description: string }[] = [
+  { type: 'male', label: 'Male', icon: '♂', description: 'Blue, green, brown & gray' },
+  { type: 'female', label: 'Female', icon: '♀', description: 'Pink, purple, peach & white' },
+  { type: 'neutral', label: 'Neutral', icon: '⚧', description: 'Yellow, teal, golden & cream' },
 ];
 
 const STEP_CONFIG = [
   { title: 'Choose Your Pet', description: 'Who will be your new companion?', icon: PawPrint },
   { title: 'Name Your Friend', description: 'Give your pet a special name', icon: Heart },
-  { title: 'Pick a Color', description: 'What color suits them best?', icon: Palette },
+  { title: 'Style Your Pet', description: 'Choose gender and color theme', icon: Palette },
   { title: 'Select Personality', description: 'Each personality affects behavior', icon: Sparkles },
 ];
 
@@ -52,19 +48,25 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
   const [step, setStep] = useState(1);
   const [selectedSpecies, setSelectedSpecies] = useState<Species | null>(null);
   const [petName, setPetName] = useState('');
-  const [selectedColor, setSelectedColor] = useState<PetColor>('golden');
+  const [selectedGender, setSelectedGender] = useState<PetGender>('male');
+  const [selectedColor, setSelectedColor] = useState<PetColor>('blue');
   const [selectedPersonality, setSelectedPersonality] = useState<Personality | null>(null);
   const [nameError, setNameError] = useState('');
   const [jumpingSpecies, setJumpingSpecies] = useState<Species | null>(null);
 
   const handleSpeciesClick = useCallback((species: Species) => {
     setSelectedSpecies(species);
-    // Reset animation so it replays on every click, even the same pet
     setJumpingSpecies(null);
     requestAnimationFrame(() => {
       setJumpingSpecies(species);
     });
   }, []);
+
+  const handleGenderChange = (gender: PetGender) => {
+    setSelectedGender(gender);
+    const palette = GENDER_COLORS[gender];
+    setSelectedColor(palette[0].color);
+  };
 
   const validateName = (name: string): boolean => {
     if (name.trim().length < 2) {
@@ -90,7 +92,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
 
   const handleBack = () => {
     if (step === 1) {
-      onComplete(); // Return to start screen
+      onComplete();
     } else {
       setStep(step - 1);
     }
@@ -102,6 +104,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
     createPet({
       name: petName.trim(),
       species: selectedSpecies,
+      gender: selectedGender,
       color: selectedColor,
       personality: selectedPersonality,
       stage: 'baby' as GrowthStage,
@@ -111,6 +114,8 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
 
   const currentStepConfig = STEP_CONFIG[step - 1];
   const StepIcon = currentStepConfig.icon;
+  const currentPalette = GENDER_COLORS[selectedGender];
+  const currentColorHex = currentPalette.find(color => color.color === selectedColor)?.hex ?? currentPalette[0].hex;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 paper-texture relative overflow-hidden">
@@ -225,9 +230,32 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
             </div>
           )}
 
-          {/* Step 3: Color Selection */}
+          {/* Step 3: Gender + Color Selection (merged) */}
           {step === 3 && (
             <div className="space-y-6">
+              {/* Gender selection */}
+              <div className="flex justify-center gap-3">
+                {GENDERS.map((gender, index) => (
+                  <button
+                    key={gender.type}
+                    onClick={() => handleGenderChange(gender.type)}
+                    className={cn(
+                      "px-5 py-3 rounded-2xl border-2 transition-all duration-300 text-center min-w-[120px]",
+                      "animate-fade-in-up opacity-0",
+                      selectedGender === gender.type
+                        ? "border-primary bg-primary/10 shadow-lg"
+                        : "border-border/50 hover:border-primary/40 bg-card"
+                    )}
+                    style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}
+                  >
+                    <div className="text-2xl mb-1">{gender.icon}</div>
+                    <div className="font-serif font-semibold text-sm text-foreground">{gender.label}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{gender.description}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Pet preview with color */}
               <div className="flex justify-center">
                 {selectedSpecies && (
                   <div
@@ -243,17 +271,19 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
                       <div
                         className="absolute inset-0 transition-all duration-300 pointer-events-none"
                         style={{
-                          backgroundColor: COLORS.find(color => color.color === selectedColor)?.hex,
-                          mixBlendMode: selectedColor === 'black' ? 'multiply' : 'color',
-                          opacity: selectedColor === 'black' ? 0.6 : 0.75,
+                          backgroundColor: currentColorHex,
+                          mixBlendMode: 'color',
+                          opacity: 0.75,
                         }}
                       />
                     </div>
                   </div>
                 )}
               </div>
+
+              {/* Color palette (dynamic based on gender) */}
               <div className="flex flex-wrap justify-center gap-4">
-                {COLORS.map((colorOption, index) => (
+                {currentPalette.map((colorOption, index) => (
                   <button
                     key={colorOption.color}
                     onClick={() => setSelectedColor(colorOption.color)}
@@ -274,7 +304,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
                 ))}
               </div>
               <p className="text-center text-muted-foreground">
-                Selected: <span className="font-semibold text-foreground">{COLORS.find(color => color.color === selectedColor)?.name}</span>
+                Selected: <span className="font-semibold text-foreground">{currentPalette.find(color => color.color === selectedColor)?.name}</span>
               </p>
             </div>
           )}

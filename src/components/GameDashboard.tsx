@@ -3,6 +3,7 @@ import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PetDisplay from '@/components/PetDisplay';
+import SidePanel from '@/components/SidePanel';
 import Shop from '@/components/Shop';
 import FinancePanel from '@/components/FinancePanel';
 import MiniGames from '@/components/MiniGames';
@@ -24,6 +25,7 @@ const GameDashboard: React.FC = () => {
   const previousMoney = useRef(state.money);
   const [moneyAnimations, setMoneyAnimations] = useState<Array<{ id: number; amount: number; swoopX: number; swoopY: number }>>([]);
   const [walletPulsing, setWalletPulsing] = useState(false);
+  const [activeTab, setActiveTab] = useState('shop');
 
   const unreadNotificationCount = state.notifications.filter(notification => !notification.read).length;
 
@@ -150,9 +152,7 @@ const GameDashboard: React.FC = () => {
                 <PawPrint className="w-5 h-5 text-primary" />
               </div>
               <h1 className="text-xl md:text-2xl font-serif font-bold tracking-tight">
-                <span className="text-primary">Paws</span>
-                <span className="text-foreground/20 mx-1">&</span>
-                <span className="text-secondary">Prosper</span>
+                <span className="text-primary">Paws Up</span>
               </h1>
             </div>
             {state.pet && (
@@ -283,26 +283,28 @@ const GameDashboard: React.FC = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Pet & Stats */}
+          {/* Left Column - Pet & Stats (always visible) */}
           <div className="lg:col-span-1 space-y-5">
             <div className="animate-fade-in-up">
-              <PetDisplay />
+              <PetDisplay onXpClick={() => setActiveTab('tasks')} />
             </div>
-
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              <SidePanel />
+            </div>
           </div>
 
           {/* Right Column - Tabs */}
           <div className="lg:col-span-2 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-            <Tabs defaultValue="alerts" className="h-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
               <TabsList className="grid w-full grid-cols-6 mb-5 bg-card/80 border-2 border-border/40 p-1.5 rounded-2xl h-auto shadow-sm">
                 <TabsTrigger
                   value="alerts"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3 relative"
+                  className="group w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Bell className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Needs</span>
                   {needsAttentionCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full shadow-md ring-2 ring-card notification-badge-pulse">
+                    <span className="ml-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 group-data-[state=active]:bg-white group-data-[state=active]:text-rose-500 text-white text-[10px] font-bold rounded-full">
                       {needsAttentionCount}
                     </span>
                   )}
@@ -323,12 +325,12 @@ const GameDashboard: React.FC = () => {
                 </TabsTrigger>
                 <TabsTrigger
                   value="tasks"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3 relative"
+                  className="group w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <ClipboardCheck className="w-4 h-4" />
                   <span className="hidden md:inline font-medium">Tasks</span>
                   {state.dailyTasks.some(task => task.completed) && !state.dailyBonusClaimed && (
-                    <span className="absolute -top-1.5 -right-1 w-2.5 h-2.5 rounded-full bg-orange-500 ring-2 ring-card" />
+                    <span className="ml-1 w-2.5 h-2.5 rounded-full bg-orange-500 group-data-[state=active]:bg-white" />
                   )}
                 </TabsTrigger>
                 <TabsTrigger

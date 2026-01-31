@@ -74,15 +74,15 @@ export function calculateLevel(totalXp: number): { level: number; currentXp: num
   let level = 1;
   let xpRemaining = totalXp;
 
-  while (xpRemaining >= 50 * level) {
-    xpRemaining -= 50 * level;
+  while (xpRemaining >= 30 * level) {
+    xpRemaining -= 30 * level;
     level++;
   }
 
   return {
     level,
     currentXp: xpRemaining,
-    xpForNext: 50 * level,
+    xpForNext: 30 * level,
   };
 }
 

@@ -3,7 +3,31 @@
 export type Species = 'dog' | 'cat' | 'rabbit' | 'hamster';
 export type Personality = 'playful' | 'calm' | 'curious' | 'lazy';
 export type GrowthStage = 'baby' | 'teen' | 'adult';
-export type PetColor = 'golden' | 'cream' | 'gray' | 'brown' | 'white' | 'black' | 'orange';
+export type PetGender = 'male' | 'female' | 'neutral';
+export type PetColor = 'blue' | 'green' | 'brown' | 'gray' | 'pink' | 'purple' | 'peach' | 'white' | 'yellow' | 'teal' | 'golden' | 'cream';
+export type AccessorySlot = 'head' | 'neck' | 'body' | 'tag';
+
+export interface EquippedAccessories {
+  head?: string;
+  neck?: string;
+  body?: string;
+  tag?: string;
+}
+
+export interface AccessoryDef {
+  id: string;
+  name: string;
+  emoji: string;
+  slot: AccessorySlot;
+  genderFilter: 'male' | 'female' | 'both';
+  price: number;
+  tier: 'basic' | 'standard' | 'deluxe';
+  description: string;
+  condition?: {
+    stat: keyof PetStats;
+    min: number;
+  };
+}
 
 export interface PetStats {
   hunger: number; // 0-100
@@ -17,12 +41,14 @@ export interface Pet {
   id: string;
   name: string;
   species: Species;
+  gender: PetGender;
   color: PetColor;
   personality: Personality;
   stage: GrowthStage;
   stats: PetStats;
   experience: number;
   level: number;
+  equippedAccessories: EquippedAccessories;
   createdAt: number;
   lastCaredAt: number;
 }
@@ -32,7 +58,7 @@ export interface ShopItem {
   name: string;
   description: string;
   price: number;
-  category: 'food' | 'toy' | 'grooming' | 'medicine' | 'accessory';
+  category: 'hunger' | 'happiness' | 'cleanliness' | 'health' | 'energy' | 'accessory';
   tier: 'basic' | 'standard' | 'deluxe';
   effects: Partial<PetStats>;
   icon: string;
@@ -93,6 +119,7 @@ export interface DailyTask {
   id: string;
   progress: number;
   completed: boolean;
+  claimed: boolean;
 }
 
 // Milestone definition
@@ -164,6 +191,8 @@ export interface GameState {
     totalFeeds: number;
     totalPlays: number;
   };
+  petAsleep: boolean;
+  lastSleepDate: string;
 }
 
 // Personality modifiers
@@ -177,9 +206,31 @@ export const PERSONALITY_MODIFIERS: Record<Personality, Partial<Record<keyof Pet
 // Growth stage thresholds
 export const GROWTH_THRESHOLDS = {
   baby: 0,
-  teen: 100,
-  adult: 300,
+  teen: 50,
+  adult: 150,
 };
 
-// XP needed to reach a given level: 50 * level
-export const XP_PER_LEVEL = (level: number): number => 50 * level;
+// XP needed to reach a given level: 30 * level
+export const XP_PER_LEVEL = (level: number): number => 30 * level;
+
+// Gender-based color palettes
+export const GENDER_COLORS: Record<PetGender, { color: PetColor; name: string; hex: string }[]> = {
+  male: [
+    { color: 'blue', name: 'Blue', hex: '#5B8FB9' },
+    { color: 'green', name: 'Green', hex: '#6B8E6B' },
+    { color: 'brown', name: 'Brown', hex: '#8B6F5C' },
+    { color: 'gray', name: 'Gray', hex: '#8B9A8E' },
+  ],
+  female: [
+    { color: 'pink', name: 'Pink', hex: '#E8A0BF' },
+    { color: 'purple', name: 'Purple', hex: '#B08BBF' },
+    { color: 'peach', name: 'Peach', hex: '#F5C6AA' },
+    { color: 'white', name: 'White', hex: '#FAF8F5' },
+  ],
+  neutral: [
+    { color: 'yellow', name: 'Yellow', hex: '#E8D44D' },
+    { color: 'teal', name: 'Teal', hex: '#5FABA1' },
+    { color: 'golden', name: 'Golden', hex: '#D4A574' },
+    { color: 'cream', name: 'Cream', hex: '#F5E6D3' },
+  ],
+};

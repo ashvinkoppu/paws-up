@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
-import { GameState, Pet, PetStats, Transaction, Achievement, RandomEvent, InventoryItem, GameNotification, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, DailyTask, DailyTracking, MilestoneState } from '@/types/game';
+import { GameState, Pet, PetStats, Transaction, Achievement, RandomEvent, InventoryItem, GameNotification, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, DailyTask, DailyTracking, MilestoneState, AccessorySlot } from '@/types/game';
 import { INITIAL_ACHIEVEMENTS } from '@/data/achievements';
 import { getRandomEvent } from '@/data/events';
 import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, MILESTONES, checkMilestone, DEFAULT_DAILY_TRACKING, LifetimeCounters } from '@/data/tasks';
@@ -27,6 +27,8 @@ const initialState: GameState = {
   milestones: [],
   dailyBonusClaimed: false,
   lifetimeCounters: { totalFeeds: 0, totalPlays: 0 },
+  petAsleep: false,
+  lastSleepDate: '',
 };
 
 type GameAction =
@@ -53,9 +55,31 @@ type GameAction =
   | { type: 'RESET_DAILY_TASKS' }
   | { type: 'CHECK_MILESTONES' }
   | { type: 'ADD_XP'; payload: number }
-  | { type: 'INCREMENT_LIFETIME_COUNTER'; payload: { counter: 'totalFeeds' | 'totalPlays'; amount?: number } };
+  | { type: 'INCREMENT_LIFETIME_COUNTER'; payload: { counter: 'totalFeeds' | 'totalPlays'; amount?: number } }
+  | { type: 'CLAIM_DAILY_TASK'; payload: string }
+  | { type: 'EQUIP_ACCESSORY'; payload: { slot: AccessorySlot; accessoryId: string } }
+  | { type: 'UNEQUIP_ACCESSORY'; payload: AccessorySlot }
+  | { type: 'PUT_PET_TO_SLEEP' }
+  | { type: 'WAKE_PET_UP' };
+
+const ACHIEVEMENT_REWARD = 10;
 
 const clampStat = (value: number): number => Math.max(0, Math.min(100, value));
+
+/** Unlock an achievement in the array and return [updatedAchievements, moneyEarned]. */
+function unlockAchievementInList(
+  achievements: Achievement[],
+  achievementId: string
+): [Achievement[], number] {
+  const achievement = achievements.find(a => a.id === achievementId);
+  if (!achievement || achievement.unlocked) return [achievements, 0];
+  return [
+    achievements.map(a =>
+      a.id === achievementId ? { ...a, unlocked: true, unlockedAt: Date.now() } : a
+    ),
+    ACHIEVEMENT_REWARD,
+  ];
+}
 
 function ensureDailyTracking(state: GameState): DailyTracking {
   const today = new Date().toDateString();
@@ -71,7 +95,7 @@ function ensureDailyTasks(state: GameState): DailyTask[] {
     return state.dailyTasks;
   }
   const taskIds = selectDailyTasks(today);
-  return taskIds.map(id => ({ id, progress: 0, completed: false }));
+  return taskIds.map(id => ({ id, progress: 0, completed: false, claimed: false }));
 }
 
 function ensureMilestones(state: GameState): MilestoneState[] {
@@ -126,13 +150,13 @@ function addXpToPet(state: GameState, xpAmount: number): GameState {
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'CREATE_PET': {
+      const [updatedAchievements, reward] = unlockAchievementInList(state.achievements, 'first-pet');
       const newState = {
         ...state,
         pet: action.payload,
         gameStarted: true,
-        achievements: state.achievements.map(a =>
-          a.id === 'first-pet' ? { ...a, unlocked: true, unlockedAt: Date.now() } : a
-        ),
+        money: state.money + reward,
+        achievements: updatedAchievements,
       };
       return newState;
     }
@@ -152,12 +176,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'ADD_MONEY': {
-      const newMoney = state.money + action.payload;
+      let newMoney = state.money + action.payload;
       let achievements = state.achievements;
       if (newMoney >= 500) {
-        achievements = achievements.map(a =>
-          a.id === 'rich' && !a.unlocked ? { ...a, unlocked: true, unlockedAt: Date.now() } : a
-        );
+        const [updated, reward] = unlockAchievementInList(achievements, 'rich');
+        achievements = updated;
+        newMoney += reward;
       }
       return { ...state, money: newMoney, achievements };
     }
@@ -228,11 +252,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'UNLOCK_ACHIEVEMENT': {
+      const [updatedAchievements, reward] = unlockAchievementInList(state.achievements, action.payload);
       return {
         ...state,
-        achievements: state.achievements.map(a =>
-          a.id === action.payload && !a.unlocked ? { ...a, unlocked: true, unlockedAt: Date.now() } : a
-        ),
+        money: state.money + reward,
+        achievements: updatedAchievements,
       };
     }
 
@@ -252,15 +276,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newStreak = state.lastCareDate === yesterday ? state.careStreak + 1 : 1;
 
       let achievements = state.achievements;
+      let achievementMoney = 0;
       if (newStreak >= 3) {
-        achievements = achievements.map(a =>
-          a.id === 'streak-3' && !a.unlocked ? { ...a, unlocked: true, unlockedAt: Date.now() } : a
-        );
+        const [updated, reward] = unlockAchievementInList(achievements, 'streak-3');
+        achievements = updated;
+        achievementMoney += reward;
       }
       if (newStreak >= 7) {
-        achievements = achievements.map(a =>
-          a.id === 'streak-7' && !a.unlocked ? { ...a, unlocked: true, unlockedAt: Date.now() } : a
-        );
+        const [updated, reward] = unlockAchievementInList(achievements, 'streak-7');
+        achievements = updated;
+        achievementMoney += reward;
       }
 
       // Also reset daily tasks if it's a new day
@@ -272,6 +297,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         careStreak: newStreak,
         lastCareDate: today,
         totalDaysPlayed: state.totalDaysPlayed + (state.lastCareDate !== today ? 1 : 0),
+        money: state.money + achievementMoney,
         achievements,
         dailyTracking,
         dailyTasks,
@@ -284,28 +310,30 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       let newStage = state.pet.stage;
       let achievements = state.achievements;
+      let achievementMoney = 0;
 
       if (state.pet.experience >= GROWTH_THRESHOLDS.adult && state.pet.stage !== 'adult') {
         newStage = 'adult';
-        achievements = achievements.map(a =>
-          a.id === 'adult-stage' && !a.unlocked ? { ...a, unlocked: true, unlockedAt: Date.now() } : a
-        );
+        const [updated, reward] = unlockAchievementInList(achievements, 'adult-stage');
+        achievements = updated;
+        achievementMoney += reward;
       } else if (state.pet.experience >= GROWTH_THRESHOLDS.teen && state.pet.stage === 'baby') {
         newStage = 'teen';
-        achievements = achievements.map(a =>
-          a.id === 'teen-stage' && !a.unlocked ? { ...a, unlocked: true, unlockedAt: Date.now() } : a
-        );
+        const [updated, reward] = unlockAchievementInList(achievements, 'teen-stage');
+        achievements = updated;
+        achievementMoney += reward;
       }
 
       const stats = state.pet.stats;
       if (Object.values(stats).every(v => v >= 90)) {
-        achievements = achievements.map(a =>
-          a.id === 'perfect-stats' && !a.unlocked ? { ...a, unlocked: true, unlockedAt: Date.now() } : a
-        );
+        const [updated, reward] = unlockAchievementInList(achievements, 'perfect-stats');
+        achievements = updated;
+        achievementMoney += reward;
       }
 
       return {
         ...state,
+        money: state.money + achievementMoney,
         pet: { ...state.pet, stage: newStage },
         achievements,
       };
@@ -318,11 +346,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const modifiers = PERSONALITY_MODIFIERS[personality];
 
       const decay: Partial<PetStats> = {
-        hunger: -8 + (modifiers.hunger || 0),
-        happiness: -6 + (modifiers.happiness || 0),
-        energy: -5 + (modifiers.energy || 0),
-        cleanliness: -6 + (modifiers.cleanliness || 0),
-        health: state.pet.stats.hunger < 20 || state.pet.stats.cleanliness < 20 ? -8 : -2,
+        hunger: -6 + (modifiers.hunger || 0),
+        happiness: -5 + (modifiers.happiness || 0),
+        energy: -4 + (modifiers.energy || 0),
+        cleanliness: -5 + (modifiers.cleanliness || 0),
+        health: state.pet.stats.hunger < 20 || state.pet.stats.cleanliness < 20 ? -6 : -2,
       };
 
       const newStats = { ...state.pet.stats };
@@ -339,7 +367,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'LOAD_GAME': {
-      return {
+      const loadedState = {
         ...initialState,
         ...action.payload,
         notifications: action.payload.notifications || initialState.notifications,
@@ -353,7 +381,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         milestones: action.payload.milestones || [],
         dailyBonusClaimed: action.payload.dailyBonusClaimed || false,
         lifetimeCounters: action.payload.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 },
+        petAsleep: action.payload.petAsleep || false,
+        lastSleepDate: action.payload.lastSleepDate || '',
       } as GameState;
+      // Migrate old pets: add gender and equippedAccessories if missing
+      if (loadedState.pet) {
+        if (!loadedState.pet.gender) {
+          loadedState.pet = { ...loadedState.pet, gender: 'neutral' };
+        }
+        if (!loadedState.pet.equippedAccessories) {
+          loadedState.pet = { ...loadedState.pet, equippedAccessories: {} };
+        }
+      }
+      return loadedState;
     }
 
     case 'RESET_WEEKLY_BUDGET': {
@@ -413,10 +453,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (!taskDef) return task;
         const currentProgress = newTracking[taskDef.trackingKey as keyof DailyTracking] as number;
         const completed = currentProgress >= taskDef.target;
-        if (completed && !task.completed) {
-          // Grant XP for completing daily task
-          resultState = addXpToPet(resultState, taskDef.xpReward);
-        }
         return {
           ...task,
           progress: Math.min(currentProgress, taskDef.target),
@@ -458,7 +494,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const taskIds = selectDailyTasks(today);
       return {
         ...state,
-        dailyTasks: taskIds.map(id => ({ id, progress: 0, completed: false })),
+        dailyTasks: taskIds.map(id => ({ id, progress: 0, completed: false, claimed: false })),
         dailyTracking: { ...DEFAULT_DAILY_TRACKING, date: today },
         dailyBonusClaimed: false,
         milestones: ensureMilestones(state),
@@ -507,6 +543,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return addXpToPet(state, action.payload);
     }
 
+    case 'CLAIM_DAILY_TASK': {
+      const taskId = action.payload;
+      const task = state.dailyTasks.find(task => task.id === taskId);
+      if (!task || !task.completed || task.claimed) return state;
+      const taskDef = DAILY_TASK_POOL.find(definition => definition.id === taskId);
+      if (!taskDef) return state;
+      let claimState = addXpToPet(state, taskDef.xpReward);
+      claimState = {
+        ...claimState,
+        dailyTasks: claimState.dailyTasks.map(dailyTask =>
+          dailyTask.id === taskId ? { ...dailyTask, claimed: true } : dailyTask
+        ),
+      };
+      return claimState;
+    }
+
     case 'INCREMENT_LIFETIME_COUNTER': {
       const { counter, amount = 1 } = action.payload;
       const counters = state.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 };
@@ -516,6 +568,64 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...counters,
           [counter]: (counters[counter] || 0) + amount,
         },
+      };
+    }
+
+    case 'EQUIP_ACCESSORY': {
+      if (!state.pet) return state;
+      const { slot, accessoryId } = action.payload;
+      return {
+        ...state,
+        pet: {
+          ...state.pet,
+          equippedAccessories: {
+            ...state.pet.equippedAccessories,
+            [slot]: accessoryId,
+          },
+        },
+      };
+    }
+
+    case 'UNEQUIP_ACCESSORY': {
+      if (!state.pet) return state;
+      const unequipSlot = action.payload;
+      const updatedAccessories = { ...state.pet.equippedAccessories };
+      delete updatedAccessories[unequipSlot];
+      return {
+        ...state,
+        pet: {
+          ...state.pet,
+          equippedAccessories: updatedAccessories,
+        },
+      };
+    }
+
+    case 'PUT_PET_TO_SLEEP': {
+      if (!state.pet) return state;
+      const today = new Date().toDateString();
+      // Already slept today
+      if (state.lastSleepDate === today) return state;
+
+      // Apply sleep effects: boost energy, happiness, cleanliness, health; reduce hunger
+      const newStats = { ...state.pet.stats };
+      newStats.energy = clampStat(newStats.energy + 15);
+      newStats.happiness = clampStat(newStats.happiness + 8);
+      newStats.cleanliness = clampStat(newStats.cleanliness + 5);
+      newStats.health = clampStat(newStats.health + 5);
+      newStats.hunger = clampStat(newStats.hunger - 10); // Gets a little hungry while sleeping
+
+      return {
+        ...state,
+        pet: { ...state.pet, stats: newStats },
+        petAsleep: true,
+        lastSleepDate: today,
+      };
+    }
+
+    case 'WAKE_PET_UP': {
+      return {
+        ...state,
+        petAsleep: false,
       };
     }
 
@@ -539,7 +649,9 @@ interface GameContextType {
   lastActionFeedback: ActionFeedbackEvent | null;
   isPlayingMiniGame: boolean;
   setIsPlayingMiniGame: (playing: boolean) => void;
-  createPet: (pet: Omit<Pet, 'id' | 'stats' | 'experience' | 'level' | 'createdAt' | 'lastCaredAt'>) => void;
+  createPet: (pet: Omit<Pet, 'id' | 'stats' | 'experience' | 'level' | 'equippedAccessories' | 'createdAt' | 'lastCaredAt'>) => void;
+  equipAccessory: (slot: AccessorySlot, accessoryId: string) => void;
+  unequipAccessory: (slot: AccessorySlot) => void;
   updateStats: (stats: Partial<PetStats>) => void;
   addMoney: (amount: number, description?: string) => void;
   spendMoney: (amount: number, category: string, description: string) => boolean;
@@ -557,6 +669,9 @@ interface GameContextType {
   markNotificationsRead: () => void;
   trackGamePlayed: () => void;
   claimDailyBonus: () => void;
+  claimDailyTask: (taskId: string) => void;
+  putPetToSleep: () => void;
+  wakePetUp: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -597,24 +712,26 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (Math.random() < 0.05 && !isPlayingMiniGame) {
         dispatch({ type: 'TRIGGER_EVENT', payload: getRandomEvent() });
       }
-    }, 60000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [state.pet]);
 
-  const createPet = (petData: Omit<Pet, 'id' | 'stats' | 'experience' | 'level' | 'createdAt' | 'lastCaredAt'>) => {
+  const createPet = (petData: Omit<Pet, 'id' | 'stats' | 'experience' | 'level' | 'equippedAccessories' | 'createdAt' | 'lastCaredAt'>) => {
     const newPet: Pet = {
       ...petData,
       id: Date.now().toString(),
+      // Initialize all stats at 50/100 as per requirements
       stats: {
-        hunger: 80,
-        happiness: 80,
-        energy: 80,
-        cleanliness: 80,
-        health: 100,
+        hunger: 50,
+        happiness: 50,
+        energy: 50,
+        cleanliness: 50,
+        health: 50,
       },
       experience: 0,
       level: 1,
+      equippedAccessories: {},
       createdAt: Date.now(),
       lastCaredAt: Date.now(),
     };
@@ -710,10 +827,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const achievement = state.achievements.find(a => a.id === achievementId);
     if (achievement && !achievement.unlocked) {
       dispatch({ type: 'UNLOCK_ACHIEVEMENT', payload: achievementId });
-      dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'achievement', title: 'Achievement Unlocked!', description: achievement.name, icon: '🏆' } });
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'achievement', title: 'Achievement Unlocked!', description: `${achievement.name} — +$${ACHIEVEMENT_REWARD} reward!`, icon: '🏆' } });
       toast({
         title: `🏆 Achievement Unlocked!`,
-        description: achievement.name,
+        description: `${achievement.name} — +$${ACHIEVEMENT_REWARD} reward!`,
       });
     }
   };
@@ -791,15 +908,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const actions: Record<string, { stats: Partial<PetStats>; exp: number; message: string }> = {
       feed: { stats: { hunger: 0 }, exp: 0, message: '' },
-      play: { stats: { happiness: 15, energy: -10 }, exp: 8, message: `${state.pet.name} had fun playing!` },
-      rest: { stats: { energy: 20, happiness: 3 }, exp: 2, message: `${state.pet.name} had a rest!` },
-      clean: { stats: { cleanliness: 15, happiness: -5 }, exp: 4, message: `${state.pet.name} is clean now!` },
-      vet: { stats: { health: 15 }, exp: 4, message: `${state.pet.name} got a health checkup!` },
+      play: { stats: { happiness: 8, energy: -10 }, exp: 8, message: `${state.pet.name} had fun playing!` },
+      rest: { stats: { energy: 12, happiness: 2 }, exp: 2, message: `${state.pet.name} had a rest!` },
+      clean: { stats: { cleanliness: 8, happiness: -5 }, exp: 4, message: `${state.pet.name} is clean now!` },
+      vet: { stats: { health: 8 }, exp: 4, message: `${state.pet.name} got a health checkup!` },
     };
 
     // Feed requires food items from inventory
     if (action === 'feed') {
-      const foodItem = state.inventory.find(item => item.category === 'food' && item.quantity > 0);
+      const foodItem = state.inventory.find(item => item.category === 'hunger' && item.quantity > 0);
       if (foodItem) {
         useItem(foodItem.id);
         toast({
@@ -865,6 +982,44 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'CLAIM_DAILY_BONUS' });
   };
 
+  const claimDailyTask = (taskId: string) => {
+    dispatch({ type: 'CLAIM_DAILY_TASK', payload: taskId });
+  };
+
+  const equipAccessory = (slot: AccessorySlot, accessoryId: string) => {
+    dispatch({ type: 'EQUIP_ACCESSORY', payload: { slot, accessoryId } });
+  };
+
+  const unequipAccessory = (slot: AccessorySlot) => {
+    dispatch({ type: 'UNEQUIP_ACCESSORY', payload: slot });
+  };
+
+  const putPetToSleep = () => {
+    const today = new Date().toDateString();
+    if (state.lastSleepDate === today) {
+      toast({
+        title: "😴 Already rested today",
+        description: `${state.pet?.name || 'Your pet'} already had their nightly sleep!`,
+      });
+      return;
+    }
+    dispatch({ type: 'PUT_PET_TO_SLEEP' });
+    dispatch({ type: 'TRACK_ACTION', payload: { key: 'restCount' } });
+    dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Good Night!', description: `${state.pet?.name || 'Your pet'} is sleeping soundly. 💤`, icon: '🌙' } });
+    toast({
+      title: "🌙 Good Night!",
+      description: `${state.pet?.name || 'Your pet'} is now sleeping. Stats restored!`,
+    });
+  };
+
+  const wakePetUp = () => {
+    dispatch({ type: 'WAKE_PET_UP' });
+    toast({
+      title: "☀️ Good Morning!",
+      description: `${state.pet?.name || 'Your pet'} is awake and ready for the day!`,
+    });
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -890,6 +1045,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         markNotificationsRead,
         trackGamePlayed,
         claimDailyBonus,
+        claimDailyTask,
+        equipAccessory,
+        unequipAccessory,
+        putPetToSleep,
+        wakePetUp,
       }}
     >
       {children}

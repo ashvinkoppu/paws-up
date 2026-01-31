@@ -89,10 +89,17 @@ const Achievements: React.FC = () => {
               </p>
 
               {/* Unlocked badge */}
-              {achievement.unlocked && (
-                <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-amber-500/15 to-orange-500/15 rounded-full border border-amber-400/20">
-                  <Sparkles className="w-3 h-3 text-amber-500" />
-                  <span className="text-xs font-semibold text-amber-600">Unlocked</span>
+              {achievement.unlocked ? (
+                <div className="mt-3 flex flex-col items-center gap-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-amber-500/15 to-orange-500/15 rounded-full border border-amber-400/20">
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <span className="text-xs font-semibold text-amber-600">Unlocked</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-semibold text-emerald-600">+$10 earned</span>
+                </div>
+              ) : (
+                <div className="mt-3">
+                  <span className="text-[10px] font-mono text-muted-foreground/70">$10 reward</span>
                 </div>
               )}
             </div>
