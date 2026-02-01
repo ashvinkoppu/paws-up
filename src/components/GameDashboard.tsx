@@ -292,17 +292,17 @@ const GameDashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {/* Pet Status - left of pet on xl, above pet on lg */}
           <div className="hidden xl:block xl:col-span-1 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <SidePanel />
+            <SidePanel onFinanceClick={() => setActiveTab('finance')} />
           </div>
 
           {/* Pet Display */}
           <div className="lg:col-span-1 xl:col-span-1">
             <div className="animate-fade-in-up">
-              <PetDisplay onXpClick={() => setActiveTab('tasks')} />
+              <PetDisplay onXpClick={() => setActiveTab('tasks')} onFinanceClick={() => setActiveTab('finance')} />
             </div>
             {/* SidePanel below pet on lg, hidden on xl (shown in its own column) */}
             <div className="mt-5 xl:hidden animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-              <SidePanel />
+              <SidePanel onFinanceClick={() => setActiveTab('finance')} />
             </div>
           </div>
 

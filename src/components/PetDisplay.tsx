@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Species, GrowthStage, PetColor, AccessorySlot } from '@/types/game';
 import { cn } from '@/lib/utils';
-import { Flame, Calendar, AlertTriangle, Heart } from 'lucide-react';
+import { Flame, Calendar, AlertTriangle, Heart, Wallet, ArrowRight } from 'lucide-react';
 import { calculateLevel } from '@/data/tasks';
 import { getAccessoryById, ACCESSORY_POSITIONS } from '@/data/accessories';
 
@@ -112,9 +112,10 @@ interface ItemUseParticle {
 
 interface PetDisplayProps {
   onXpClick?: () => void;
+  onFinanceClick?: () => void;
 }
 
-const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
+const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) => {
   const { state, lastActionFeedback } = useGame();
   const { petAsleep } = state;
 
@@ -485,16 +486,20 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
                     <span className="text-sm font-bold text-indigo-500/60 animate-float-zzz" style={{ animationDelay: '0.5s' }}>z</span>
                     <span className="text-base font-bold text-indigo-500/40 animate-float-zzz" style={{ animationDelay: '1s' }}>z</span>
                   </div>
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                    <span className="text-xs bg-indigo-500/15 text-indigo-600 px-3 py-1 rounded-full font-medium border border-indigo-500/20">
-                      Sleeping
-                    </span>
-                  </div>
                 </div>
               )}
             </div>
           );
         })()}
+
+        {/* Sleeping label - outside circle */}
+        {petAsleep && (
+          <div className="flex justify-center -mt-1 mb-1">
+            <span className="text-xs bg-indigo-500/15 text-indigo-600 px-3 py-1 rounded-full font-medium border border-indigo-500/20">
+              Sleeping
+            </span>
+          </div>
+        )}
 
         {/* Pet Info */}
         <div className="text-center mb-5">
@@ -524,6 +529,58 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick }) => {
             <span className="font-bold text-foreground font-mono">{state.totalDaysPlayed}</span>
             <span className="text-muted-foreground text-xs">days</span>
           </div>
+        </div>
+
+        {/* Weekly Budget Snapshot */}
+        <div
+          className="w-full mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15 cursor-pointer hover:bg-emerald-500/10 transition-colors group"
+          onClick={() => onFinanceClick?.()}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="flex items-center gap-2">
+              <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-xs font-semibold text-foreground">Weekly Budget</span>
+            </span>
+            <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              Details <ArrowRight className="w-3 h-3" />
+            </span>
+          </div>
+          {(() => {
+            const budgetUsedPercent = state.weeklyBudget > 0
+              ? (state.weeklySpent / state.weeklyBudget) * 100
+              : 0;
+            const isOverBudget = state.weeklySpent > state.weeklyBudget;
+            const remaining = state.weeklyBudget - state.weeklySpent;
+            return (
+              <>
+                <div className="h-2.5 bg-emerald-500/10 rounded-full overflow-hidden mb-1.5">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-500 relative",
+                      isOverBudget ? "bg-red-500" : budgetUsedPercent > 75 ? "bg-amber-500" : "bg-emerald-500"
+                    )}
+                    style={{ width: `${Math.min(budgetUsedPercent, 100)}%` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    ${state.weeklySpent.toFixed(0)} / ${state.weeklyBudget}
+                  </span>
+                  <span className={cn(
+                    "text-[10px] font-semibold font-mono",
+                    isOverBudget ? "text-red-500" : "text-emerald-600"
+                  )}>
+                    {isOverBudget
+                      ? `Over $${Math.abs(remaining).toFixed(0)}`
+                      : `$${remaining.toFixed(0)} left`
+                    }
+                  </span>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>

@@ -802,10 +802,21 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'TRACK_ACTION', payload: { key: 'itemsUsed' } });
 
     if (item && state.pet) {
-      // Track feed if food item
-      if (item.effects.hunger) {
-        dispatch({ type: 'TRACK_ACTION', payload: { key: 'feedCount' } });
-        dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: 'totalFeeds' } });
+      // Track category-specific daily task counters
+      const categoryTrackingMap: Record<string, { key: keyof DailyTracking; counter?: 'totalFeeds' | 'totalPlays' }> = {
+        hunger: { key: 'feedCount', counter: 'totalFeeds' },
+        happiness: { key: 'playCount', counter: 'totalPlays' },
+        cleanliness: { key: 'cleanCount' },
+        health: { key: 'vetCount' },
+        energy: { key: 'restCount' },
+      };
+
+      const categoryTracking = categoryTrackingMap[item.category];
+      if (categoryTracking) {
+        dispatch({ type: 'TRACK_ACTION', payload: { key: categoryTracking.key } });
+        if (categoryTracking.counter) {
+          dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: categoryTracking.counter } });
+        }
       }
 
       if (item.effects.hunger) {
@@ -923,29 +934,41 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       vet: { stats: { health: 8 }, exp: 4, message: `${state.pet.name} got a health checkup!` },
     };
 
-    // Feed requires food items from inventory
-    if (action === 'feed') {
-      const foodItem = state.inventory.find(item => item.category === 'hunger' && item.quantity > 0);
-      if (foodItem) {
-        useItem(foodItem.id);
+    // Actions that require inventory items
+    const inventoryActions: Record<string, { category: string; emptyTitle: string; emptyDescription: string; successIcon: string; successTitle: string }> = {
+      feed: { category: 'hunger', emptyTitle: '❌ No food in inventory!', emptyDescription: 'Buy food from the Shop to feed your pet.', successIcon: '🍖', successTitle: `Fed ${state.pet.name}!` },
+      rest: { category: 'energy', emptyTitle: '❌ No energy items in inventory!', emptyDescription: 'Buy energy items from the Shop to rest your pet.', successIcon: '😴', successTitle: `${state.pet.name} had a rest!` },
+      clean: { category: 'cleanliness', emptyTitle: '❌ No cleaning supplies in inventory!', emptyDescription: 'Buy cleaning supplies from the Shop to clean your pet.', successIcon: '🧼', successTitle: `${state.pet.name} is clean now!` },
+      vet: { category: 'health', emptyTitle: '❌ No health items in inventory!', emptyDescription: 'Buy health items from the Shop to heal your pet.', successIcon: '💊', successTitle: `${state.pet.name} got a health checkup!` },
+    };
+
+    const inventoryAction = inventoryActions[action];
+    if (inventoryAction) {
+      const item = state.inventory.find(item => item.category === inventoryAction.category && item.quantity > 0);
+      if (item) {
+        useItem(item.id);
         toast({
-          title: "🍖 Fed " + state.pet.name + "!",
-          description: `Used ${foodItem.name} from your inventory.`,
+          title: `${inventoryAction.successIcon} ${inventoryAction.successTitle}`,
+          description: `Used ${item.name} from your inventory.`,
         });
       } else {
         toast({
-          title: "❌ No food in inventory!",
-          description: "Buy food from the Shop to feed your pet.",
+          title: inventoryAction.emptyTitle,
+          description: inventoryAction.emptyDescription,
           variant: "destructive",
         });
+        return;
       }
-      return;
     }
 
     const actionData = actions[action];
-    updateStats(actionData.stats);
 
-    // Grant XP for the action (fixing the XP bug - exp was defined but never added)
+    // Play doesn't require inventory, apply stats directly
+    if (!inventoryAction) {
+      updateStats(actionData.stats);
+    }
+
+    // Grant XP for the action
     if (actionData.exp > 0) {
       dispatch({ type: 'ADD_XP', payload: actionData.exp });
     }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
-import { Activity, AlertCircle, ChevronDown, ChevronUp, Utensils, Sparkles, BedDouble, Stethoscope, Gamepad2 } from 'lucide-react';
+import { Activity, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PetStats, Personality } from '@/types/game';
 
@@ -124,9 +124,10 @@ const getStatColor = (value: number): { barColor: string; textColor: string; bgC
 interface SidePanelProps {
   collapsed?: boolean;
   onToggle?: () => void;
+  onFinanceClick?: () => void;
 }
 
-const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle }) => {
+const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle, onFinanceClick }) => {
   const { state, performAction } = useGame();
   const { pet } = state;
   const [isMinimized, setIsMinimized] = useState(false);
@@ -274,7 +275,7 @@ const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle }) =>
         
         {/* Minimized: Compact stat preview row */}
         {isMinimized && (
-          <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border/30">
+          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/30">
             {(Object.keys(STAT_CONFIG) as (keyof PetStats)[]).map((stat) => {
               const value = stats[stat];
               const colors = getStatColor(value);
