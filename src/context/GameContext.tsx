@@ -29,6 +29,7 @@ const initialState: GameState = {
   lifetimeCounters: { totalFeeds: 0, totalPlays: 0 },
   petAsleep: false,
   lastSleepDate: '',
+  petDead: false,
 };
 
 type GameAction =
@@ -61,7 +62,9 @@ type GameAction =
   | { type: 'EQUIP_ACCESSORY'; payload: { slot: AccessorySlot; accessoryId: string } }
   | { type: 'UNEQUIP_ACCESSORY'; payload: AccessorySlot }
   | { type: 'PUT_PET_TO_SLEEP' }
-  | { type: 'WAKE_PET_UP' };
+  | { type: 'EXPIRE_TIMED_TASK'; payload: string }
+  | { type: 'WAKE_PET_UP' }
+  | { type: 'PET_DIED' };
 
 const ACHIEVEMENT_REWARD = 10;
 
@@ -96,7 +99,13 @@ function ensureDailyTasks(state: GameState): DailyTask[] {
     return state.dailyTasks;
   }
   const taskIds = selectDailyTasks(today);
-  return taskIds.map(id => ({ id, progress: 0, completed: false, claimed: false }));
+  const now = Date.now();
+  return taskIds.map(id => {
+    const taskDef = DAILY_TASK_POOL.find(definition => definition.id === id);
+    const timed = !!(taskDef?.timeLimitMinutes);
+    const timerExpiresAt = timed && taskDef ? now + taskDef.timeLimitMinutes * 60 * 1000 : null;
+    return { id, progress: 0, completed: false, claimed: false, timed, timerExpiresAt };
+  });
 }
 
 function ensureMilestones(state: GameState): MilestoneState[] {
@@ -312,17 +321,38 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let newStage = state.pet.stage;
       let achievements = state.achievements;
       let achievementMoney = 0;
+      let notifications = [...state.notifications];
 
       if (state.pet.experience >= GROWTH_THRESHOLDS.adult && state.pet.stage !== 'adult') {
         newStage = 'adult';
         const [updated, reward] = unlockAchievementInList(achievements, 'adult-stage');
         achievements = updated;
         achievementMoney += reward;
+        const notification: GameNotification = {
+          id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+          type: 'milestone',
+          title: 'Evolution: Adult Stage!',
+          description: `${state.pet.name} has reached their final form! They are now fully grown.`,
+          icon: '🌟',
+          read: false,
+          timestamp: Date.now(),
+        };
+        notifications = [notification, ...notifications].slice(0, 50);
       } else if (state.pet.experience >= GROWTH_THRESHOLDS.teen && state.pet.stage === 'baby') {
         newStage = 'teen';
         const [updated, reward] = unlockAchievementInList(achievements, 'teen-stage');
         achievements = updated;
         achievementMoney += reward;
+        const notification: GameNotification = {
+          id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+          type: 'milestone',
+          title: 'Evolution: Teen Stage!',
+          description: `${state.pet.name} is growing up! They've entered the teen stage.`,
+          icon: '⭐',
+          read: false,
+          timestamp: Date.now(),
+        };
+        notifications = [notification, ...notifications].slice(0, 50);
       }
 
       const stats = state.pet.stats;
@@ -337,6 +367,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         money: state.money + achievementMoney,
         pet: { ...state.pet, stage: newStage },
         achievements,
+        notifications,
       };
     }
 
@@ -361,6 +392,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       });
 
+      // Check for pet death condition:
+      // hunger < 20, happiness < 20, energy < 10, cleanliness < 10, health < 20
+      const isDead = 
+        newStats.hunger < 20 &&
+        newStats.happiness < 20 &&
+        newStats.energy < 10 &&
+        newStats.cleanliness < 10 &&
+        newStats.health < 20;
+
+      if (isDead) {
+        return {
+          ...state,
+          pet: { ...state.pet, stats: newStats, lastCaredAt: Date.now() },
+          petDead: true,
+        };
+      }
+
       return {
         ...state,
         pet: { ...state.pet, stats: newStats, lastCaredAt: Date.now() },
@@ -384,6 +432,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lifetimeCounters: action.payload.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 },
         petAsleep: action.payload.petAsleep || false,
         lastSleepDate: action.payload.lastSleepDate || '',
+        petDead: action.payload.petDead || false,
       } as GameState;
       // Migrate old pets: add gender and equippedAccessories if missing
       if (loadedState.pet) {
@@ -393,6 +442,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (!loadedState.pet.equippedAccessories) {
           loadedState.pet = { ...loadedState.pet, equippedAccessories: {} };
         }
+      }
+      // Migration: ensure dailyTasks have timed fields
+      if (loadedState.dailyTasks) {
+        loadedState.dailyTasks = loadedState.dailyTasks.map(task => ({
+          ...task,
+          timed: task.timed ?? false,
+          timerExpiresAt: task.timerExpiresAt ?? null,
+        }));
       }
       return loadedState;
     }
@@ -500,12 +557,37 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'RESET_DAILY_TASKS': {
       const today = new Date().toDateString();
       const taskIds = selectDailyTasks(today);
+      const now = Date.now();
       return {
         ...state,
-        dailyTasks: taskIds.map(id => ({ id, progress: 0, completed: false, claimed: false })),
+        dailyTasks: taskIds.map(id => {
+          const taskDef = DAILY_TASK_POOL.find(definition => definition.id === id);
+          const timed = !!(taskDef?.timeLimitMinutes);
+          const timerExpiresAt = timed && taskDef ? now + taskDef.timeLimitMinutes * 60 * 1000 : null;
+          return { id, progress: 0, completed: false, claimed: false, timed, timerExpiresAt };
+        }),
         dailyTracking: { ...DEFAULT_DAILY_TRACKING, date: today },
         dailyBonusClaimed: false,
         milestones: ensureMilestones(state),
+      };
+    }
+
+    case 'EXPIRE_TIMED_TASK': {
+      const expiredTaskId = action.payload;
+      const taskDef = DAILY_TASK_POOL.find(definition => definition.id === expiredTaskId);
+      const notification: GameNotification = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+        type: 'alert',
+        title: 'Task Expired!',
+        description: `Time's up! "${taskDef?.name || 'Timed task'}" has been removed.`,
+        icon: '⏰',
+        read: false,
+        timestamp: Date.now(),
+      };
+      return {
+        ...state,
+        dailyTasks: state.dailyTasks.filter(task => task.id !== expiredTaskId),
+        notifications: [notification, ...state.notifications].slice(0, 50),
       };
     }
 
@@ -679,6 +761,7 @@ interface GameContextType {
   trackGamePlayed: () => void;
   claimDailyBonus: () => void;
   claimDailyTask: (taskId: string) => void;
+  expireTimedTask: (taskId: string) => void;
   putPetToSleep: () => void;
   wakePetUp: () => void;
 }
@@ -730,13 +813,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const newPet: Pet = {
       ...petData,
       id: Date.now().toString(),
-      // Initialize all stats at 50/100 as per requirements
+      // Initialize all stats at 70/100 as per requirements
       stats: {
-        hunger: 50,
-        happiness: 50,
-        energy: 50,
-        cleanliness: 50,
-        health: 50,
+        hunger: 70,
+        happiness: 70,
+        energy: 70,
+        cleanliness: 70,
+        health: 70,
       },
       experience: 0,
       level: 1,
@@ -937,6 +1020,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Actions that require inventory items
     const inventoryActions: Record<string, { category: string; emptyTitle: string; emptyDescription: string; successIcon: string; successTitle: string }> = {
       feed: { category: 'hunger', emptyTitle: '❌ No food in inventory!', emptyDescription: 'Buy food from the Shop to feed your pet.', successIcon: '🍖', successTitle: `Fed ${state.pet.name}!` },
+      play: { category: 'happiness', emptyTitle: '❌ No toys in inventory!', emptyDescription: 'Buy toys from the Shop to play with your pet.', successIcon: '🎾', successTitle: `Played with ${state.pet.name}!` },
       rest: { category: 'energy', emptyTitle: '❌ No energy items in inventory!', emptyDescription: 'Buy energy items from the Shop to rest your pet.', successIcon: '😴', successTitle: `${state.pet.name} had a rest!` },
       clean: { category: 'cleanliness', emptyTitle: '❌ No cleaning supplies in inventory!', emptyDescription: 'Buy cleaning supplies from the Shop to clean your pet.', successIcon: '🧼', successTitle: `${state.pet.name} is clean now!` },
       vet: { category: 'health', emptyTitle: '❌ No health items in inventory!', emptyDescription: 'Buy health items from the Shop to heal your pet.', successIcon: '💊', successTitle: `${state.pet.name} got a health checkup!` },
@@ -962,16 +1046,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     const actionData = actions[action];
-
-    // Play doesn't require inventory, apply stats directly
-    if (!inventoryAction) {
-      updateStats(actionData.stats);
-    }
-
-    // Grant XP for the action
-    if (actionData.exp > 0) {
-      dispatch({ type: 'ADD_XP', payload: actionData.exp });
-    }
 
     // Track the action for daily tasks
     const trackingMap: Record<string, keyof DailyTracking> = {
@@ -1056,6 +1130,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
+  const expireTimedTask = (taskId: string) => {
+    dispatch({ type: 'EXPIRE_TIMED_TASK', payload: taskId });
+    toast({
+      title: "⏰ Task Expired!",
+      description: `Time ran out! The timed task has been removed.`,
+      variant: "destructive",
+    });
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -1083,6 +1166,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         trackGamePlayed,
         claimDailyBonus,
         claimDailyTask,
+        expireTimedTask,
         equipAccessory,
         unequipAccessory,
         putPetToSleep,

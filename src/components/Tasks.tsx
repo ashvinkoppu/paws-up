@@ -33,7 +33,7 @@ interface XpFloater {
 }
 
 const Tasks: React.FC = () => {
-  const { state, claimDailyBonus, claimDailyTask } = useGame();
+  const { state, claimDailyBonus, claimDailyTask, expireTimedTask } = useGame();
   const countdown = useCountdownToMidnight();
   const [xpFloaters, setXpFloaters] = useState<XpFloater[]>([]);
   const [claimingTasks, setClaimingTasks] = useState<Set<string>>(new Set());
@@ -65,6 +65,36 @@ const Tasks: React.FC = () => {
       }, 400);
     }, 200);
   }, [claimDailyTask, triggerXpAnimation]);
+
+  // Timed task expiration check — runs every second
+  const [, forceRender] = useState(0);
+
+  useEffect(() => {
+    const hasTimedTasks = state.dailyTasks.some(
+      task => task.timed && task.timerExpiresAt && !task.completed && !task.claimed
+    );
+    if (!hasTimedTasks) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      state.dailyTasks.forEach(task => {
+        if (task.timed && task.timerExpiresAt && !task.completed && !task.claimed && now >= task.timerExpiresAt) {
+          expireTimedTask(task.id);
+        }
+      });
+      forceRender(previous => previous + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [state.dailyTasks, expireTimedTask]);
+
+  // Helper to format remaining time
+  function formatTimeRemaining(expiresAt: number): string {
+    const remaining = Math.max(0, expiresAt - Date.now());
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
 
   if (!state.pet) return null;
 
@@ -199,6 +229,8 @@ const Tasks: React.FC = () => {
                   "flex items-center gap-3 p-3 rounded-xl border transition-all overflow-hidden",
                   task.completed
                     ? "bg-emerald-500/5 border-emerald-500/20"
+                    : task.timed && task.timerExpiresAt && (task.timerExpiresAt - Date.now()) < 120000
+                    ? "bg-red-500/5 border-red-500/20"
                     : progress > 0
                     ? "bg-amber-500/5 border-amber-500/20"
                     : "bg-card border-border/30"
@@ -218,6 +250,16 @@ const Tasks: React.FC = () => {
                     )}>
                       {taskDef.name}
                     </span>
+                    {task.timed && task.timerExpiresAt && !task.completed && (
+                      <span className={cn(
+                        "text-[10px] font-mono px-1.5 py-0.5 rounded-full flex-shrink-0",
+                        (task.timerExpiresAt - Date.now()) < 120000
+                          ? "bg-red-500/15 text-red-600"
+                          : "bg-amber-500/10 text-amber-600"
+                      )}>
+                        ⏱ {formatTimeRemaining(task.timerExpiresAt)}
+                      </span>
+                    )}
                     <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
                       +{taskDef.xpReward} XP
                     </span>

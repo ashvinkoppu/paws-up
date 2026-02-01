@@ -85,11 +85,24 @@ const PET_COLOR_FILTERS: Record<PetColor, string> = {
   cream: 'sepia(0.15) saturate(0.9) brightness(1.02)',
 };
 
-const STAGE_CONFIG: Record<GrowthStage, { scale: string; label: string }> = {
-  baby: { scale: 'scale-75', label: 'Baby' },
-  teen: { scale: 'scale-90', label: 'Growing' },
-  adult: { scale: 'scale-100', label: 'Adult' },
+const STAGE_CONFIG: Record<GrowthStage, { scale: string; label: string; imageSize: string }> = {
+  baby: { scale: 'scale-75', label: 'Baby', imageSize: 'w-28 h-28' },
+  teen: { scale: 'scale-90', label: 'Growing', imageSize: 'w-32 h-32' },
+  adult: { scale: 'scale-100', label: 'Adult', imageSize: 'w-36 h-36' },
 };
+
+const EVOLUTION_SPARKLE_POSITIONS = [
+  { x: '-40px', y: '-40px' },
+  { x: '40px', y: '-35px' },
+  { x: '-35px', y: '30px' },
+  { x: '45px', y: '25px' },
+  { x: '0px', y: '-50px' },
+  { x: '-50px', y: '0px' },
+  { x: '50px', y: '5px' },
+  { x: '5px', y: '45px' },
+  { x: '-25px', y: '-48px' },
+  { x: '30px', y: '40px' },
+];
 
 const EATING_FOOD_EMOJIS = ['🍖', '🥣', '🍗', '🥩', '🧆'];
 
@@ -127,9 +140,40 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   const [hungerAfter, setHungerAfter] = useState<number | null>(null);
   const [itemUseParticles, setItemUseParticles] = useState<ItemUseParticle[]>([]);
   const [itemUseLabel, setItemUseLabel] = useState<string | null>(null);
+  const [isEvolving, setIsEvolving] = useState(false);
+  const [evolutionTarget, setEvolutionTarget] = useState<GrowthStage | null>(null);
+  const previousStageRef = useRef<GrowthStage>(state.pet!.stage);
   const lastFeedTimestamp = useRef<number>(0);
   const lastItemUseTimestamp = useRef<number>(0);
   const particleIdRef = useRef(0);
+
+  // Detect stage evolution
+  useEffect(() => {
+    const currentStage = state.pet!.stage;
+    const previousStage = previousStageRef.current;
+
+    if (currentStage !== previousStage) {
+      const stageOrder: GrowthStage[] = ['baby', 'teen', 'adult'];
+      const previousIndex = stageOrder.indexOf(previousStage);
+      const currentIndex = stageOrder.indexOf(currentStage);
+
+      // Only animate forward evolution (not regression)
+      if (currentIndex > previousIndex) {
+        setEvolutionTarget(currentStage);
+        setIsEvolving(true);
+
+        const evolutionTimer = setTimeout(() => {
+          setIsEvolving(false);
+          setEvolutionTarget(null);
+        }, 3200);
+
+        previousStageRef.current = currentStage;
+        return () => clearTimeout(evolutionTimer);
+      }
+
+      previousStageRef.current = currentStage;
+    }
+  }, [state.pet?.stage]);
 
   // Handle eating animation (food items)
   useEffect(() => {
@@ -294,10 +338,12 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
               {/* Mood aura — pulsing gradient ring behind the pet circle */}
               <div className={cn(
                 "absolute inset-0 rounded-full transition-all duration-700",
-                `bg-gradient-to-br ${moodVisual.auraColor}`,
-                moodVisual.auraIntensity,
-                mood.key === 'critical' && "animate-pulse",
-                mood.key === 'needsAttention' && "animate-breathe",
+                isEvolving
+                  ? "bg-gradient-to-br from-yellow-400/40 via-amber-300/30 to-yellow-400/40 animate-evolution-glow"
+                  : `bg-gradient-to-br ${moodVisual.auraColor}`,
+                !isEvolving && moodVisual.auraIntensity,
+                !isEvolving && mood.key === 'critical' && "animate-pulse",
+                !isEvolving && mood.key === 'needsAttention' && "animate-breathe",
               )} style={{ transform: 'scale(1.15)' }} />
 
               {/* Inner circle */}
@@ -312,7 +358,9 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                   alt={pet.name}
                   onClick={handlePetClick}
                   className={cn(
-                    "w-36 h-36 object-contain transition-all duration-500 drop-shadow-lg cursor-pointer hover:scale-105 active:scale-95",
+                    "object-contain transition-all duration-500 drop-shadow-lg cursor-pointer hover:scale-105 active:scale-95",
+                    stageConfig.imageSize,
+                    isEvolving ? "animate-evolution-scale-burst" :
                     petAsleep ? "animate-pet-sleeping opacity-80" :
                     eatingState === 'eating' ? "animate-pet-eating" :
                     interaction === 'happy' ? "animate-happy-jump" :
@@ -321,11 +369,62 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                   )}
                   style={{
                     filter: [
+                      isEvolving ? `${PET_COLOR_FILTERS[pet.color] || ''} brightness(1.3) saturate(1.4)` :
                       petAsleep ? `${PET_COLOR_FILTERS[pet.color] || ''} brightness(0.85)` : PET_COLOR_FILTERS[pet.color] || '',
-                      moodVisual.petFilter,
+                      isEvolving ? '' : moodVisual.petFilter,
                     ].filter(Boolean).join(' ') || undefined,
                   }}
                 />
+
+                {/* Evolution animation overlay */}
+                {isEvolving && (
+                  <>
+                    {/* White flash overlay */}
+                    <div className="absolute inset-0 rounded-full bg-white/70 pointer-events-none z-30 animate-evolution-flash" />
+
+                    {/* Expanding ring effects */}
+                    {[0, 1, 2].map((index) => (
+                      <div
+                        key={`ring-${index}`}
+                        className="absolute inset-0 rounded-full border-yellow-400 pointer-events-none z-20 animate-evolution-ring"
+                        style={{
+                          animationDelay: `${index * 0.4}s`,
+                          borderStyle: 'solid',
+                        }}
+                      />
+                    ))}
+
+                    {/* Sparkle burst particles */}
+                    {EVOLUTION_SPARKLE_POSITIONS.map((position, index) => (
+                      <div
+                        key={`evo-sparkle-${index}`}
+                        className="absolute top-1/2 left-1/2 w-2.5 h-2.5 rounded-full pointer-events-none z-30 animate-evolution-sparkle"
+                        style={{
+                          '--spark-x': position.x,
+                          '--spark-y': position.y,
+                          animationDelay: `${0.3 + index * 0.1}s`,
+                          background: index % 3 === 0 ? '#FFD700' : index % 3 === 1 ? '#FFA500' : '#FFFFFF',
+                          boxShadow: `0 0 6px ${index % 3 === 0 ? '#FFD700' : index % 3 === 1 ? '#FFA500' : '#FFFFFF'}`,
+                        } as React.CSSProperties}
+                      />
+                    ))}
+
+                    {/* Star emoji particles */}
+                    {['⭐', '✨', '🌟', '⭐', '✨'].map((emoji, index) => (
+                      <div
+                        key={`evo-star-${index}`}
+                        className="absolute top-1/2 left-1/2 text-xl pointer-events-none z-30 animate-evolution-sparkle"
+                        style={{
+                          '--spark-x': `${Math.cos(index * 1.25) * 55}px`,
+                          '--spark-y': `${Math.sin(index * 1.25) * 55}px`,
+                          animationDelay: `${0.5 + index * 0.15}s`,
+                        } as React.CSSProperties}
+                      >
+                        {emoji}
+                      </div>
+                    ))}
+                  </>
+                )}
 
                 {/* CSS-based ambient particles instead of emoji clusters */}
                 {!petAsleep && eatingState === 'idle' && moodVisual.particles === 'sparkle' && (
@@ -468,6 +567,18 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
 
               </div>
 
+              {/* Evolution announcement — positioned above the circle */}
+              {isEvolving && evolutionTarget && (
+                <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-40 pointer-events-none animate-evolution-text">
+                  <div className="bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 rounded-2xl px-6 py-3 shadow-2xl text-center whitespace-nowrap border-2 border-yellow-300/50">
+                    <div className="text-xs font-semibold text-yellow-900/80 uppercase tracking-wider">Evolving!</div>
+                    <div className="font-serif font-bold text-xl text-white drop-shadow-md capitalize">
+                      {evolutionTarget === 'teen' ? 'Teen Stage' : 'Adult Stage'}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Hunger result after eating — positioned above the circle */}
               {eatingState === 'done' && hungerAfter !== null && (
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-fade-in-up">
@@ -511,7 +622,11 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
             "inline-flex items-center gap-2 px-3 py-1.5 rounded-full",
             avgHealth >= 60 ? "bg-secondary/10" : avgHealth >= 30 ? "bg-chart-3/10" : "bg-destructive/10"
           )}>
-            <span className={cn("text-sm font-semibold", mood.color)}>
+            <span className={cn(
+              "text-sm font-semibold",
+              mood.color,
+              mood.key === 'critical' && "animate-urgent-shake"
+            )}>
               {mood.text}
             </span>
           </div>

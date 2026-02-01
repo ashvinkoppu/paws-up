@@ -19,7 +19,7 @@ const ACTIONS = [
     id: 'play',
     label: 'Play',
     icon: Gamepad2,
-    description: '+15 Happy',
+    description: 'Uses toy',
     color: 'text-chart-2',
     bgColor: 'bg-chart-2/10',
     hoverColor: 'hover:bg-chart-2/20 hover:border-chart-2/50',

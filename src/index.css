@@ -245,6 +245,10 @@
   animation: sadShake 1s ease-in-out;
 }
 
+.animate-urgent-shake {
+  animation: urgentShake 0.5s ease-in-out infinite;
+}
+
 @keyframes happyJump {
   0% { transform: scale(1) translateY(0); }
   33% { transform: scale(0.9) translateY(5px); }
@@ -258,6 +262,19 @@
   50% { transform: scale(0.95) rotate(0deg) translateY(5px); }
   75% { transform: scale(0.95) rotate(5deg) translateY(5px); }
   100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes urgentShake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-4px); }
+  20% { transform: translateX(4px); }
+  30% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  50% { transform: translateX(-4px); }
+  60% { transform: translateX(4px); }
+  70% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  90% { transform: translateX(-4px); }
 }
 
 /* Eating animations */
@@ -845,6 +862,78 @@
   animation: gentleDrift 8s ease-in-out infinite;
 }
 
+/* Pet evolution animations */
+@keyframes evolutionGlow {
+  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+  20% { box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.4), 0 0 60px 20px rgba(255, 215, 0, 0.2); }
+  50% { box-shadow: 0 0 50px 20px rgba(255, 215, 0, 0.6), 0 0 100px 40px rgba(255, 215, 0, 0.3), 0 0 150px 60px rgba(255, 215, 0, 0.1); }
+  80% { box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.3), 0 0 60px 20px rgba(255, 215, 0, 0.1); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+@keyframes evolutionScaleBurst {
+  0% { transform: scale(1); }
+  15% { transform: scale(0.85); }
+  35% { transform: scale(0.8); }
+  50% { transform: scale(1.25); }
+  65% { transform: scale(1.1); }
+  80% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes evolutionSparkle {
+  0% { opacity: 0; transform: translate(0, 0) scale(0); }
+  30% { opacity: 1; transform: translate(var(--spark-x), var(--spark-y)) scale(1.5); }
+  70% { opacity: 0.8; transform: translate(calc(var(--spark-x) * 1.8), calc(var(--spark-y) * 1.8)) scale(1); }
+  100% { opacity: 0; transform: translate(calc(var(--spark-x) * 2.5), calc(var(--spark-y) * 2.5)) scale(0); }
+}
+
+@keyframes evolutionRing {
+  0% { transform: scale(0.8); opacity: 0; border-width: 4px; }
+  30% { transform: scale(1); opacity: 1; border-width: 4px; }
+  70% { transform: scale(1.6); opacity: 0.5; border-width: 2px; }
+  100% { transform: scale(2); opacity: 0; border-width: 0px; }
+}
+
+@keyframes evolutionTextReveal {
+  0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+  40% { opacity: 1; transform: translateY(-5px) scale(1.05); }
+  60% { opacity: 1; transform: translateY(0) scale(1); }
+  85% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+}
+
+@keyframes evolutionFlash {
+  0% { opacity: 0; }
+  40% { opacity: 0.7; }
+  60% { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+
+.animate-evolution-glow {
+  animation: evolutionGlow 2.5s ease-in-out forwards;
+}
+
+.animate-evolution-scale-burst {
+  animation: evolutionScaleBurst 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-evolution-sparkle {
+  animation: evolutionSparkle 1.8s ease-out forwards;
+}
+
+.animate-evolution-ring {
+  animation: evolutionRing 1.5s ease-out forwards;
+}
+
+.animate-evolution-text {
+  animation: evolutionTextReveal 3s ease-out forwards;
+}
+
+.animate-evolution-flash {
+  animation: evolutionFlash 1.2s ease-in-out forwards;
+}
+
 /* Enhanced button press effect */
 .btn-press {
   transition: all 0.15s cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -866,4 +955,94 @@
   border-radius: inherit;
   background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--secondary)));
   z-index: -1;
+}
+
+/* Game Clock Reminder Animations */
+@keyframes reminderSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes reminderPulse {
+  0%, 100% {
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.2), 0 0 0 8px rgba(245, 158, 11, 0);
+  }
+}
+
+.animate-reminder-slide-in {
+  animation: reminderSlideIn 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards,
+             reminderPulse 2s ease-in-out 0.4s infinite;
+}
+
+/* Clock glow effect during meal times */
+@keyframes clockMealGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  50% {
+    box-shadow: 0 0 12px 2px currentColor;
+  }
+}
+
+.animate-clock-meal-glow {
+  animation: clockMealGlow 2s ease-in-out infinite;
+}
+
+/* Pet Death Overlay Animations */
+@keyframes deathFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes deathCardPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(40px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.03) translateY(-5px);
+  }
+  80% {
+    transform: scale(0.98) translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes deathHeartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.08);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.05);
+  }
+  60% {
+    transform: scale(1);
+  }
 }

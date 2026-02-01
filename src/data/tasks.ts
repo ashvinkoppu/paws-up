@@ -10,12 +10,12 @@ export const DAILY_TASK_POOL: DailyTaskDef[] = [
   { id: 'rest-2', name: 'Nap Time', description: 'Let your pet rest 2 times', icon: '😴', trackingKey: 'restCount', target: 2, xpReward: 15, difficulty: 'easy' },
   { id: 'use-item-2', name: 'Item User', description: 'Use 2 items from inventory', icon: '🎁', trackingKey: 'itemsUsed', target: 2, xpReward: 15, difficulty: 'easy' },
   { id: 'game-1', name: 'Game On', description: 'Play 1 mini-game', icon: '🎮', trackingKey: 'gamesPlayed', target: 1, xpReward: 15, difficulty: 'easy' },
-  // Hard tasks (higher targets)
-  { id: 'feed-5', name: 'Master Chef', description: 'Feed your pet 5 times', icon: '👨‍🍳', trackingKey: 'feedCount', target: 5, xpReward: 15, difficulty: 'hard' },
-  { id: 'play-4', name: 'Fun Machine', description: 'Play with your pet 4 times', icon: '🎪', trackingKey: 'playCount', target: 4, xpReward: 15, difficulty: 'hard' },
-  { id: 'buy-3', name: 'Shopping Spree', description: 'Buy 3 items from the shop', icon: '🛒', trackingKey: 'itemsBought', target: 3, xpReward: 15, difficulty: 'hard' },
-  { id: 'spend-50', name: 'Big Spender', description: 'Spend $50 today', icon: '💸', trackingKey: 'moneySpent', target: 50, xpReward: 15, difficulty: 'hard' },
-  { id: 'game-3', name: 'Arcade Star', description: 'Play 3 mini-games', icon: '⭐', trackingKey: 'gamesPlayed', target: 3, xpReward: 15, difficulty: 'hard' },
+  // Hard tasks (higher targets) - these are timed with 10-minute limits
+  { id: 'feed-5', name: 'Master Chef', description: 'Feed your pet 5 times', icon: '👨‍🍳', trackingKey: 'feedCount', target: 5, xpReward: 15, difficulty: 'hard', timeLimitMinutes: 10 },
+  { id: 'play-4', name: 'Fun Machine', description: 'Play with your pet 4 times', icon: '🎪', trackingKey: 'playCount', target: 4, xpReward: 15, difficulty: 'hard', timeLimitMinutes: 10 },
+  { id: 'buy-3', name: 'Shopping Spree', description: 'Buy 3 items from the shop', icon: '🛒', trackingKey: 'itemsBought', target: 3, xpReward: 15, difficulty: 'hard', timeLimitMinutes: 10 },
+  { id: 'spend-50', name: 'Big Spender', description: 'Spend $50 today', icon: '💸', trackingKey: 'moneySpent', target: 50, xpReward: 15, difficulty: 'hard', timeLimitMinutes: 10 },
+  { id: 'game-3', name: 'Arcade Star', description: 'Play 3 mini-games', icon: '⭐', trackingKey: 'gamesPlayed', target: 3, xpReward: 15, difficulty: 'hard', timeLimitMinutes: 10 },
   { id: 'vet-1', name: 'Health Check', description: 'Take your pet to the vet', icon: '🏥', trackingKey: 'vetCount', target: 1, xpReward: 15, difficulty: 'easy' },
 ];
 

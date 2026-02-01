@@ -112,6 +112,7 @@ export interface DailyTaskDef {
   target: number;
   xpReward: number;
   difficulty: 'easy' | 'hard';
+  timeLimitMinutes?: number;
 }
 
 // Active daily task instance (in game state)
@@ -120,6 +121,8 @@ export interface DailyTask {
   progress: number;
   completed: boolean;
   claimed: boolean;
+  timed: boolean;
+  timerExpiresAt: number | null;
 }
 
 // Milestone definition
@@ -193,6 +196,7 @@ export interface GameState {
   };
   petAsleep: boolean;
   lastSleepDate: string;
+  petDead: boolean;
 }
 
 // Personality modifiers
