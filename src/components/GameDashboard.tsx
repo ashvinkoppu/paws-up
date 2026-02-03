@@ -4,6 +4,17 @@ import { useGame } from '@/context/GameContext';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import PetDisplay from '@/components/PetDisplay';
 import SidePanel from '@/components/SidePanel';
 import Shop from '@/components/Shop';
@@ -113,9 +124,7 @@ const GameDashboard: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (window.confirm('Are you sure you want to reset your game? All progress will be lost!')) {
-      resetGame();
-    }
+    resetGame();
   };
 
   const handleTriggerEvent = () => {
@@ -293,14 +302,34 @@ const GameDashboard: React.FC = () => {
               <span className="hidden md:inline">Save</span>
             </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              className="text-destructive/70 hover:text-destructive hover:bg-destructive/10"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-2xl border-border/50 shadow-2xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-serif text-lg">Reset Game?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-muted-foreground">
+                    Are you sure you want to reset your game? All progress will be lost, including your pet, money, and achievements.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleReset}
+                    className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                  >
+                    Reset Game
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             <Button
               variant="ghost"
@@ -612,6 +641,8 @@ const GameDashboard: React.FC = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3 text-[11px] text-muted-foreground/60">
+                <Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link>
+                <span>•</span>
                 <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
                 <span>•</span>
                 <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
