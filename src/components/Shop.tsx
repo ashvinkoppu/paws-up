@@ -23,6 +23,13 @@ const Shop: React.FC = () => {
   const { state, spendMoney, addToInventory, useItem, equipAccessory, unequipAccessory } = useGame();
   const [activeTab, setActiveTab] = useState('shop');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  const discount = state.activeShopDiscount || 0;
+  
+  const getDiscountedPrice = (price: number) => {
+    if (discount <= 0) return price;
+    return Math.floor(price * (1 - discount / 100));
+  };
 
   const filteredItems = selectedCategory === 'all'
     ? SHOP_ITEMS
@@ -39,7 +46,9 @@ const Shop: React.FC = () => {
   const availableAccessories = getAccessoriesForGender(petGender);
 
   const handleBuy = (item: ShopItem) => {
-    if (state.money < item.price) {
+    const finalPrice = getDiscountedPrice(item.price);
+    
+    if (state.money < finalPrice) {
       const alternative = getCheaperAlternative(item);
       if (alternative) {
         toast({
@@ -50,19 +59,21 @@ const Shop: React.FC = () => {
       return;
     }
 
-    if (spendMoney(item.price, item.category, item.name)) {
+    if (spendMoney(finalPrice, item.category, item.name)) {
       addToInventory(item as InventoryItem);
       toast({
         title: "Purchased!",
-        description: `${item.name} added to inventory`,
+        description: `${item.name} added to inventory${discount > 0 ? ` (${discount}% off!)` : ''}`,
       });
     }
   };
 
   const handleBuyAccessory = (accessory: AccessoryDef) => {
-    if (state.money < accessory.price) return;
+    const finalPrice = getDiscountedPrice(accessory.price);
+    
+    if (state.money < finalPrice) return;
 
-    if (spendMoney(accessory.price, 'accessory', accessory.name)) {
+    if (spendMoney(finalPrice, 'accessory', accessory.name)) {
       // Add to inventory with quantity tracking
       const inventoryItem: InventoryItem = {
         id: accessory.id,
@@ -78,7 +89,7 @@ const Shop: React.FC = () => {
       addToInventory(inventoryItem);
       toast({
         title: "Purchased!",
-        description: `${accessory.emoji} ${accessory.name} added to your wardrobe`,
+        description: `${accessory.emoji} ${accessory.name} added to your wardrobe${discount > 0 ? ` (${discount}% off!)` : ''}`,
       });
     }
   };
@@ -123,6 +134,11 @@ const Shop: React.FC = () => {
           <Badge variant="outline" className="ml-auto font-mono bg-accent/50">
             ${state.money.toFixed(0)} available
           </Badge>
+          {discount > 0 && (
+            <Badge className="bg-emerald-500 text-white animate-pulse">
+              {discount}% OFF ACTIVE!
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -185,7 +201,8 @@ const Shop: React.FC = () => {
             {/* Items Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {filteredItems.map((item, index) => {
-                const canAfford = state.money >= item.price;
+                const finalPrice = getDiscountedPrice(item.price);
+                const canAfford = state.money >= finalPrice;
                 const alternative = !canAfford ? getCheaperAlternative(item) : null;
 
                 return (
@@ -223,12 +240,20 @@ const Shop: React.FC = () => {
                           </Badge>
                         </div>
                       </div>
-                      <span className={cn(
-                        "font-mono font-bold text-lg",
-                        canAfford ? "text-secondary" : "text-destructive"
-                      )}>
-                        ${item.price}
-                      </span>
+                      <div className="flex flex-col items-end">
+                        {discount > 0 && (
+                          <span className="text-xs text-muted-foreground line-through">
+                            ${item.price}
+                          </span>
+                        )}
+                        <span className={cn(
+                          "font-mono font-bold text-lg",
+                          canAfford ? "text-secondary" : "text-destructive",
+                          discount > 0 && "text-emerald-500"
+                        )}>
+                          ${finalPrice}
+                        </span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
@@ -252,7 +277,7 @@ const Shop: React.FC = () => {
                     {!canAfford && alternative && (
                       <div className="flex items-center gap-1.5 text-xs text-chart-1 mb-3 p-2 bg-chart-1/10 rounded-lg">
                         <Lightbulb className="w-3.5 h-3.5" />
-                        <span>Try {alternative.name} (${alternative.price})</span>
+                        <span>Try {alternative.name} (${getDiscountedPrice(alternative.price)})</span>
                       </div>
                     )}
 
@@ -321,7 +346,8 @@ const Shop: React.FC = () => {
               {availableAccessories.map((accessory, index) => {
                 const owned = ownedAccessoryIds.has(accessory.id);
                 const isEquipped = Object.values(equippedAccessories).includes(accessory.id);
-                const canAfford = state.money >= accessory.price;
+                const finalPrice = getDiscountedPrice(accessory.price);
+                const canAfford = state.money >= finalPrice;
                 const slotInfo = SLOT_LABELS[accessory.slot];
 
                 return (
@@ -363,12 +389,20 @@ const Shop: React.FC = () => {
                         </div>
                       </div>
                       {!owned && (
-                        <span className={cn(
-                          "font-mono font-bold text-lg",
-                          canAfford ? "text-secondary" : "text-destructive"
-                        )}>
-                          ${accessory.price}
-                        </span>
+                        <div className="flex flex-col items-end">
+                          {discount > 0 && (
+                            <span className="text-xs text-muted-foreground line-through">
+                              ${accessory.price}
+                            </span>
+                          )}
+                          <span className={cn(
+                            "font-mono font-bold text-lg",
+                            canAfford ? "text-secondary" : "text-destructive",
+                            discount > 0 && "text-emerald-500"
+                          )}>
+                            ${finalPrice}
+                          </span>
+                        </div>
                       )}
                       {owned && !isEquipped && (
                         <Badge className="bg-accent text-accent-foreground">Owned</Badge>

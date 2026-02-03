@@ -768,9 +768,9 @@ const WhackGame: React.FC<{
 };
 
 const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
-  const { state, addMoney, updateStats, updateHighScore, setIsPlayingMiniGame, trackGamePlayed } = useGame();
+  const { state, claimGameReward, updateStats, updateHighScore, setIsPlayingMiniGame, trackGamePlayed } = useGame();
   const [selectedGame, setSelectedGame] = useState<MiniGameType>(null);
-  const [gameResult, setGameResult] = useState<{ won: boolean; reward: number } | null>(null);
+  const [gameResult, setGameResult] = useState<{ won: boolean; reward: number; rewardClaimed: boolean } | null>(null);
 
   // Track when we're in an active game (selected game but no result yet)
   useEffect(() => {
@@ -784,17 +784,22 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
   const handleWin = (reward: number) => {
     addMoney(reward, 'Mini-game reward');
     updateStats({ happiness: 5 });
-    trackGamePlayed();
+    trackGamePlayed(selectedGame || undefined);
     setGameResult({ won: true, reward });
   };
 
   const handleLose = () => {
-    setGameResult({ won: false, reward: 0 });
+    setGameResult({ won: false, reward: 0, rewardClaimed: false });
   };
 
   const resetGame = () => {
     setSelectedGame(null);
     setGameResult(null);
+  };
+
+  const isRewardAvailable = (gameId: string) => {
+    const today = new Date().toDateString();
+    return state.dailyGameRewards?.[gameId] !== today;
   };
 
   return (
@@ -816,13 +821,22 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
             {/* Catch Game Card */}
             <button
               onClick={() => setSelectedGame('catch')}
+              disabled={!!(state.dailyTracking?.catchGamePlayed && state.dailyTracking.catchGamePlayed >= 1)}
               className={cn(
                 "p-6 rounded-2xl border-2 border-dashed border-border/50",
                 "bg-gradient-to-br from-card to-primary/5",
                 "hover:border-primary/50 hover:shadow-lg",
-                "transition-all duration-300 text-center group card-hover"
+                "transition-all duration-300 text-center group card-hover relative",
+                (state.dailyTracking?.catchGamePlayed && state.dailyTracking.catchGamePlayed >= 1) && "opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none"
               )}
             >
+              {(state.dailyTracking?.catchGamePlayed && state.dailyTracking.catchGamePlayed >= 1) && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] rounded-2xl z-10">
+                  <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                    Daily Limit Reached
+                  </span>
+                </div>
+              )}
               <div className="p-4 bg-primary/10 rounded-2xl inline-flex mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Target className="w-10 h-10 text-primary" />
               </div>
@@ -831,9 +845,11 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 Click treats as fast as you can!
               </p>
               <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center gap-2 text-secondary">
+                <div className={cn("flex items-center gap-2", isRewardAvailable('catch') ? "text-secondary" : "text-muted-foreground")}>
                   <Coins className="w-4 h-4" />
-                  <span className="font-semibold text-sm">$2–$8 per catch</span>
+                  <span className="font-semibold text-sm">
+                    {isRewardAvailable('catch') ? "$2–$8 per catch" : "Daily Limit Reached"}
+                  </span>
                 </div>
                 {state.highScores?.['catch'] !== undefined && (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
@@ -847,13 +863,22 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
             {/* Memory Game Card */}
             <button
               onClick={() => setSelectedGame('memory')}
+              disabled={!!(state.dailyTracking?.memoryGamePlayed && state.dailyTracking.memoryGamePlayed >= 1)}
               className={cn(
                 "p-6 rounded-2xl border-2 border-dashed border-border/50",
                 "bg-gradient-to-br from-card to-secondary/5",
                 "hover:border-secondary/50 hover:shadow-lg",
-                "transition-all duration-300 text-center group card-hover flex flex-col items-center"
+                "transition-all duration-300 text-center group card-hover flex flex-col items-center relative",
+                (state.dailyTracking?.memoryGamePlayed && state.dailyTracking.memoryGamePlayed >= 1) && "opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none"
               )}
             >
+              {(state.dailyTracking?.memoryGamePlayed && state.dailyTracking.memoryGamePlayed >= 1) && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] rounded-2xl z-10">
+                  <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                    Daily Limit Reached
+                  </span>
+                </div>
+              )}
               <div className="p-4 bg-secondary/10 rounded-2xl inline-flex mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Brain className="w-10 h-10 text-secondary" />
               </div>
@@ -866,9 +891,11 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                  </div>
               </div>
                <div className="flex items-center justify-between w-full mt-2">
-                <div className="flex items-center gap-2 text-secondary">
+                <div className={cn("flex items-center gap-2", isRewardAvailable('memory') ? "text-secondary" : "text-muted-foreground")}>
                   <Coins className="w-4 h-4" />
-                  <span className="font-semibold text-sm">$5–$12 per game</span>
+                  <span className="font-semibold text-sm">
+                    {isRewardAvailable('memory') ? "$5–$12 per game" : "Daily Limit Reached"}
+                  </span>
                 </div>
                 {state.highScores?.['memory'] !== undefined && (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
@@ -882,13 +909,22 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
             {/* Quiz Game Card */}
             <button
               onClick={() => setSelectedGame('quiz')}
+              disabled={!!(state.dailyTracking?.quizGamePlayed && state.dailyTracking.quizGamePlayed >= 1)}
               className={cn(
                 "p-6 rounded-2xl border-2 border-dashed border-border/50",
                 "bg-gradient-to-br from-card to-[#8B5E3C]/5",
                 "hover:border-[#8B5E3C]/50 hover:shadow-lg",
-                "transition-all duration-300 text-center group card-hover"
+                "transition-all duration-300 text-center group card-hover relative",
+                (state.dailyTracking?.quizGamePlayed && state.dailyTracking.quizGamePlayed >= 1) && "opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none"
               )}
             >
+              {(state.dailyTracking?.quizGamePlayed && state.dailyTracking.quizGamePlayed >= 1) && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] rounded-2xl z-10">
+                  <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                    Daily Limit Reached
+                  </span>
+                </div>
+              )}
               <div className="p-4 bg-[#8B5E3C]/10 rounded-2xl inline-flex mb-4 group-hover:scale-110 transition-transform duration-300">
                 <HelpCircle className="w-10 h-10 text-[#8B5E3C]" />
               </div>
@@ -897,9 +933,11 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 Test your pet knowledge!
               </p>
               <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center gap-2 text-secondary">
+                <div className={cn("flex items-center gap-2", isRewardAvailable('quiz') ? "text-secondary" : "text-muted-foreground")}>
                   <Coins className="w-4 h-4" />
-                  <span className="font-semibold text-sm">$6–$15 per game</span>
+                  <span className="font-semibold text-sm">
+                    {isRewardAvailable('quiz') ? "$6–$15 per game" : "Daily Limit Reached"}
+                  </span>
                 </div>
                 {state.highScores?.['quiz'] !== undefined && (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
@@ -913,13 +951,22 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
             {/* Whack Game Card */}
             <button
               onClick={() => setSelectedGame('whack')}
+              disabled={!!(state.dailyTracking?.whackGamePlayed && state.dailyTracking.whackGamePlayed >= 1)}
               className={cn(
                 "p-6 rounded-2xl border-2 border-dashed border-border/50",
                 "bg-gradient-to-br from-card to-primary/5",
                 "hover:border-primary/50 hover:shadow-lg",
-                "transition-all duration-300 text-center group card-hover"
+                "transition-all duration-300 text-center group card-hover relative",
+                (state.dailyTracking?.whackGamePlayed && state.dailyTracking.whackGamePlayed >= 1) && "opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none"
               )}
             >
+              {(state.dailyTracking?.whackGamePlayed && state.dailyTracking.whackGamePlayed >= 1) && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] rounded-2xl z-10">
+                  <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+                    Daily Limit Reached
+                  </span>
+                </div>
+              )}
               <div className="p-4 bg-primary/10 rounded-2xl inline-flex mb-4 group-hover:scale-110 transition-transform duration-300">
                 <Zap className="w-10 h-10 text-primary" />
               </div>
@@ -928,9 +975,11 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 Tap critters before they hide!
               </p>
               <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center gap-2 text-secondary">
+                <div className={cn("flex items-center gap-2", isRewardAvailable('whack') ? "text-secondary" : "text-muted-foreground")}>
                   <Coins className="w-4 h-4" />
-                  <span className="font-semibold text-sm">$2–$5 per whack</span>
+                  <span className="font-semibold text-sm">
+                    {isRewardAvailable('whack') ? "$2–$5 per whack" : "Daily Limit Reached"}
+                  </span>
                 </div>
                 {state.highScores?.['whack'] !== undefined && (
                   <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
@@ -988,9 +1037,16 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                   {gameResult.won ? '🎉' : '😔'}
                 </div>
                 <p className="text-3xl font-serif font-bold text-foreground mb-3">
-                  {gameResult.won ? `You earned $${gameResult.reward}!` : 'Better luck next time!'}
+                  {gameResult.won 
+                    ? gameResult.rewardClaimed 
+                      ? `You earned $${gameResult.reward}!` 
+                      : 'You won!' 
+                    : 'Better luck next time!'}
                 </p>
-                {gameResult.won && (
+                {gameResult.won && !gameResult.rewardClaimed && (
+                  <p className="text-muted-foreground mb-2">Daily limit reached for this game.</p>
+                )}
+                {gameResult.won && gameResult.rewardClaimed && (
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/15 rounded-full text-secondary mb-6">
                     <Trophy className="w-5 h-5" />
                     <span className="font-semibold">Reward added to balance</span>

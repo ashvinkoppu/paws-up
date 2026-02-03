@@ -17,6 +17,9 @@ export const DAILY_TASK_POOL: DailyTaskDef[] = [
   { id: 'spend-50', name: 'Big Spender', description: 'Spend $50 today', icon: '💸', trackingKey: 'moneySpent', target: 50, xpReward: 15, difficulty: 'hard', timeLimitMinutes: 10 },
   { id: 'game-3', name: 'Arcade Star', description: 'Play 3 mini-games', icon: '⭐', trackingKey: 'gamesPlayed', target: 3, xpReward: 15, difficulty: 'hard', timeLimitMinutes: 10 },
   { id: 'vet-1', name: 'Health Check', description: 'Take your pet to the vet', icon: '🏥', trackingKey: 'vetCount', target: 1, xpReward: 15, difficulty: 'easy' },
+  // Discount Rewards
+  { id: 'discount-game-5', name: 'Mega Gamer', description: 'Play 5 mini-games for 10% off', icon: '🕹️', trackingKey: 'gamesPlayed', target: 5, xpReward: 30, difficulty: 'hard', rewardType: 'discount', discountValue: 10 },
+  { id: 'discount-spend-80', name: 'Shopaholic', description: 'Spend $80 for 15% off', icon: '🛍️', trackingKey: 'moneySpent', target: 80, xpReward: 30, difficulty: 'hard', rewardType: 'discount', discountValue: 15 },
 ];
 
 // ── Milestones (12, in 3 tiers) ─────────────────────────────────────────
@@ -37,6 +40,25 @@ export const MILESTONES: MilestoneDef[] = [
   { id: 'ms-play-100', name: 'Play Legend', description: 'Play 100 times total', icon: '👑', tier: 3, xpReward: 200, moneyReward: 50, checkFn: 'playCount100' },
   { id: 'ms-level-10', name: 'Master Owner', description: 'Reach level 10', icon: '💎', tier: 3, xpReward: 200, moneyReward: 75, checkFn: 'level10' },
   { id: 'ms-streak-14', name: 'Unwavering Carer', description: 'Achieve a 14-day care streak', icon: '🔥', tier: 3, xpReward: 200, moneyReward: 50, checkFn: 'streak14' },
+  
+  // Special Weekly Task
+  { 
+    id: 'ms-weekly-challenge-1', 
+    name: 'Weekly Challenge: Care Week', 
+    description: 'Complete a full week of care to earn a massive reward pack!', 
+    icon: '📅', 
+    tier: 3, 
+    xpReward: 300, 
+    moneyReward: 100, 
+    itemRewards: [
+      'hunger-gourmet-feast',
+      'happiness-interactive-playset',
+      'cleanliness-spa-day',
+      'health-full-treatment',
+      'energy-cozy-bed'
+    ],
+    checkFn: 'streak7' 
+  },
 ];
 
 // ── Seeded random daily task selection ────────────────────────────────────
@@ -57,12 +79,24 @@ function seededRandom(seed: string): () => number {
 export function selectDailyTasks(date: string): string[] {
   const random = seededRandom(date);
   const pool = [...DAILY_TASK_POOL];
+  
+  const discountTasks = pool.filter(t => t.rewardType === 'discount');
+  const standardTasks = pool.filter(t => t.rewardType !== 'discount');
+  
   const selected: string[] = [];
 
-  for (let i = 0; i < 5 && pool.length > 0; i++) {
-    const index = Math.floor(random() * pool.length);
-    selected.push(pool[index].id);
-    pool.splice(index, 1);
+  // 1. Chance to add a discount task (e.g. 50% chance, or always if available)
+  // Let's make it always 1 if available to ensure the feature is visible
+  if (discountTasks.length > 0) {
+    const discountIndex = Math.floor(random() * discountTasks.length);
+    selected.push(discountTasks[discountIndex].id);
+  }
+
+  // 2. Fill the rest with standard tasks
+  while (selected.length < 5 && standardTasks.length > 0) {
+    const index = Math.floor(random() * standardTasks.length);
+    selected.push(standardTasks[index].id);
+    standardTasks.splice(index, 1);
   }
 
   return selected;
@@ -132,4 +166,8 @@ export const DEFAULT_DAILY_TRACKING: DailyTracking = {
   gamesPlayed: 0,
   highScore: 0,
   itemsUsed: 0,
+  catchGamePlayed: 0,
+  memoryGamePlayed: 0,
+  quizGamePlayed: 0,
+  whackGamePlayed: 0,
 };

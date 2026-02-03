@@ -53,7 +53,7 @@ const Dashboard: React.FC = () => {
 
   if (loadingCloudSave) {
     return (
-      <div className="min-h-screen flex items-center justify-center paper-texture">
+      <div className="min-h-screen flex items-center justify-center paper-texture w-full overflow-x-hidden">
         <div className="animate-pulse text-muted-foreground text-lg">Loading your adventure...</div>
       </div>
     );

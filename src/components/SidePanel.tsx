@@ -275,7 +275,7 @@ const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle, onFi
         
         {/* Minimized: Compact stat preview row */}
         {isMinimized && (
-          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/30">
+          <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-border/30">
             {(Object.keys(STAT_CONFIG) as (keyof PetStats)[]).map((stat) => {
               const value = stats[stat];
               const colors = getStatColor(value);

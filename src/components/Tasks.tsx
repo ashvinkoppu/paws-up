@@ -260,8 +260,13 @@ const Tasks: React.FC = () => {
                         ⏱ {formatTimeRemaining(task.timerExpiresAt)}
                       </span>
                     )}
-                    <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                      +{taskDef.xpReward} XP
+                    <span className="text-xs text-muted-foreground ml-2 flex-shrink-0 flex items-center gap-1">
+                      {taskDef.rewardType === 'discount' && (
+                        <span className="font-bold text-emerald-500">
+                          {taskDef.discountValue}% OFF
+                        </span>
+                      )}
+                      <span>+{taskDef.xpReward} XP</span>
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-1.5">{taskDef.description}</p>

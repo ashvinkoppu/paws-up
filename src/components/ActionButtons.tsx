@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
-import { Utensils, Gamepad2, Moon, Sparkles, Stethoscope, Zap } from 'lucide-react';
+import { Utensils, Gamepad2, Moon, Sparkles, Stethoscope, Zap, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const ACTIONS = [
@@ -63,6 +63,7 @@ const ACTION_FEEDBACK: Record<string, { emoji: string; verb: string }> = {
   rest: { emoji: '💤', verb: 'Rested' },
   clean: { emoji: '🛁', verb: 'Cleaned' },
   vet: { emoji: '💊', verb: 'Healed' },
+  wake: { emoji: '☀️', verb: 'Woke up' },
 };
 
 interface ActionFeedback {
@@ -71,7 +72,7 @@ interface ActionFeedback {
 }
 
 const ActionButtons: React.FC = () => {
-  const { state, performAction } = useGame();
+  const { state, performAction, wakePetUp } = useGame();
   const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
 
   useEffect(() => {
@@ -80,14 +81,28 @@ const ActionButtons: React.FC = () => {
     return () => clearTimeout(timer);
   }, [feedback]);
 
-  const handleAction = useCallback((actionId: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => {
+  const handleAction = useCallback((actionId: 'feed' | 'play' | 'rest' | 'clean' | 'vet' | 'wake') => {
+    if (actionId === 'wake') {
+      wakePetUp();
+      setFeedback({ actionId: 'wake', key: Date.now() });
+      return;
+    }
     performAction(actionId);
     setFeedback({ actionId, key: Date.now() });
-  }, [performAction]);
+  }, [performAction, wakePetUp]);
 
   if (!state.pet) return null;
 
-  const activeFeedback = feedback ? ACTIONS.find(action => action.id === feedback.actionId) : null;
+  const activeFeedback = feedback ? (feedback.actionId === 'wake' ? {
+    id: 'wake',
+    label: 'Wake Up',
+    icon: Sun,
+    description: 'Start the day',
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-500/10',
+    hoverColor: '',
+    activeColor: ''
+  } : ACTIONS.find(action => action.id === feedback.actionId)) : null;
   const activeFeedbackMeta = feedback ? ACTION_FEEDBACK[feedback.actionId] : null;
 
   return (
@@ -126,12 +141,14 @@ const ActionButtons: React.FC = () => {
                 {activeFeedback.description}
               </span>
             </div>
-            <div
-              className={cn("text-3xl font-bold ml-2", activeFeedback.color)}
-              style={{ animation: 'actionStatBounce 0.6s ease-out' }}
-            >
-              +
-            </div>
+            {feedback.actionId !== 'wake' && (
+              <div
+                className={cn("text-3xl font-bold ml-2", activeFeedback.color)}
+                style={{ animation: 'actionStatBounce 0.6s ease-out' }}
+              >
+                +
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -147,36 +164,58 @@ const ActionButtons: React.FC = () => {
       {/* Action buttons grid */}
       <div className="grid grid-cols-5 gap-2">
         {ACTIONS.map((action, index) => {
-          const Icon = action.icon;
+          let Icon = action.icon;
+          let label = action.label;
+          let description = action.description;
+          let color = action.color;
+          let bgColor = action.bgColor;
+          let isDisabled = false;
+          let clickAction = action.id;
+
+          if (state.petAsleep) {
+            if (action.id === 'rest') {
+              Icon = Sun;
+              label = 'Wake Up';
+              description = 'Start the day';
+              color = 'text-orange-500';
+              bgColor = 'bg-orange-500/10';
+              clickAction = 'wake';
+            } else {
+              isDisabled = true;
+            }
+          }
+
           return (
             <Button
               key={action.id}
               variant="outline"
+              disabled={isDisabled}
               className={cn(
                 "flex flex-col items-center justify-center h-auto py-4 px-2",
                 "border border-border/40 rounded-xl",
                 "transition-all duration-200 transform btn-press",
-                "hover:scale-105 hover:-translate-y-1 hover:shadow-md",
-                action.bgColor,
+                !isDisabled && "hover:scale-105 hover:-translate-y-1 hover:shadow-md",
+                bgColor,
                 action.hoverColor,
                 action.activeColor,
-                "animate-fade-in-up opacity-0"
+                "animate-fade-in-up opacity-0",
+                isDisabled && "opacity-50 cursor-not-allowed grayscale"
               )}
               style={{
                 animationDelay: `${index * 0.05}s`,
                 animationFillMode: 'forwards'
               }}
-              onClick={() => handleAction(action.id as 'feed' | 'play' | 'rest' | 'clean' | 'vet')}
+              onClick={() => handleAction(clickAction as any)}
             >
               <div className={cn(
                 "p-2 rounded-xl mb-2 transition-colors duration-200",
-                `${action.bgColor}`
+                bgColor
               )}>
-                <Icon className={cn("w-5 h-5", action.color)} />
+                <Icon className={cn("w-5 h-5", color)} />
               </div>
-              <span className="font-semibold text-xs text-foreground">{action.label}</span>
+              <span className="font-semibold text-xs text-foreground">{label}</span>
               <span className="text-[10px] text-muted-foreground mt-0.5 hidden md:block">
-                {action.description}
+                {description}
               </span>
             </Button>
           );
@@ -187,7 +226,7 @@ const ActionButtons: React.FC = () => {
       <div className="mt-4 pt-3 border-t border-border/30">
         <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
           <span className="text-primary">Tip:</span>
-          <span>Shop items give bigger stat boosts</span>
+          <span>{state.petAsleep ? "Wake up your pet to play!" : "Shop items give bigger stat boosts"}</span>
         </p>
       </div>
     </div>

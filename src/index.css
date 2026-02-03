@@ -148,6 +148,14 @@
 }
 
 @layer base {
+  html, body {
+    @apply h-full w-full overflow-x-hidden;
+  }
+  
+  #root {
+    @apply min-h-screen flex flex-col w-full;
+  }
+
   * {
     @apply border-border;
   }

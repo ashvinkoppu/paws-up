@@ -131,6 +131,8 @@ const Index: React.FC = () => {
           <div className="mt-8 flex items-center justify-center gap-4 text-sm text-muted-foreground animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
             <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
             <span>•</span>
+            <Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link>
+            <span>•</span>
             <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
-import { Species, GrowthStage, PetColor, AccessorySlot } from '@/types/game';
+import { Species, GrowthStage, PetColor, AccessorySlot, GROWTH_THRESHOLDS } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { Flame, Calendar, AlertTriangle, Heart, Wallet, ArrowRight } from 'lucide-react';
 import { calculateLevel } from '@/data/tasks';
@@ -285,6 +285,23 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   const mood = getMood();
   const stageConfig = STAGE_CONFIG[pet.stage];
 
+  // Calculate growth progress
+  const getGrowthProgress = () => {
+    if (pet.stage === 'adult') return 100;
+    
+    const currentThreshold = GROWTH_THRESHOLDS[pet.stage];
+    const nextStage = pet.stage === 'baby' ? 'teen' : 'adult';
+    const nextThreshold = GROWTH_THRESHOLDS[nextStage];
+    
+    // Safety check to avoid division by zero
+    if (nextThreshold === currentThreshold) return 100;
+
+    const progress = ((pet.experience - currentThreshold) / (nextThreshold - currentThreshold)) * 100;
+    return Math.min(Math.max(progress, 0), 100);
+  };
+
+  const growthProgress = getGrowthProgress();
+
   return (
     <div className="relative p-6 glass-card rounded-3xl shadow-lg overflow-hidden">
       {/* Scenic room background */}
@@ -298,12 +315,25 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
 
       <div className="relative flex flex-col items-center">
         {/* Top badges row */}
-        <div className="w-full flex justify-between items-center mb-4 gap-2 px-1">
-          {/* Stage Badge */}
-          <div className="px-3 py-2 bg-accent/60 rounded-full border border-border/50">
+        <div className="w-full flex flex-wrap justify-between items-center mb-4 gap-2 px-1">
+          {/* Stage Badge with Growth Progress */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-accent/60 rounded-xl border border-border/50">
             <span className="text-xs font-semibold text-accent-foreground capitalize">
               {stageConfig.label}
             </span>
+            {pet.stage !== 'adult' && (
+              <div className="flex flex-col justify-center h-full">
+                <div 
+                  className="w-12 h-1.5 bg-background/40 rounded-full overflow-hidden" 
+                  title={`Growth to next stage: ${Math.round(growthProgress)}%`}
+                >
+                  <div 
+                    className="h-full bg-accent-foreground/70 rounded-full transition-all duration-500"
+                    style={{ width: `${growthProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Level Badge with XP Progress */}

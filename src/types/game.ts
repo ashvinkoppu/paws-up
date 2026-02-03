@@ -113,6 +113,8 @@ export interface DailyTaskDef {
   xpReward: number;
   difficulty: 'easy' | 'hard';
   timeLimitMinutes?: number;
+  rewardType?: 'xp' | 'discount';
+  discountValue?: number; // Percentage (e.g., 10 for 10% off)
 }
 
 // Active daily task instance (in game state)
@@ -134,6 +136,7 @@ export interface MilestoneDef {
   tier: 1 | 2 | 3;
   xpReward: number;
   moneyReward: number;
+  itemRewards?: string[];
   checkFn: string;
 }
 
@@ -157,6 +160,10 @@ export interface DailyTracking {
   gamesPlayed: number;
   highScore: number;
   itemsUsed: number;
+  catchGamePlayed: number;
+  memoryGamePlayed: number;
+  quizGamePlayed: number;
+  whackGamePlayed: number;
 }
 
 export type NotificationType = 'achievement' | 'alert' | 'purchase' | 'event' | 'milestone' | 'levelup';
@@ -190,6 +197,7 @@ export interface GameState {
   dailyTracking: DailyTracking;
   milestones: MilestoneState[];
   dailyBonusClaimed: boolean;
+  activeShopDiscount: number; // Percentage discount (0-100)
   lifetimeCounters: {
     totalFeeds: number;
     totalPlays: number;
@@ -198,6 +206,7 @@ export interface GameState {
   lastSleepDate: string;
   petDead: boolean;
   tutorialCompleted: boolean;
+  dailyGameRewards: Record<string, string>;
 }
 
 // Personality modifiers

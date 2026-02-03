@@ -227,6 +227,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
                   className={cn(
                     "text-center text-xl h-14 rounded-xl border-2 bg-accent/30",
                     "focus:border-primary focus:bg-card transition-all duration-200",
+                    "focus-visible:ring-0 focus-visible:ring-offset-0",
                     nameError && "border-destructive"
                   )}
                   maxLength={20}

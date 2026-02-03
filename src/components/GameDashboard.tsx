@@ -15,6 +15,7 @@ import EventModal from '@/components/EventModal';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import GameClock from '@/components/GameClock';
 import TutorialOverlay from '@/components/TutorialOverlay';
+import FAQChatbot from '@/components/FAQChatbot';
 import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -147,7 +148,7 @@ const GameDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen paper-texture relative">
+    <div className="min-h-screen paper-texture relative overflow-x-hidden w-full">
       {/* Atmospheric background */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-br from-primary/6 to-transparent blur-3xl" />
@@ -335,7 +336,7 @@ const GameDashboard: React.FC = () => {
           {/* Right Column - Tabs */}
           <div className="lg:col-span-2 xl:col-span-3 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-              <TabsList className="grid w-full grid-cols-6 mb-5 glass-card p-1.5 rounded-2xl h-auto shadow-md">
+              <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-5 glass-card p-1.5 rounded-2xl h-auto shadow-md">
                 <TabsTrigger
                   value="alerts"
                   data-tutorial="tab-alerts"
@@ -622,6 +623,19 @@ const GameDashboard: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* AI Chatbot with pet context */}
+      <FAQChatbot
+        context={state.pet ? {
+          pet: state.pet,
+          money: state.money,
+          careStreak: state.careStreak,
+          totalDaysPlayed: state.totalDaysPlayed,
+          inventoryCount: state.inventory.reduce((sum, item) => sum + item.quantity, 0),
+          achievementsUnlocked: state.achievements.filter(a => a.unlocked).length,
+          totalAchievements: state.achievements.length,
+        } : undefined}
+      />
     </div>
   );
 };

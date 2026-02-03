@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 // Game time progresses at 1 real second = 1 game minute
 // This means 1 real hour = 1 game hour, which feels natural
-const REAL_MS_PER_GAME_MINUTE = 1000; // 1 second = 1 game minute
+const REAL_MS_PER_GAME_MINUTE = 3000; // 3 seconds = 1 game minute
 
 interface MealWindow {
   name: string;

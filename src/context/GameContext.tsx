@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect, useState, Reac
 import { GameState, Pet, PetStats, Transaction, Achievement, RandomEvent, InventoryItem, GameNotification, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, DailyTask, DailyTracking, MilestoneState, AccessorySlot } from '@/types/game';
 import { INITIAL_ACHIEVEMENTS } from '@/data/achievements';
 import { getRandomEvent } from '@/data/events';
+import { SHOP_ITEMS } from '@/data/shopItems';
 import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, MILESTONES, checkMilestone, DEFAULT_DAILY_TRACKING, LifetimeCounters } from '@/data/tasks';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
@@ -9,7 +10,7 @@ import { supabase } from '@/lib/supabase';
 const initialState: GameState = {
   pet: null,
   money: 100,
-  weeklyBudget: 150,
+  weeklyBudget: 300,
   weeklySpent: 0,
   inventory: [],
   transactions: [],
@@ -25,11 +26,13 @@ const initialState: GameState = {
   dailyTracking: { ...DEFAULT_DAILY_TRACKING },
   milestones: [],
   dailyBonusClaimed: false,
+  activeShopDiscount: 0,
   lifetimeCounters: { totalFeeds: 0, totalPlays: 0 },
   petAsleep: false,
   lastSleepDate: '',
   petDead: false,
   tutorialCompleted: false,
+  dailyGameRewards: {},
 };
 
 type GameAction =
@@ -65,7 +68,8 @@ type GameAction =
   | { type: 'EXPIRE_TIMED_TASK'; payload: string }
   | { type: 'WAKE_PET_UP' }
   | { type: 'PET_DIED' }
-  | { type: 'COMPLETE_TUTORIAL' };
+  | { type: 'COMPLETE_TUTORIAL' }
+  | { type: 'CLAIM_GAME_REWARD'; payload: { gameId: string; amount: number } };
 
 const ACHIEVEMENT_REWARD = 10;
 
@@ -158,9 +162,85 @@ function addXpToPet(state: GameState, xpAmount: number): GameState {
   return newState;
 }
 
+function checkAllMilestones(state: GameState): GameState {
+  const milestones = ensureMilestones(state);
+  const counters: LifetimeCounters = state.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 };
+  let resultState = { ...state };
+  let achievements = [...resultState.achievements];
+  let achievementMoney = 0;
+
+  const updatedMilestones = milestones.map(milestone => {
+    if (milestone.completed) return milestone;
+    const milestoneDef = MILESTONES.find(definition => definition.id === milestone.id);
+    if (!milestoneDef) return milestone;
+
+    const passed = checkMilestone(milestoneDef.checkFn, resultState, counters);
+    if (passed) {
+      resultState = addXpToPet(resultState, milestoneDef.xpReward);
+      
+      let description = `${milestoneDef.name}: +${milestoneDef.xpReward} XP, +$${milestoneDef.moneyReward}`;
+      
+      // Handle item rewards
+      if (milestoneDef.itemRewards && milestoneDef.itemRewards.length > 0) {
+        const newInventory = [...resultState.inventory];
+        let itemsAddedCount = 0;
+
+        milestoneDef.itemRewards.forEach(itemId => {
+          const shopItem = SHOP_ITEMS.find(i => i.id === itemId);
+          if (shopItem) {
+            const existingItemIndex = newInventory.findIndex(i => i.id === itemId);
+            if (existingItemIndex >= 0) {
+              newInventory[existingItemIndex] = {
+                ...newInventory[existingItemIndex],
+                quantity: newInventory[existingItemIndex].quantity + 1
+              };
+            } else {
+              newInventory.push({ ...shopItem, quantity: 1 });
+            }
+            itemsAddedCount++;
+          }
+        });
+        
+        resultState = {
+          ...resultState,
+          inventory: newInventory
+        };
+        
+        if (itemsAddedCount > 0) {
+          description += `, +${itemsAddedCount} Items!`;
+        }
+      }
+
+      resultState = {
+        ...resultState,
+        money: resultState.money + milestoneDef.moneyReward,
+      };
+      
+      const notification: GameNotification = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+        type: 'milestone',
+        title: 'Milestone Complete!',
+        description: description,
+        icon: milestoneDef.icon,
+        read: false,
+        timestamp: Date.now(),
+      };
+      resultState = {
+        ...resultState,
+        notifications: [notification, ...resultState.notifications].slice(0, 50),
+      };
+      return { ...milestone, completed: true, completedAt: Date.now() };
+    }
+    return milestone;
+  });
+
+  return { ...resultState, milestones: updatedMilestones };
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'CREATE_PET': {
+
       const [updatedAchievements, reward] = unlockAchievementInList(state.achievements, 'first-pet');
       const newState = {
         ...state,
@@ -303,7 +383,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const dailyTracking = ensureDailyTracking({ ...state, lastCareDate: today });
       const dailyTasks = ensureDailyTasks({ ...state, dailyTracking });
 
-      return {
+      const newState = {
         ...state,
         careStreak: newStreak,
         lastCareDate: today,
@@ -314,6 +394,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         dailyTasks,
         dailyBonusClaimed: state.dailyTracking?.date === today ? state.dailyBonusClaimed : false,
       };
+
+      return checkAllMilestones(newState);
     }
 
     case 'CHECK_GROWTH': {
@@ -379,11 +461,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const modifiers = PERSONALITY_MODIFIERS[personality];
 
       const decay: Partial<PetStats> = {
-        hunger: -6 + (modifiers.hunger || 0),
-        happiness: -5 + (modifiers.happiness || 0),
-        energy: -4 + (modifiers.energy || 0),
-        cleanliness: -5 + (modifiers.cleanliness || 0),
-        health: state.pet.stats.hunger < 20 || state.pet.stats.cleanliness < 20 ? -6 : -2,
+        hunger: -2 + (modifiers.hunger || 0),
+        happiness: -2 + (modifiers.happiness || 0),
+        energy: -1 + (modifiers.energy || 0),
+        cleanliness: -2 + (modifiers.cleanliness || 0),
+        health: state.pet.stats.hunger < 20 || state.pet.stats.cleanliness < 20 ? -3 : -1,
       };
 
       const newStats = { ...state.pet.stats };
@@ -430,11 +512,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         dailyTracking: action.payload.dailyTracking || { ...DEFAULT_DAILY_TRACKING },
         milestones: action.payload.milestones || [],
         dailyBonusClaimed: action.payload.dailyBonusClaimed || false,
+        activeShopDiscount: action.payload.activeShopDiscount || 0,
         lifetimeCounters: action.payload.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 },
         petAsleep: action.payload.petAsleep || false,
         lastSleepDate: action.payload.lastSleepDate || '',
         petDead: action.payload.petDead || false,
         tutorialCompleted: action.payload.tutorialCompleted ?? (action.payload.gameStarted ? true : false),
+        dailyGameRewards: action.payload.dailyGameRewards || {},
       } as GameState;
       // Migrate old pets: add gender and equippedAccessories if missing
       if (loadedState.pet) {
@@ -570,6 +654,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }),
         dailyTracking: { ...DEFAULT_DAILY_TRACKING, date: today },
         dailyBonusClaimed: false,
+        activeShopDiscount: 0, // Reset discount for new day
         milestones: ensureMilestones(state),
       };
     }
@@ -594,41 +679,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'CHECK_MILESTONES': {
-      const milestones = ensureMilestones(state);
-      const counters: LifetimeCounters = state.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 };
-      let resultState = { ...state };
-
-      const updatedMilestones = milestones.map(milestone => {
-        if (milestone.completed) return milestone;
-        const milestoneDef = MILESTONES.find(definition => definition.id === milestone.id);
-        if (!milestoneDef) return milestone;
-
-        const passed = checkMilestone(milestoneDef.checkFn, resultState, counters);
-        if (passed) {
-          resultState = addXpToPet(resultState, milestoneDef.xpReward);
-          resultState = {
-            ...resultState,
-            money: resultState.money + milestoneDef.moneyReward,
-          };
-          const notification: GameNotification = {
-            id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
-            type: 'milestone',
-            title: 'Milestone Complete!',
-            description: `${milestoneDef.name}: +${milestoneDef.xpReward} XP, +$${milestoneDef.moneyReward}`,
-            icon: milestoneDef.icon,
-            read: false,
-            timestamp: Date.now(),
-          };
-          resultState = {
-            ...resultState,
-            notifications: [notification, ...resultState.notifications].slice(0, 50),
-          };
-          return { ...milestone, completed: true, completedAt: Date.now() };
-        }
-        return milestone;
-      });
-
-      return { ...resultState, milestones: updatedMilestones };
+      return checkAllMilestones(state);
     }
 
     case 'ADD_XP': {
@@ -641,7 +692,31 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!task || !task.completed || task.claimed) return state;
       const taskDef = DAILY_TASK_POOL.find(definition => definition.id === taskId);
       if (!taskDef) return state;
+      
       let claimState = addXpToPet(state, taskDef.xpReward);
+      
+      // Handle Discount Reward
+      if (taskDef.rewardType === 'discount' && taskDef.discountValue) {
+        claimState = {
+          ...claimState,
+          activeShopDiscount: taskDef.discountValue,
+        };
+        // Add notification for discount
+        const notification: GameNotification = {
+          id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+          type: 'milestone', // or 'reward'
+          title: 'Discount Activated!',
+          description: `You've earned a ${taskDef.discountValue}% discount in the shop for today!`,
+          icon: '🏷️',
+          read: false,
+          timestamp: Date.now(),
+        };
+        claimState = {
+          ...claimState,
+          notifications: [notification, ...claimState.notifications].slice(0, 50),
+        };
+      }
+
       claimState = {
         ...claimState,
         dailyTasks: claimState.dailyTasks.map(dailyTask =>
@@ -728,6 +803,39 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'CLAIM_GAME_REWARD': {
+      const { gameId, amount } = action.payload;
+      const today = new Date().toDateString();
+      
+      // Double check if already claimed (though UI should prevent this)
+      if (state.dailyGameRewards[gameId] === today) {
+        return state;
+      }
+
+      let achievements = state.achievements;
+      // You could add specific achievements for earning game money here if needed
+
+      return {
+        ...state,
+        money: state.money + amount,
+        dailyGameRewards: {
+          ...state.dailyGameRewards,
+          [gameId]: today
+        },
+        transactions: [
+          ...state.transactions,
+          {
+            id: Date.now().toString(),
+            type: 'income',
+            category: 'earnings',
+            amount,
+            description: 'Mini-game reward',
+            timestamp: Date.now(),
+          }
+        ]
+      };
+    }
+
     default:
       return state;
   }
@@ -767,13 +875,14 @@ interface GameContextType {
   updateHighScore: (gameId: string, score: number) => void;
   markNotificationsRead: () => void;
   clearNotifications: () => void;
-  trackGamePlayed: () => void;
+  trackGamePlayed: (gameId?: string) => void;
   claimDailyBonus: () => void;
   claimDailyTask: (taskId: string) => void;
   expireTimedTask: (taskId: string) => void;
   putPetToSleep: () => void;
   wakePetUp: () => void;
   completeTutorial: () => void;
+  claimGameReward: (gameId: string, amount: number) => boolean;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -873,14 +982,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       dispatch({ type: 'CHECK_GROWTH' });
 
       // Random event chance (5% every minute) - but not during mini-games
-      if (Math.random() < 0.05 && !isPlayingMiniGame) {
-        dispatch({ type: 'TRIGGER_EVENT', payload: getRandomEvent() });
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [state.pet]);
-
+              if (Math.random() < 0.05 && !isPlayingMiniGame) {
+                dispatch({ type: 'TRIGGER_EVENT', payload: getRandomEvent() });
+              }
+            }, 180000);
+      
+            return () => clearInterval(interval);
+          }, [state.pet]);
   const createPet = (petData: Omit<Pet, 'id' | 'stats' | 'experience' | 'level' | 'equippedAccessories' | 'createdAt' | 'lastCaredAt'>) => {
     const newPet: Pet = {
       ...petData,
@@ -1184,8 +1292,23 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'CLEAR_NOTIFICATIONS' });
   };
 
-  const trackGamePlayed = () => {
+  const trackGamePlayed = (gameId?: string) => {
     dispatch({ type: 'TRACK_ACTION', payload: { key: 'gamesPlayed' } });
+    
+    if (gameId) {
+      const keyMap: Record<string, keyof DailyTracking> = {
+        'catch': 'catchGamePlayed',
+        'memory': 'memoryGamePlayed',
+        'quiz': 'quizGamePlayed',
+        'whack': 'whackGamePlayed'
+      };
+      
+      const trackingKey = keyMap[gameId];
+      if (trackingKey) {
+        dispatch({ type: 'TRACK_ACTION', payload: { key: trackingKey } });
+      }
+    }
+    
     dispatch({ type: 'CHECK_MILESTONES' });
   };
 
@@ -1244,6 +1367,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
+  const claimGameReward = (gameId: string, amount: number): boolean => {
+    const today = new Date().toDateString();
+    if (state.dailyGameRewards[gameId] === today) {
+      return false;
+    }
+    dispatch({ type: 'CLAIM_GAME_REWARD', payload: { gameId, amount } });
+    return true;
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -1277,6 +1409,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         putPetToSleep,
         wakePetUp,
         completeTutorial,
+        claimGameReward,
       }}
     >
       {children}
