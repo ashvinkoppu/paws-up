@@ -1404,9 +1404,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return true;
   };
 
-  const updateGameTime = (minutes: number) => {
+  const updateGameTime = useCallback((minutes: number) => {
     dispatch({ type: 'UPDATE_GAME_TIME', payload: minutes });
-  };
+  }, []);
 
   return (
     <GameContext.Provider

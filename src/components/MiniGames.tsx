@@ -768,7 +768,7 @@ const WhackGame: React.FC<{
 };
 
 const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
-  const { state, claimGameReward, updateStats, updateHighScore, setIsPlayingMiniGame, trackGamePlayed } = useGame();
+  const { state, claimGameReward, updateStats, updateHighScore, setIsPlayingMiniGame, trackGamePlayed, addMoney } = useGame();
   const [selectedGame, setSelectedGame] = useState<MiniGameType>(null);
   const [gameResult, setGameResult] = useState<{ won: boolean; reward: number; rewardClaimed: boolean } | null>(null);
 
@@ -785,7 +785,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
     addMoney(reward, 'Mini-game reward');
     updateStats({ happiness: 5 });
     trackGamePlayed(selectedGame || undefined);
-    setGameResult({ won: true, reward });
+    setGameResult({ won: true, reward, rewardClaimed: true });
   };
 
   const handleLose = () => {
