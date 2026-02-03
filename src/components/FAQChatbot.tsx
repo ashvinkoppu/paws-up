@@ -288,8 +288,8 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
           </CardHeader>
 
           {/* Messages */}
-          <CardContent className="p-0">
-            <div className="h-[320px] overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background to-muted/30">
+          <CardContent className="p-0 bg-gradient-to-b from-background to-muted/30">
+            <div className="h-[320px] overflow-y-auto p-4 space-y-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -360,7 +360,7 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
             )}
 
             {/* Input */}
-            <div className="p-4 border-t border-border/50 bg-background">
+            <div className="p-4 border-t border-border/50 bg-transparent">
               <div className="flex gap-2">
                 <Input
                   ref={inputRef}

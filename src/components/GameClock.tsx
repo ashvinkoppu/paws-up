@@ -246,7 +246,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
         {reminders.map((reminder) => (
           <div
             key={reminder.id}
-            className="pointer-events-auto animate-reminder-slide-in"
+            className="pointer-events-auto animate-reminder-slide-in rounded-2xl"
             onClick={() => dismissReminder(reminder.id)}
           >
             <div className={cn(
