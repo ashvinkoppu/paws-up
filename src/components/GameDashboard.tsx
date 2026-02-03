@@ -488,7 +488,7 @@ const GameDashboard: React.FC = () => {
               </div>
 
               {/* Tab content with consistent card styling */}
-              <div className="bg-card/30 backdrop-blur-sm rounded-2xl border border-border/20 p-1 flex-1 min-h-0 overflow-y-auto">
+              <div className="flex-1 min-h-0 overflow-y-auto">
                 <TabsContent value="alerts" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
                   <NotificationsPanel />
                 </TabsContent>
