@@ -683,10 +683,10 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
         >
           <div className="flex items-center justify-between mb-2">
             <span className="flex items-center gap-2">
-              <Wallet className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-xs font-semibold text-foreground">Weekly Budget</span>
+              <Wallet className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-semibold text-foreground">Weekly Budget</span>
             </span>
-            <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
               Details <ArrowRight className="w-3 h-3" />
             </span>
           </div>
@@ -710,11 +710,11 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-muted-foreground font-mono">
+                  <span className="text-xs text-muted-foreground font-mono font-semibold">
                     ${state.weeklySpent.toFixed(0)} / ${state.weeklyBudget}
                   </span>
                   <span className={cn(
-                    "text-[10px] font-semibold font-mono",
+                    "text-xs font-bold font-mono",
                     isOverBudget ? "text-red-500" : "text-emerald-600"
                   )}>
                     {isOverBudget

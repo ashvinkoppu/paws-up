@@ -142,13 +142,13 @@ const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle, onFi
                 title={`${config.label}: ${Math.round(value)}%`}
               >
                 <span className={cn(
-                  "text-xs transition-transform",
+                  "text-sm transition-transform",
                   value <= 30 && "animate-wiggle"
                 )}>
                   {config.icon}
                 </span>
                 <span className={cn(
-                  "text-[10px] font-mono font-semibold",
+                  "text-xs font-mono font-bold",
                   colors.textColor
                 )}>
                   {Math.round(value)}%

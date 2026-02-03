@@ -192,10 +192,10 @@ const NotificationsPanel: React.FC = () => {
                   )}>
                     {config.icon}
                   </span>
-                  <span className="font-medium text-sm text-foreground">{config.label}</span>
+                  <span className="font-medium text-base text-foreground">{config.label}</span>
                 </span>
                 <span className={cn(
-                  "font-mono text-sm font-semibold transition-colors duration-300",
+                  "font-mono text-base font-bold transition-colors duration-300",
                   isCritical ? "text-destructive" :
                   isLow ? "text-chart-1" :
                   "text-muted-foreground"
