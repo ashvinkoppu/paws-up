@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PetDisplay from '@/components/PetDisplay';
@@ -13,13 +15,20 @@ import EventModal from '@/components/EventModal';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import GameClock from '@/components/GameClock';
 import TutorialOverlay from '@/components/TutorialOverlay';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck } from 'lucide-react';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const GameDashboard: React.FC = () => {
   const { state, saveGame, resetGame, triggerRandomEvent, markNotificationsRead, clearNotifications, completeTutorial } = useGame();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
   const showTutorial = !state.tutorialCompleted;
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [showNewDayPopup, setShowNewDayPopup] = useState(false);
   const previousDaysPlayed = useRef(state.totalDaysPlayed);
@@ -290,6 +299,15 @@ const GameDashboard: React.FC = () => {
               className="text-destructive/70 hover:text-destructive hover:bg-destructive/10"
             >
               <RotateCcw className="w-4 h-4" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            >
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -591,8 +609,15 @@ const GameDashboard: React.FC = () => {
                 <span>Streaks = bonuses</span>
               </div>
             </div>
-            <div className="text-[11px] text-muted-foreground/50 font-mono tracking-wide">
-              Day {state.totalDaysPlayed} of your adventure
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 text-[11px] text-muted-foreground/60">
+                <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+                <span>•</span>
+                <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+              </div>
+              <div className="text-[11px] text-muted-foreground/50 font-mono tracking-wide">
+                Day {state.totalDaysPlayed} of your adventure
+              </div>
             </div>
           </div>
         </div>

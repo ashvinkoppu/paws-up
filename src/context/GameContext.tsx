@@ -1,11 +1,10 @@
-import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode, useCallback } from 'react';
 import { GameState, Pet, PetStats, Transaction, Achievement, RandomEvent, InventoryItem, GameNotification, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, DailyTask, DailyTracking, MilestoneState, AccessorySlot } from '@/types/game';
 import { INITIAL_ACHIEVEMENTS } from '@/data/achievements';
 import { getRandomEvent } from '@/data/events';
 import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, MILESTONES, checkMilestone, DEFAULT_DAILY_TRACKING, LifetimeCounters } from '@/data/tasks';
 import { toast } from '@/hooks/use-toast';
-
-const STORAGE_KEY = 'paws-up-save';
+import { supabase } from '@/lib/supabase';
 
 const initialState: GameState = {
   pet: null,
@@ -761,9 +760,9 @@ interface GameContextType {
   triggerRandomEvent: () => void;
   handleEventChoice: (choiceIndex: number) => void;
   updateCareStreak: () => void;
-  saveGame: () => void;
-  loadGame: () => boolean;
-  resetGame: () => void;
+  saveGame: () => Promise<void>;
+  loadGameFromCloud: (saveData: GameState) => void;
+  resetGame: () => Promise<void>;
   performAction: (action: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => void;
   updateHighScore: (gameId: string, score: number) => void;
   markNotificationsRead: () => void;
@@ -784,11 +783,73 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [lastActionFeedback, setLastActionFeedback] = useState<ActionFeedbackEvent | null>(null);
   const [isPlayingMiniGame, setIsPlayingMiniGame] = useState(false);
 
-  // Auto-save on state changes
+  // Debounced auto-save to Supabase
   useEffect(() => {
-    if (state.gameStarted) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (!state.gameStarted) {
+      console.log('[AutoSave] Skipping - game not started');
+      return;
     }
+
+    console.log('[AutoSave] Scheduling save, pet:', state.pet?.name);
+
+    const timeout = setTimeout(async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      console.log('[AutoSave] Session check:', { hasSession: !!session, hasUser: !!session?.user, userId: session?.user?.id });
+
+      if (!session?.user) {
+        console.log('[AutoSave] No session/user, aborting');
+        return;
+      }
+
+      // Ensure profile exists before saving (required for foreign key constraint)
+      const { data: existingProfile, error: profileCheckError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      console.log('[AutoSave] Profile check:', { existingProfile, profileCheckError });
+
+      if (!existingProfile) {
+        console.log('[AutoSave] Creating profile for user:', session.user.id);
+        // Create profile if it doesn't exist (e.g., for OAuth users where trigger might fail)
+        const { error: profileError } = await supabase.from('profiles').upsert(
+          {
+            id: session.user.id,
+            display_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0],
+            avatar_url: session.user.user_metadata?.avatar_url || null,
+          },
+          { onConflict: 'id' }
+        );
+
+        if (profileError) {
+          console.error('[AutoSave] Failed to create profile:', profileError);
+          return;
+        }
+        console.log('[AutoSave] Profile created successfully');
+      }
+
+      console.log('[AutoSave] Saving game for user:', session.user.id);
+      const { error } = await supabase.from('game_saves').upsert(
+        {
+          user_id: session.user.id,
+          save_data: state,
+          version: 1,
+        },
+        { onConflict: 'user_id' },
+      );
+
+      if (error) {
+        console.error('[AutoSave] Failed to save game:', error);
+      } else {
+        console.log('[AutoSave] Game saved successfully!');
+      }
+    }, 2000);
+
+    return () => clearTimeout(timeout);
   }, [state]);
 
   // Initialize daily tasks and milestones on load
@@ -986,35 +1047,64 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'UPDATE_CARE_STREAK' });
   };
 
-  const saveGame = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    toast({
-      title: "💾 Game Saved!",
-      description: "Your progress has been saved.",
-    });
-  };
+  const saveGame = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.user) return;
 
-  const loadGame = (): boolean => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsedState = JSON.parse(saved);
-        dispatch({ type: 'LOAD_GAME', payload: parsedState });
-        return true;
-      } catch {
-        return false;
+    // Ensure profile exists before saving (required for foreign key constraint)
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', session.user.id)
+      .maybeSingle();
+
+    if (!existingProfile) {
+      const { error: profileError } = await supabase.from('profiles').upsert(
+        {
+          id: session.user.id,
+          display_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0],
+          avatar_url: session.user.user_metadata?.avatar_url || null,
+        },
+        { onConflict: 'id' }
+      );
+
+      if (profileError) {
+        toast({ title: 'Save failed', description: 'Could not create user profile', variant: 'destructive' });
+        return;
       }
     }
-    return false;
+
+    const { error } = await supabase.from('game_saves').upsert(
+      {
+        user_id: session.user.id,
+        save_data: state,
+        version: 1,
+      },
+      { onConflict: 'user_id' },
+    );
+
+    if (error) {
+      toast({ title: 'Save failed', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Game Saved!', description: 'Your progress has been saved to the cloud.' });
+    }
   };
 
-  const resetGame = () => {
-    localStorage.removeItem(STORAGE_KEY);
+  const loadGameFromCloud = useCallback((saveData: GameState) => {
+    dispatch({ type: 'LOAD_GAME', payload: saveData });
+  }, []);
+
+  const resetGame = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session?.user) {
+      await supabase.from('game_saves').delete().eq('user_id', session.user.id);
+    }
     dispatch({ type: 'LOAD_GAME', payload: initialState });
-    toast({
-      title: "🔄 Game Reset",
-      description: "Starting fresh!",
-    });
+    toast({ title: 'Game Reset', description: 'Starting fresh!' });
   };
 
   const performAction = (action: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => {
@@ -1172,7 +1262,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         handleEventChoice,
         updateCareStreak,
         saveGame,
-        loadGame,
+        loadGameFromCloud,
         resetGame,
         performAction,
         updateHighScore,
