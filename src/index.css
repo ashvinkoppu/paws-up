@@ -1029,6 +1029,35 @@
   }
 }
 
+/* Tutorial Overlay Animations */
+@keyframes tutorialPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px hsl(var(--primary) / 0);
+  }
+}
+
+@keyframes tutorialTooltipIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-tutorial-pulse {
+  animation: tutorialPulse 2s ease-in-out infinite;
+}
+
+.animate-tutorial-tooltip-in {
+  animation: tutorialTooltipIn 0.35s ease-out forwards;
+}
+
 @keyframes deathHeartbeat {
   0%, 100% {
     transform: scale(1);

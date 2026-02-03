@@ -12,12 +12,14 @@ import Tasks from '@/components/Tasks';
 import EventModal from '@/components/EventModal';
 import NotificationsPanel from '@/components/NotificationsPanel';
 import GameClock from '@/components/GameClock';
+import TutorialOverlay from '@/components/TutorialOverlay';
 import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const GameDashboard: React.FC = () => {
-  const { state, saveGame, resetGame, triggerRandomEvent, markNotificationsRead, clearNotifications } = useGame();
+  const { state, saveGame, resetGame, triggerRandomEvent, markNotificationsRead, clearNotifications, completeTutorial } = useGame();
+  const showTutorial = !state.tutorialCompleted;
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [showNewDayPopup, setShowNewDayPopup] = useState(false);
   const previousDaysPlayed = useRef(state.totalDaysPlayed);
@@ -297,17 +299,17 @@ const GameDashboard: React.FC = () => {
       <main className="container mx-auto px-4 py-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {/* Pet Status - left of pet on xl, above pet on lg */}
-          <div className="hidden xl:block xl:col-span-1 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <div className="hidden xl:block xl:col-span-1 animate-fade-in-up" data-tutorial="side-panel" style={{ animationDelay: '0.1s' }}>
             <SidePanel onFinanceClick={() => setActiveTab('finance')} />
           </div>
 
           {/* Pet Display */}
           <div className="lg:col-span-1 xl:col-span-1">
-            <div className="animate-fade-in-up">
+            <div className="animate-fade-in-up" data-tutorial="pet-display">
               <PetDisplay onXpClick={() => setActiveTab('tasks')} onFinanceClick={() => setActiveTab('finance')} />
             </div>
             {/* SidePanel below pet on lg, hidden on xl (shown in its own column) */}
-            <div className="mt-5 xl:hidden animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="mt-5 xl:hidden animate-fade-in-up" data-tutorial="side-panel" style={{ animationDelay: '0.1s' }}>
               <SidePanel onFinanceClick={() => setActiveTab('finance')} />
             </div>
           </div>
@@ -318,6 +320,7 @@ const GameDashboard: React.FC = () => {
               <TabsList className="grid w-full grid-cols-6 mb-5 glass-card p-1.5 rounded-2xl h-auto shadow-md">
                 <TabsTrigger
                   value="alerts"
+                  data-tutorial="tab-alerts"
                   className="group w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Bell className="w-4 h-4" />
@@ -330,6 +333,7 @@ const GameDashboard: React.FC = () => {
                 </TabsTrigger>
                 <TabsTrigger
                   value="shop"
+                  data-tutorial="tab-shop"
                   className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Store className="w-4 h-4" />
@@ -337,6 +341,7 @@ const GameDashboard: React.FC = () => {
                 </TabsTrigger>
                 <TabsTrigger
                   value="games"
+                  data-tutorial="tab-games"
                   className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Gamepad2 className="w-4 h-4" />
@@ -344,6 +349,7 @@ const GameDashboard: React.FC = () => {
                 </TabsTrigger>
                 <TabsTrigger
                   value="tasks"
+                  data-tutorial="tab-tasks"
                   className="group w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <ClipboardCheck className="w-4 h-4" />
@@ -354,6 +360,7 @@ const GameDashboard: React.FC = () => {
                 </TabsTrigger>
                 <TabsTrigger
                   value="finance"
+                  data-tutorial="tab-finance"
                   className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Wallet className="w-4 h-4" />
@@ -361,6 +368,7 @@ const GameDashboard: React.FC = () => {
                 </TabsTrigger>
                 <TabsTrigger
                   value="achievements"
+                  data-tutorial="tab-achievements"
                   className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-sky-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
                 >
                   <Trophy className="w-4 h-4" />
@@ -552,6 +560,14 @@ const GameDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Tutorial Overlay */}
+      {showTutorial && (
+        <TutorialOverlay
+          onComplete={completeTutorial}
+          onTabChange={setActiveTab}
+        />
       )}
 
       {/* Event Modal */}

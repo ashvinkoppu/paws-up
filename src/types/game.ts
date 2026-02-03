@@ -197,6 +197,7 @@ export interface GameState {
   petAsleep: boolean;
   lastSleepDate: string;
   petDead: boolean;
+  tutorialCompleted: boolean;
 }
 
 // Personality modifiers

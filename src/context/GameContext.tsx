@@ -30,6 +30,7 @@ const initialState: GameState = {
   petAsleep: false,
   lastSleepDate: '',
   petDead: false,
+  tutorialCompleted: false,
 };
 
 type GameAction =
@@ -64,7 +65,8 @@ type GameAction =
   | { type: 'PUT_PET_TO_SLEEP' }
   | { type: 'EXPIRE_TIMED_TASK'; payload: string }
   | { type: 'WAKE_PET_UP' }
-  | { type: 'PET_DIED' };
+  | { type: 'PET_DIED' }
+  | { type: 'COMPLETE_TUTORIAL' };
 
 const ACHIEVEMENT_REWARD = 10;
 
@@ -433,6 +435,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         petAsleep: action.payload.petAsleep || false,
         lastSleepDate: action.payload.lastSleepDate || '',
         petDead: action.payload.petDead || false,
+        tutorialCompleted: action.payload.tutorialCompleted ?? (action.payload.gameStarted ? true : false),
       } as GameState;
       // Migrate old pets: add gender and equippedAccessories if missing
       if (loadedState.pet) {
@@ -719,6 +722,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'COMPLETE_TUTORIAL': {
+      return {
+        ...state,
+        tutorialCompleted: true,
+      };
+    }
+
     default:
       return state;
   }
@@ -764,6 +774,7 @@ interface GameContextType {
   expireTimedTask: (taskId: string) => void;
   putPetToSleep: () => void;
   wakePetUp: () => void;
+  completeTutorial: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1130,6 +1141,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
+  const completeTutorial = () => {
+    dispatch({ type: 'COMPLETE_TUTORIAL' });
+  };
+
   const expireTimedTask = (taskId: string) => {
     dispatch({ type: 'EXPIRE_TIMED_TASK', payload: taskId });
     toast({
@@ -1171,6 +1186,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         unequipAccessory,
         putPetToSleep,
         wakePetUp,
+        completeTutorial,
       }}
     >
       {children}
