@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, PawPrint } from 'lucide-react';
 import { Pet, GameState } from '@/types/game';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+
+const MAX_MESSAGE_LENGTH = 500;
 
 interface Message {
   id: string;
@@ -29,6 +32,7 @@ interface FAQChatbotProps {
 const FAQChatbot: React.FC<FAQChatbotProps> = ({ context }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const { toast } = useToast();
 
   // Build personalized greeting based on context
   const getGreeting = () => {
@@ -137,6 +141,15 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
+
+    if (inputValue.trim().length > MAX_MESSAGE_LENGTH) {
+      toast({
+        title: "Message too long",
+        description: `Please keep your message under ${MAX_MESSAGE_LENGTH} characters.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -286,11 +299,11 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
               <div className="relative flex items-center gap-4">
                 {/* Paws avatar */}
                 <div className="relative">
-                  <div className="relative w-12 h-12 bg-muted rounded-2xl flex items-center justify-center">
-                    <span className="text-2xl">🐾</span>
+                  <div className="relative w-12 h-12 bg-[#D96A4A]/15 rounded-2xl flex items-center justify-center">
+                    <PawPrint className="w-6 h-6 text-[#D96A4A]" />
                   </div>
                   {/* Online indicator */}
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-secondary rounded-full border-2 border-card" />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#4CAF50] rounded-full border-2 border-card" />
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -330,8 +343,8 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
                   }}
                 >
                   {message.role === 'assistant' && (
-                    <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <span className="text-sm">🐾</span>
+                    <div className="w-7 h-7 rounded-lg bg-[#D96A4A]/15 flex items-center justify-center shrink-0">
+                      <PawPrint className="w-4 h-4 text-[#D96A4A]" />
                     </div>
                   )}
                   <div
@@ -356,8 +369,8 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
 
               {isLoading && (
                 <div className="flex gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    <span className="text-sm">🐾</span>
+                  <div className="w-7 h-7 rounded-lg bg-[#D96A4A]/15 flex items-center justify-center shrink-0">
+                    <PawPrint className="w-4 h-4 text-[#D96A4A]" />
                   </div>
                   <div className="bg-gradient-to-br from-muted/80 to-muted/40 rounded-2xl rounded-bl-lg border border-border/30 px-4 py-3">
                     <div className="flex items-center gap-1.5">
@@ -471,7 +484,7 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
               : "scale-150 opacity-100"
           )}
           style={{
-            background: 'radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(217, 106, 74, 0.2) 0%, transparent 70%)',
             animation: !isOpen ? 'breathe 3s ease-in-out infinite' : 'none'
           }}
         />
@@ -483,10 +496,10 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
           onMouseLeave={() => setIsHovering(false)}
           className={cn(
             "relative w-14 h-14 rounded-full shadow-xl transition-all duration-500 transform",
-            "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background",
+            "focus:outline-none focus:ring-2 focus:ring-[#D96A4A]/50 focus:ring-offset-2 focus:ring-offset-background",
             isOpen
               ? "bg-muted hover:bg-muted/80 rotate-0 scale-90"
-              : "bg-gradient-to-br from-primary via-primary to-chart-5 hover:scale-110 hover:shadow-2xl hover:shadow-primary/30"
+              : "bg-[#D96A4A] hover:bg-[#C55A3A] hover:scale-110 hover:shadow-2xl hover:shadow-[#D96A4A]/40"
           )}
           aria-label={isOpen ? 'Close chat' : 'Open chat'}
           style={{
@@ -500,9 +513,7 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <span className="text-2xl transform transition-transform duration-300 group-hover:scale-110">
-                🐾
-              </span>
+              <PawPrint className="w-6 h-6 text-white" />
             )}
           </div>
 
@@ -521,8 +532,8 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
 
         {/* Notification dot when closed */}
         {!isOpen && (
-          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-secondary rounded-full border-2 border-background flex items-center justify-center">
-            <div className="w-1.5 h-1.5 bg-secondary-foreground rounded-full" />
+          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-white rounded-full border-2 border-background flex items-center justify-center shadow-sm">
+            <div className="w-1.5 h-1.5 bg-[#D96A4A] rounded-full" />
           </div>
         )}
       </div>

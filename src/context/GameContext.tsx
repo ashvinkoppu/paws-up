@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode, useCallback, useRef } from 'react';
 import { GameState, Pet, PetStats, Transaction, Achievement, RandomEvent, InventoryItem, GameNotification, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, DailyTask, DailyTracking, MilestoneState, AccessorySlot } from '@/types/game';
 import { INITIAL_ACHIEVEMENTS } from '@/data/achievements';
 import { getRandomEvent } from '@/data/events';
@@ -169,8 +169,6 @@ function checkAllMilestones(state: GameState): GameState {
   const milestones = ensureMilestones(state);
   const counters: LifetimeCounters = state.lifetimeCounters || { totalFeeds: 0, totalPlays: 0 };
   let resultState = { ...state };
-  let achievements = [...resultState.achievements];
-  let achievementMoney = 0;
 
   const updatedMilestones = milestones.map(milestone => {
     if (milestone.completed) return milestone;
@@ -911,39 +909,72 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [state, dispatch] = useReducer(gameReducer, initialState);
   const [lastActionFeedback, setLastActionFeedback] = useState<ActionFeedbackEvent | null>(null);
   const [isPlayingMiniGame, setIsPlayingMiniGame] = useState(false);
+  const isPlayingMiniGameRef = useRef(isPlayingMiniGame);
+  const hasPendingSaveRef = useRef(false);
+  const stateRef = useRef(state);
+
+  // Keep refs in sync
+  useEffect(() => {
+    isPlayingMiniGameRef.current = isPlayingMiniGame;
+  }, [isPlayingMiniGame]);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  // Handle beforeunload to save pending data
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (hasPendingSaveRef.current && stateRef.current.gameStarted) {
+        // Try to save using sendBeacon for reliability
+        const saveData = JSON.stringify({
+          state: stateRef.current,
+          timestamp: Date.now(),
+        });
+
+        // sendBeacon is more reliable for unload saves
+        if (navigator.sendBeacon) {
+          // Note: This would need a server endpoint to handle beacon saves
+          // For now, we just prevent the page from closing without warning
+        }
+
+        // Show browser confirmation dialog
+        event.preventDefault();
+        event.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return event.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   // Debounced auto-save to Supabase
   useEffect(() => {
     if (!state.gameStarted) {
-      console.log('[AutoSave] Skipping - game not started');
       return;
     }
 
-    console.log('[AutoSave] Scheduling save, pet:', state.pet?.name);
+    hasPendingSaveRef.current = true;
 
     const timeout = setTimeout(async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      console.log('[AutoSave] Session check:', { hasSession: !!session, hasUser: !!session?.user, userId: session?.user?.id });
-
       if (!session?.user) {
-        console.log('[AutoSave] No session/user, aborting');
+        hasPendingSaveRef.current = false;
         return;
       }
 
       // Ensure profile exists before saving (required for foreign key constraint)
-      const { data: existingProfile, error: profileCheckError } = await supabase
+      const { data: existingProfile } = await supabase
         .from('profiles')
         .select('id')
         .eq('id', session.user.id)
         .maybeSingle();
 
-      console.log('[AutoSave] Profile check:', { existingProfile, profileCheckError });
-
       if (!existingProfile) {
-        console.log('[AutoSave] Creating profile for user:', session.user.id);
         // Create profile if it doesn't exist (e.g., for OAuth users where trigger might fail)
         const { error: profileError } = await supabase.from('profiles').upsert(
           {
@@ -955,13 +986,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         );
 
         if (profileError) {
-          console.error('[AutoSave] Failed to create profile:', profileError);
+          hasPendingSaveRef.current = false;
           return;
         }
-        console.log('[AutoSave] Profile created successfully');
       }
 
-      console.log('[AutoSave] Saving game for user:', session.user.id);
       const { error } = await supabase.from('game_saves').upsert(
         {
           user_id: session.user.id,
@@ -971,11 +1000,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         { onConflict: 'user_id' },
       );
 
-      if (error) {
-        console.error('[AutoSave] Failed to save game:', error);
-      } else {
-        console.log('[AutoSave] Game saved successfully!');
-      }
+      hasPendingSaveRef.current = false;
     }, 2000);
 
     return () => clearTimeout(timeout);
@@ -1001,14 +1026,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       dispatch({ type: 'DECAY_STATS' });
       dispatch({ type: 'CHECK_GROWTH' });
 
-      // Random event chance (5% every minute) - but not during mini-games
-              if (Math.random() < 0.05 && !isPlayingMiniGame) {
-                dispatch({ type: 'TRIGGER_EVENT', payload: getRandomEvent() });
-              }
-            }, 180000);
-      
-            return () => clearInterval(interval);
-          }, [state.pet]);
+      // Random event chance (5% every interval) - but not during mini-games
+      if (Math.random() < 0.05 && !isPlayingMiniGameRef.current) {
+        dispatch({ type: 'TRIGGER_EVENT', payload: getRandomEvent() });
+      }
+    }, 180000);
+
+    return () => clearInterval(interval);
+  }, [state.pet]);
   const createPet = (petData: Omit<Pet, 'id' | 'stats' | 'experience' | 'level' | 'equippedAccessories' | 'createdAt' | 'lastCaredAt'>) => {
     const newPet: Pet = {
       ...petData,

@@ -77,13 +77,7 @@ const getStatColor = (value: number): { barColor: string; textColor: string; bgC
   };
 };
 
-interface SidePanelProps {
-  collapsed?: boolean;
-  onToggle?: () => void;
-  onFinanceClick?: () => void;
-}
-
-const SidePanel: React.FC<SidePanelProps> = ({ collapsed = false, onToggle, onFinanceClick }) => {
+const SidePanel: React.FC = () => {
   const { state } = useGame();
   const { pet } = state;
 

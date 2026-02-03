@@ -18,7 +18,7 @@ export const DAILY_TASK_POOL: DailyTaskDef[] = [
   { id: 'game-3', name: 'Arcade Star', description: 'Play 3 mini-games', icon: '⭐', trackingKey: 'gamesPlayed', target: 3, xpReward: 15, difficulty: 'hard', timeLimitMinutes: 10 },
   { id: 'vet-1', name: 'Health Check', description: 'Take your pet to the vet', icon: '🏥', trackingKey: 'vetCount', target: 1, xpReward: 15, difficulty: 'easy' },
   // Discount Rewards
-  { id: 'discount-game-5', name: 'Mega Gamer', description: 'Play 5 mini-games for 10% off', icon: '🕹️', trackingKey: 'gamesPlayed', target: 5, xpReward: 30, difficulty: 'hard', rewardType: 'discount', discountValue: 10 },
+  { id: 'discount-game-4', name: 'Mega Gamer', description: 'Play 4 mini-games for 10% off', icon: '🕹️', trackingKey: 'gamesPlayed', target: 4, xpReward: 30, difficulty: 'hard', rewardType: 'discount', discountValue: 10 },
   { id: 'discount-spend-80', name: 'Shopaholic', description: 'Spend $80 for 15% off', icon: '🛍️', trackingKey: 'moneySpent', target: 80, xpReward: 30, difficulty: 'hard', rewardType: 'discount', discountValue: 15 },
 ];
 

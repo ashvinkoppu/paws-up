@@ -43,6 +43,15 @@ const GameDashboard: React.FC = () => {
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const showTutorial = !state.tutorialCompleted;
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -94,15 +103,28 @@ const GameDashboard: React.FC = () => {
       setMoneyAnimations((previous) => [...previous, { id: animationId, amount: Math.round(earned), swoopX, swoopY }]);
 
       // Pulse the wallet when animation arrives
-      setTimeout(() => {
+      const pulseTimer = setTimeout(() => {
+        if (!isMountedRef.current) return;
         setWalletPulsing(true);
-        setTimeout(() => setWalletPulsing(false), 400);
+        const resetTimer = setTimeout(() => {
+          if (isMountedRef.current) {
+            setWalletPulsing(false);
+          }
+        }, 400);
+        return () => clearTimeout(resetTimer);
       }, 1000);
 
       // Remove animation element after it completes
-      setTimeout(() => {
-        setMoneyAnimations((previous) => previous.filter((animation) => animation.id !== animationId));
+      const cleanupTimer = setTimeout(() => {
+        if (isMountedRef.current) {
+          setMoneyAnimations((previous) => previous.filter((animation) => animation.id !== animationId));
+        }
       }, 1500);
+
+      return () => {
+        clearTimeout(pulseTimer);
+        clearTimeout(cleanupTimer);
+      };
     }
     previousMoney.current = state.money;
   }, [state.money]);
