@@ -44,7 +44,7 @@ const Achievements: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-1">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[600px] overflow-y-auto pr-1">
           {state.achievements.map((achievement, index) => (
             <div
               key={achievement.id}
