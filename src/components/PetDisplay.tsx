@@ -323,12 +323,12 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
             </span>
             {pet.stage !== 'adult' && (
               <div className="flex flex-col justify-center h-full">
-                <div 
-                  className="w-12 h-1.5 bg-background/40 rounded-full overflow-hidden" 
+                <div
+                  className="w-12 h-1.5 bg-border rounded-full overflow-hidden"
                   title={`Growth to next stage: ${Math.round(growthProgress)}%`}
                 >
-                  <div 
-                    className="h-full bg-accent-foreground/70 rounded-full transition-all duration-500"
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-500"
                     style={{ width: `${growthProgress}%` }}
                   />
                 </div>

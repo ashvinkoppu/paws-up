@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PawPrint, ArrowLeft, ScrollText } from 'lucide-react';
+import { PawPrint, ArrowLeft, ScrollText, ChevronRight } from 'lucide-react';
 
 const TermsOfService: React.FC = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const sections = [
     {
       title: 'Acceptance of Terms',
@@ -98,96 +101,106 @@ Our total liability for any claims arising from your use of the service shall no
   ];
 
   return (
-    <div className="min-h-screen flex flex-col paper-texture relative overflow-hidden">
-      {/* Atmospheric background layers */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-15%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-br from-secondary/8 via-secondary/4 to-transparent blur-3xl animate-breathe" />
-        <div className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-primary/8 via-primary/4 to-transparent blur-3xl animate-breathe" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-[20%] right-[10%] text-primary/10 text-3xl animate-gentle-drift" style={{ animationDelay: '1s' }}>🐾</div>
-        <div className="absolute bottom-[30%] left-[12%] text-secondary/10 text-2xl animate-gentle-drift" style={{ animationDelay: '4s' }}>🐾</div>
-      </div>
-
-      {/* Top nav */}
-      <nav className="relative z-10 flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <PawPrint className="w-6 h-6 text-primary" />
-          <Link to="/" className="text-xl font-serif font-bold bg-gradient-to-br from-primary to-chart-5 bg-clip-text text-transparent">
-            Paws Up
+    <div className="min-h-screen bg-gradient-to-b from-background to-accent/10">
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/20">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="p-1.5 bg-primary/10 rounded-lg transition-colors group-hover:bg-primary/20">
+              <PawPrint className="w-4 h-4 text-primary" />
+            </div>
+            <span className="font-serif font-bold bg-gradient-to-r from-primary to-chart-5 bg-clip-text text-transparent">
+              Paws Up
+            </span>
           </Link>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="rounded-xl gap-1.5">
-              <ArrowLeft className="w-4 h-4" />
-              Home
-            </Button>
-          </Link>
-          <Link to="/dashboard">
-            <Button variant="ghost" size="sm" className="rounded-xl">
-              Dashboard
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Home</span>
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button size="sm" className="bg-primary/10 hover:bg-primary/20 text-primary border-0">
+                Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center p-4 pb-12 relative z-10">
-        <div className="max-w-4xl w-full">
-          {/* Header */}
-          <div className="text-center mb-8 animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 glass-card rounded-full text-sm font-medium text-accent-foreground mb-6 shadow-sm">
-              <ScrollText className="w-4 h-4 text-primary" />
-              <span>Please read carefully</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 tracking-tight">
-              <span className="bg-gradient-to-br from-primary via-primary to-chart-5 bg-clip-text text-transparent">
-                Terms of Service
-              </span>
-            </h1>
-            <p className="text-muted-foreground">
-              Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-            </p>
+      <main className="max-w-3xl mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary/10 rounded-full text-sm mb-4">
+            <ScrollText className="w-4 h-4 text-secondary" />
+            <span className="text-secondary font-medium">Legal</span>
           </div>
+          <h1 className="text-4xl font-serif font-bold mb-3">Terms of Service</h1>
+          <p className="text-muted-foreground">
+            Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
+        </div>
 
-          {/* Introduction */}
-          <Card className="glass-card rounded-2xl shadow-lg mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <CardContent className="p-6">
-              <p className="text-foreground leading-relaxed">
-                Welcome to Paws Up! These Terms of Service govern your use of our pet care and budgeting game application. By using Paws Up, you agree to these terms. Please read them carefully before using our service.
-              </p>
-            </CardContent>
-          </Card>
+        {/* Introduction */}
+        <div className="prose prose-neutral dark:prose-invert max-w-none mb-12">
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Welcome to Paws Up! These Terms of Service govern your use of our pet care and budgeting game application. By using Paws Up, you agree to these terms. Please read them carefully before using our service.
+          </p>
+        </div>
 
-          {/* Sections */}
-          <div className="space-y-4">
+        {/* Table of Contents */}
+        <div className="mb-12 p-6 bg-card/50 rounded-2xl border border-border/20">
+          <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-4">Contents</h2>
+          <div className="grid sm:grid-cols-2 gap-2">
             {sections.map((section, index) => (
-              <Card
+              <a
                 key={index}
-                className="glass-card rounded-2xl shadow-lg animate-fade-in-up"
-                style={{ animationDelay: `${0.15 + index * 0.05}s` }}
+                href={`#section-${index}`}
+                className="flex items-center gap-2 text-sm text-foreground/80 hover:text-primary transition-colors py-1"
               >
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-serif text-primary">
-                    {section.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-foreground/90 leading-relaxed whitespace-pre-line">
-                    {section.content}
-                  </p>
-                </CardContent>
-              </Card>
+                <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                {section.title}
+              </a>
             ))}
           </div>
+        </div>
 
-          {/* Footer links */}
-          <div className="mt-8 text-center animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-            <p className="text-muted-foreground text-sm">
-              See also: <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-            </p>
+        {/* Sections */}
+        <div className="space-y-10">
+          {sections.map((section, index) => (
+            <section key={index} id={`section-${index}`} className="scroll-mt-20">
+              <h2 className="text-xl font-serif font-semibold mb-4 text-foreground">
+                {section.title}
+              </h2>
+              <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                {section.content}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        {/* Footer navigation */}
+        <div className="mt-16 pt-8 border-t border-border/30">
+          <div className="flex items-center justify-between">
+            <Link
+              to="/privacy"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              <span>Privacy Policy</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+            <Link
+              to="/faq"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              <span>FAQ</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

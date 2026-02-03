@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useGame } from '@/context/GameContext';
 import { Clock, Utensils, Moon, Sun, Coffee, Soup } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -59,8 +60,9 @@ interface GameClockProps {
 }
 
 const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder }) => {
-  // Start game time at 7:00 AM
-  const [gameMinutes, setGameMinutes] = useState(7 * 60); // 7:00 AM = 420 minutes
+  const { state, updateGameTime } = useGame();
+  // Start game time from saved state or default to 7:00 AM
+  const [gameMinutes, setGameMinutes] = useState(state.gameTime || 7 * 60); 
   const [reminders, setReminders] = useState<ReminderPopup[]>([]);
   const [shownReminders, setShownReminders] = useState<Set<string>>(new Set());
   const lastMealWindowRef = useRef<string | null>(null);
@@ -87,6 +89,26 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
 
     return () => clearInterval(interval);
   }, []);
+
+  // Sync local time with global state (handle loads/resets)
+  useEffect(() => {
+    // Only update local time if difference is large (> 20 mins) to avoid jitter/loops
+    // This allows local state to "tick" smoothly while context might lag slightly
+    // But detects major shifts like loading a save or resetting the game
+    const diff = Math.abs((state.gameTime || 0) - gameMinutes);
+    if (diff > 20 && diff < 1400) { // Ignore small diffs (jitter) and wrap-around diffs (0 vs 1439)
+      setGameMinutes(state.gameTime || 7 * 60);
+    }
+  }, [state.gameTime]);
+
+  // Sync global state with local time (periodically)
+  useEffect(() => {
+    // Every 5 game minutes (15 real seconds), push update to context
+    // This ensures time is saved reasonably often without spamming updates
+    if (gameMinutes % 5 === 0) {
+      updateGameTime(gameMinutes);
+    }
+  }, [gameMinutes, updateGameTime]);
 
   // Check for meal and bedtime reminders
   useEffect(() => {

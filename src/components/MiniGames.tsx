@@ -830,7 +830,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 (state.dailyTracking?.catchGamePlayed && state.dailyTracking.catchGamePlayed >= 1) && "opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none"
               )}
             >
-              {(state.dailyTracking?.catchGamePlayed && state.dailyTracking.catchGamePlayed >= 1) && (
+              {state.dailyTracking?.catchGamePlayed >= 1 && (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] rounded-2xl z-10">
                   <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-sm">
                     Daily Limit Reached
@@ -851,12 +851,9 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                     {isRewardAvailable('catch') ? "$2–$8 per catch" : "Daily Limit Reached"}
                   </span>
                 </div>
-                {state.highScores?.['catch'] !== undefined && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
-                    <Trophy className="w-3 h-3 text-primary" />
-                    <span>Best: {state.highScores['catch']}</span>
-                  </div>
-                )}
+                <span className="text-xs text-muted-foreground">
+                  High Score: {state.highScores?.['catch'] ?? 0}
+                </span>
               </div>
             </button>
 
@@ -872,7 +869,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 (state.dailyTracking?.memoryGamePlayed && state.dailyTracking.memoryGamePlayed >= 1) && "opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none"
               )}
             >
-              {(state.dailyTracking?.memoryGamePlayed && state.dailyTracking.memoryGamePlayed >= 1) && (
+              {state.dailyTracking?.memoryGamePlayed >= 1 && (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] rounded-2xl z-10">
                   <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-sm">
                     Daily Limit Reached
@@ -886,23 +883,16 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
               <p className="text-sm text-muted-foreground mb-3">
                 Match all the pairs!
               </p>
-              <div className="flex items-center justify-between w-full mt-auto">
-                 <div className="flex items-center gap-2 text-secondary justify-center w-full relative">
-                 </div>
-              </div>
-               <div className="flex items-center justify-between w-full mt-2">
+              <div className="flex items-center justify-between w-full mt-2">
                 <div className={cn("flex items-center gap-2", isRewardAvailable('memory') ? "text-secondary" : "text-muted-foreground")}>
                   <Coins className="w-4 h-4" />
                   <span className="font-semibold text-sm">
                     {isRewardAvailable('memory') ? "$5–$12 per game" : "Daily Limit Reached"}
                   </span>
                 </div>
-                {state.highScores?.['memory'] !== undefined && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
-                    <Trophy className="w-3 h-3 text-secondary" />
-                    <span>Best: {Math.abs(state.highScores['memory'])} moves</span>
-                  </div>
-                )}
+                <span className="text-xs text-muted-foreground">
+                  High Score: {state.highScores?.['memory'] ? `${Math.abs(state.highScores['memory'])} moves` : '0'}
+                </span>
               </div>
             </button>
 
@@ -918,7 +908,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 (state.dailyTracking?.quizGamePlayed && state.dailyTracking.quizGamePlayed >= 1) && "opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none"
               )}
             >
-              {(state.dailyTracking?.quizGamePlayed && state.dailyTracking.quizGamePlayed >= 1) && (
+              {state.dailyTracking?.quizGamePlayed >= 1 && (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] rounded-2xl z-10">
                   <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-sm">
                     Daily Limit Reached
@@ -939,12 +929,9 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                     {isRewardAvailable('quiz') ? "$6–$15 per game" : "Daily Limit Reached"}
                   </span>
                 </div>
-                {state.highScores?.['quiz'] !== undefined && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
-                    <Trophy className="w-3 h-3 text-[#8B5E3C]" />
-                    <span>Best: {state.highScores['quiz']}/5</span>
-                  </div>
-                )}
+                <span className="text-xs text-muted-foreground">
+                  High Score: {state.highScores?.['quiz'] ?? 0}/5
+                </span>
               </div>
             </button>
 
@@ -960,7 +947,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 (state.dailyTracking?.whackGamePlayed && state.dailyTracking.whackGamePlayed >= 1) && "opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none"
               )}
             >
-              {(state.dailyTracking?.whackGamePlayed && state.dailyTracking.whackGamePlayed >= 1) && (
+              {state.dailyTracking?.whackGamePlayed >= 1 && (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-[1px] rounded-2xl z-10">
                   <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm font-medium shadow-sm">
                     Daily Limit Reached
@@ -981,12 +968,9 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                     {isRewardAvailable('whack') ? "$2–$5 per whack" : "Daily Limit Reached"}
                   </span>
                 </div>
-                {state.highScores?.['whack'] !== undefined && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-accent/50 rounded-lg text-xs font-medium text-muted-foreground">
-                    <Trophy className="w-3 h-3 text-primary" />
-                    <span>Best: {state.highScores['whack']}</span>
-                  </div>
-                )}
+                <span className="text-xs text-muted-foreground">
+                  High Score: {state.highScores?.['whack'] ?? 0}
+                </span>
               </div>
             </button>
           </div>

@@ -117,7 +117,7 @@ const FinancePanel: React.FC = () => {
       </Card>
 
       {/* Spending Breakdown */}
-      {Object.keys(spendingByCategory).length > 0 && (
+      {Object.keys(spendingByCategory).length > 0 ? (
         <Card className="glass-card rounded-2xl">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-3 text-base">
@@ -145,10 +145,27 @@ const FinancePanel: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      ) : (
+        <Card className="glass-card rounded-2xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-3 text-base">
+              <div className="p-2 bg-secondary/10 rounded-xl">
+                <DollarSign className="w-4 h-4 text-secondary" />
+              </div>
+              <span className="font-serif">Spending Breakdown</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3 p-3 bg-accent/30 rounded-xl text-sm text-muted-foreground">
+              <span className="text-lg">🫧</span>
+              <span>No spending yet.</span>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Recent Transactions */}
-      {recentTransactions.length > 0 && (
+      {recentTransactions.length > 0 ? (
         <Card className="glass-card rounded-2xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-serif">Recent Transactions</CardTitle>
@@ -184,6 +201,18 @@ const FinancePanel: React.FC = () => {
                   </span>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="glass-card rounded-2xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-serif">Recent Transactions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3 p-3 bg-accent/30 rounded-xl text-sm text-muted-foreground">
+              <span className="text-lg">🧾</span>
+              <span>No transactions yet.</span>
             </div>
           </CardContent>
         </Card>

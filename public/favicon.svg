@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <ellipse cx="50" cy="65" rx="22" ry="18" fill="#E8A87C"/>
-  <ellipse cx="28" cy="40" rx="12" ry="14" fill="#E8A87C"/>
-  <ellipse cx="72" cy="40" rx="12" ry="14" fill="#E8A87C"/>
-  <ellipse cx="18" cy="55" rx="10" ry="12" fill="#E8A87C"/>
-  <ellipse cx="82" cy="55" rx="10" ry="12" fill="#E8A87C"/>
+  <!-- Heart-shaped main pad -->
+  <path d="M50 80 C25 55, 22 40, 32 30 C40 23, 47 28, 50 35 C53 28, 60 23, 68 30 C78 40, 75 55, 50 80Z" fill="#E07A5F"/>
+  <!-- Three toe pads arranged above the heart -->
+  <circle cx="28" cy="25" r="9" fill="#E07A5F"/>
+  <circle cx="50" cy="15" r="9" fill="#E07A5F"/>
+  <circle cx="72" cy="25" r="9" fill="#E07A5F"/>
 </svg>

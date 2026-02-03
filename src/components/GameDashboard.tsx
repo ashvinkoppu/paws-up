@@ -15,6 +15,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import PetDisplay from '@/components/PetDisplay';
 import SidePanel from '@/components/SidePanel';
 import Shop from '@/components/Shop';
@@ -27,12 +34,12 @@ import NotificationsPanel from '@/components/NotificationsPanel';
 import GameClock from '@/components/GameClock';
 import TutorialOverlay from '@/components/TutorialOverlay';
 import FAQChatbot from '@/components/FAQChatbot';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut } from 'lucide-react';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, Settings, HelpCircle, ChevronRight, GraduationCap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const GameDashboard: React.FC = () => {
-  const { state, saveGame, resetGame, triggerRandomEvent, markNotificationsRead, clearNotifications, completeTutorial } = useGame();
+  const { state, saveGame, resetGame, triggerRandomEvent, markNotificationsRead, clearNotifications, completeTutorial, restartTutorial } = useGame();
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const showTutorial = !state.tutorialCompleted;
@@ -50,6 +57,8 @@ const GameDashboard: React.FC = () => {
   const [moneyAnimations, setMoneyAnimations] = useState<Array<{ id: number; amount: number; swoopX: number; swoopY: number }>>([]);
   const [walletPulsing, setWalletPulsing] = useState(false);
   const [activeTab, setActiveTab] = useState('shop');
+  const leftColumnRef = useRef<HTMLDivElement>(null);
+  const [rightColumnHeight, setRightColumnHeight] = useState<number | null>(null);
 
   const unreadNotificationCount = state.notifications.filter(notification => !notification.read).length;
 
@@ -116,6 +125,26 @@ const GameDashboard: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showNotificationPanel]);
 
+  useEffect(() => {
+    const leftColumn = leftColumnRef.current;
+    if (!leftColumn || typeof ResizeObserver === 'undefined') return;
+
+    const updateHeight = () => {
+      const nextHeight = Math.round(leftColumn.getBoundingClientRect().height);
+      setRightColumnHeight((previous) => (previous === nextHeight ? previous : nextHeight));
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(() => updateHeight());
+    observer.observe(leftColumn);
+    window.addEventListener('resize', updateHeight);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateHeight);
+    };
+  }, []);
+
   const handleOpenNotifications = () => {
     setShowNotificationPanel(!showNotificationPanel);
     if (!showNotificationPanel && unreadNotificationCount > 0) {
@@ -156,297 +185,334 @@ const GameDashboard: React.FC = () => {
     return `${Math.floor(hours / 24)}d ago`;
   };
 
+  // State for reset dialog (needed for menu)
+  const [showResetDialog, setShowResetDialog] = useState(false);
+
   return (
     <div className="min-h-screen paper-texture relative overflow-x-hidden w-full">
-      {/* Atmospheric background */}
+      {/* Atmospheric background - simplified */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-br from-primary/6 to-transparent blur-3xl" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-tl from-secondary/6 to-transparent blur-3xl" />
-        <div className="absolute top-[25%] right-[2%] w-[28vw] h-[28vw] rounded-full bg-gradient-to-bl from-violet-500/4 to-transparent blur-2xl" />
+        <div className="absolute top-[-15%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-br from-primary/5 to-transparent blur-3xl" />
+        <div className="absolute bottom-[-15%] right-[-5%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-tl from-secondary/5 to-transparent blur-3xl" />
       </div>
 
-      {/* Header - Glass morphism */}
-      <header className="sticky top-0 z-40 glass-card border-b border-border/30 shadow-lg">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-xl shadow-sm ring-1 ring-primary/10">
+      {/* Clean, minimal header */}
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/20">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex justify-between items-center">
+            {/* Left: Logo only */}
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="p-2 bg-gradient-to-br from-primary/15 to-primary/5 rounded-xl transition-all duration-300 group-hover:from-primary/25 group-hover:to-primary/10">
                 <PawPrint className="w-5 h-5 text-primary" />
               </div>
-              <h1 className="text-xl md:text-2xl font-serif font-bold tracking-tight">
+              <h1 className="text-xl font-serif font-bold">
                 <span className="bg-gradient-to-r from-primary to-chart-5 bg-clip-text text-transparent">Paws Up</span>
               </h1>
-            </div>
-            {state.pet && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-accent/40 backdrop-blur-sm rounded-full border border-accent-foreground/8">
-                <span className="text-sm text-muted-foreground">Caring for</span>
-                <span className="text-sm font-semibold text-foreground">{state.pet.name}</span>
-              </div>
-            )}
-          </div>
+            </Link>
 
-          <div className="flex items-center gap-2">
-            {/* Budget Display */}
-            <div
-              ref={walletRef}
-              className={cn(
-                "hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/12 via-emerald-500/8 to-emerald-500/4 rounded-xl border border-emerald-500/20 shadow-sm",
-                walletPulsing && "animate-wallet-pulse"
-              )}
-            >
-              <Wallet className="w-4 h-4 text-emerald-600" />
-              <span className="font-mono font-bold text-emerald-700 tracking-wide">${state.money.toFixed(0)}</span>
-            </div>
-
-            {/* Game Clock */}
-            <div className="hidden sm:block">
-              <GameClock />
-            </div>
-
-            {/* Notification Bell */}
-            <div className="relative" ref={notificationPanelRef}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleOpenNotifications}
+            {/* Center: Key info - wallet and day */}
+            <div className="hidden sm:flex items-center gap-3">
+              <div
+                ref={walletRef}
                 className={cn(
-                  "relative border-2 transition-all duration-200",
-                  showNotificationPanel
-                    ? "border-primary/50 bg-primary/5"
-                    : "hover:border-primary/30 hover:bg-primary/5"
+                  "flex items-center gap-2 px-4 py-2 bg-emerald-500/8 rounded-full border border-emerald-500/15 transition-all duration-300",
+                  walletPulsing && "animate-wallet-pulse bg-emerald-500/15"
                 )}
               >
-                <Bell className={cn("w-4 h-4", unreadNotificationCount > 0 ? "text-primary" : "text-muted-foreground")} />
-                {unreadNotificationCount > 0 && (
-                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-lg ring-2 ring-card notification-badge-pulse">
-                    {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
-                  </span>
-                )}
-              </Button>
+                <DollarSign className="w-4 h-4 text-emerald-600" />
+                <span className="font-mono font-semibold text-emerald-700">{state.money.toFixed(0)}</span>
+              </div>
 
-              {/* Notification Dropdown */}
-              {showNotificationPanel && (
-                <div className="absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in-up bg-card border border-border/50">
-                  <div className="sticky top-0 bg-card/90 backdrop-blur-md border-b border-border/40 px-4 py-3 flex items-center justify-between">
-                    <h3 className="font-serif font-semibold text-sm">Notifications</h3>
-                    <div className="flex items-center gap-1">
-                      {state.notifications.length > 0 && (
-                        <Button variant="ghost" size="sm" onClick={clearNotifications} className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive">
-                          Clear all
-                        </Button>
-                      )}
-                      <Button variant="ghost" size="sm" onClick={() => setShowNotificationPanel(false)} className="h-6 w-6 p-0">
-                        <X className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="overflow-y-auto max-h-80">
-                    {state.notifications.length === 0 ? (
-                      <div className="p-8 text-center">
-                        <Bell className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">No notifications yet</p>
-                      </div>
-                    ) : (
-                      <div className="p-2 space-y-1">
-                        {state.notifications.slice(0, 20).map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={cn(
-                              "flex items-start gap-3 p-3 rounded-xl transition-colors duration-200",
-                              notification.read ? "opacity-60" : "bg-accent/30"
-                            )}
-                          >
-                            <span className="text-xl flex-shrink-0 mt-0.5">{notification.icon}</span>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <span className="font-semibold text-xs text-foreground truncate">{notification.title}</span>
-                                <span className={cn(
-                                  "text-[10px] px-1.5 py-0.5 rounded-full border capitalize flex-shrink-0",
-                                  getNotificationTypeColor(notification.type)
-                                )}>
-                                  {notification.type}
-                                </span>
-                              </div>
-                              <p className="text-xs text-muted-foreground truncate">{notification.description}</p>
-                              <span className="text-[10px] text-muted-foreground/60 mt-1 block">{formatTimeAgo(notification.timestamp)}</span>
-                            </div>
-                            {!notification.read && (
-                              <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 mt-2" />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+              <GameClock />
+
+              <div className="flex items-center gap-1.5 px-3 py-2 bg-accent/30 rounded-full text-sm">
+                <Sun className="w-3.5 h-3.5 text-amber-500" />
+                <span className="font-mono text-muted-foreground">Day {state.totalDaysPlayed}</span>
+              </div>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTriggerEvent}
-              className="hidden md:flex items-center gap-2 border-2 hover:border-violet-500/50 hover:bg-violet-500/5"
-            >
-              <Zap className="w-4 h-4 text-violet-500" />
-              <span>Event</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={saveGame}
-              className="flex items-center gap-2 border-2 hover:border-secondary/50 hover:bg-secondary/5"
-            >
-              <Save className="w-4 h-4 text-secondary" />
-              <span className="hidden md:inline">Save</span>
-            </Button>
-
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            {/* Right: Notifications + Menu */}
+            <div className="flex items-center gap-2">
+              {/* Notification Bell - simplified */}
+              <div className="relative" ref={notificationPanelRef}>
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                  size="icon"
+                  onClick={handleOpenNotifications}
+                  className={cn(
+                    "relative h-9 w-9 rounded-full transition-all duration-200",
+                    showNotificationPanel ? "bg-primary/10" : "hover:bg-muted/50"
+                  )}
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <Bell className={cn("w-4 h-4", unreadNotificationCount > 0 ? "text-primary" : "text-muted-foreground")} />
+                  {unreadNotificationCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm">
+                      {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                    </span>
+                  )}
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="rounded-2xl border-border/50 shadow-2xl">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="font-serif text-lg">Reset Game?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-muted-foreground">
-                    Are you sure you want to reset your game? All progress will be lost, including your pet, money, and achievements.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleReset}
-                    className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                  >
-                    Reset Game
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/50"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+                {/* Notification Dropdown */}
+                {showNotificationPanel && (
+                  <div className="absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in-up bg-card/95 backdrop-blur-xl border border-border/30">
+                    <div className="sticky top-0 bg-card/90 backdrop-blur-md border-b border-border/30 px-4 py-3 flex items-center justify-between">
+                      <h3 className="font-serif font-semibold text-sm">Notifications</h3>
+                      <div className="flex items-center gap-1">
+                        {state.notifications.length > 0 && (
+                          <Button variant="ghost" size="sm" onClick={clearNotifications} className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive">
+                            Clear all
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={() => setShowNotificationPanel(false)} className="h-6 w-6 p-0">
+                          <X className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="overflow-y-auto max-h-80">
+                      {state.notifications.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <Bell className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">No notifications yet</p>
+                        </div>
+                      ) : (
+                        <div className="p-2 space-y-1">
+                          {state.notifications.slice(0, 20).map((notification) => (
+                            <div
+                              key={notification.id}
+                              className={cn(
+                                "flex items-start gap-3 p-3 rounded-xl transition-colors duration-200",
+                                notification.read ? "opacity-60" : "bg-accent/30"
+                              )}
+                            >
+                              <span className="text-lg flex-shrink-0 mt-0.5">{notification.icon}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <span className="font-semibold text-xs text-foreground truncate">{notification.title}</span>
+                                  <span className={cn(
+                                    "text-[10px] px-1.5 py-0.5 rounded-full border capitalize flex-shrink-0",
+                                    getNotificationTypeColor(notification.type)
+                                  )}>
+                                    {notification.type}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground truncate">{notification.description}</p>
+                                <span className="text-[10px] text-muted-foreground/60 mt-1 block">{formatTimeAgo(notification.timestamp)}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Consolidated Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-muted/50">
+                    <Menu className="w-4 h-4 text-muted-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 rounded-xl p-2">
+                  {state.pet && (
+                    <>
+                      <div className="px-2 py-2 mb-1">
+                        <p className="text-xs text-muted-foreground">Caring for</p>
+                        <p className="font-semibold text-foreground">{state.pet.name}</p>
+                      </div>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+
+                  <DropdownMenuItem onClick={saveGame} className="rounded-lg cursor-pointer">
+                    <Save className="w-4 h-4 mr-2 text-secondary" />
+                    <span>Save Game</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={handleTriggerEvent} className="rounded-lg cursor-pointer">
+                    <Zap className="w-4 h-4 mr-2 text-violet-500" />
+                    <span>Trigger Event</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                    <Link to="/faq" className="flex items-center">
+                      <HelpCircle className="w-4 h-4 mr-2 text-muted-foreground" />
+                      <span>Help & FAQ</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={restartTutorial}
+                    className="rounded-lg cursor-pointer"
+                  >
+                    <GraduationCap className="w-4 h-4 mr-2 text-muted-foreground" />
+                    <span>Restart Tutorial</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={() => setShowResetDialog(true)}
+                    className="rounded-lg cursor-pointer text-amber-600 focus:text-amber-600"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    <span>Reset Game</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="rounded-lg cursor-pointer text-muted-foreground focus:text-foreground"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {/* Pet Status - left of pet on xl, above pet on lg */}
-          <div className="hidden xl:block xl:col-span-1 animate-fade-in-up" data-tutorial="side-panel" style={{ animationDelay: '0.1s' }}>
-            <SidePanel onFinanceClick={() => setActiveTab('finance')} />
-          </div>
+      {/* Reset Dialog (moved outside header for menu trigger) */}
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent className="rounded-2xl border-border/50 shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif text-lg">Reset Game?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              Are you sure you want to reset your game? All progress will be lost, including your pet, money, and achievements.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReset}
+              className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              Reset Game
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-          {/* Pet Display */}
-          <div className="lg:col-span-1 xl:col-span-1">
+      {/* Main Content - Cleaner layout */}
+      <main className="container mx-auto px-4 py-6 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column: Pet + Status (narrower) */}
+          <div className="lg:col-span-4 xl:col-span-3 space-y-4" ref={leftColumnRef}>
             <div className="animate-fade-in-up" data-tutorial="pet-display">
               <PetDisplay onXpClick={() => setActiveTab('tasks')} onFinanceClick={() => setActiveTab('finance')} />
             </div>
-            {/* SidePanel below pet on lg, hidden on xl (shown in its own column) */}
-            <div className="mt-5 xl:hidden animate-fade-in-up" data-tutorial="side-panel" style={{ animationDelay: '0.1s' }}>
+            <div className="animate-fade-in-up" data-tutorial="side-panel" style={{ animationDelay: '0.1s' }}>
               <SidePanel onFinanceClick={() => setActiveTab('finance')} />
             </div>
           </div>
 
-          {/* Right Column - Tabs */}
-          <div className="lg:col-span-2 xl:col-span-3 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-              <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-5 glass-card p-1.5 rounded-2xl h-auto shadow-md">
-                <TabsTrigger
-                  value="alerts"
-                  data-tutorial="tab-alerts"
-                  className="group w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
-                >
-                  <Bell className="w-4 h-4" />
-                  <span className="hidden md:inline font-medium">Needs</span>
-                  {needsAttentionCount > 0 && (
-                    <span className="ml-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 group-data-[state=active]:bg-white group-data-[state=active]:text-rose-500 text-white text-[10px] font-bold rounded-full">
-                      {needsAttentionCount}
-                    </span>
-                  )}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="shop"
-                  data-tutorial="tab-shop"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
-                >
-                  <Store className="w-4 h-4" />
-                  <span className="hidden md:inline font-medium">Shop</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="games"
-                  data-tutorial="tab-games"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
-                >
-                  <Gamepad2 className="w-4 h-4" />
-                  <span className="hidden md:inline font-medium">Games</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="tasks"
-                  data-tutorial="tab-tasks"
-                  className="group w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
-                >
-                  <ClipboardCheck className="w-4 h-4" />
-                  <span className="hidden md:inline font-medium">Tasks</span>
-                  {state.dailyTasks.some(task => task.completed) && !state.dailyBonusClaimed && (
-                    <span className="ml-1 w-2.5 h-2.5 rounded-full bg-orange-500 group-data-[state=active]:bg-white" />
-                  )}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="finance"
-                  data-tutorial="tab-finance"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
-                >
-                  <Wallet className="w-4 h-4" />
-                  <span className="hidden md:inline font-medium">Finance</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="achievements"
-                  data-tutorial="tab-achievements"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl data-[state=active]:bg-sky-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 py-3"
-                >
-                  <Trophy className="w-4 h-4" />
-                  <span className="hidden md:inline font-medium">Awards</span>
-                </TabsTrigger>
-              </TabsList>
+          {/* Right Column: Activity Hub (wider, cleaner tabs) */}
+          <div
+            className={cn(
+              "lg:col-span-8 xl:col-span-9 animate-fade-in-up lg:flex lg:flex-col lg:overflow-hidden lg:h-[var(--right-column-h)]"
+            )}
+            style={{
+              animationDelay: '0.15s',
+              ...(rightColumnHeight ? { '--right-column-h': `${rightColumnHeight}px` } : {}),
+            } as React.CSSProperties}
+          >
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
+              {/* Simplified tab navigation - horizontal scroll on mobile, cleaner look */}
+              <div className="mb-4 -mx-4 px-4 overflow-x-auto scrollbar-hide">
+                <TabsList className="inline-flex w-auto min-w-full lg:w-full bg-card/50 backdrop-blur-sm p-1 rounded-xl border border-border/20 gap-1">
+                  {/* Needs tab - only shows badge when there are issues */}
+                  <TabsTrigger
+                    value="alerts"
+                    data-tutorial="tab-alerts"
+                    className={cn(
+                      "flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-sm",
+                      needsAttentionCount > 0 && "ring-2 ring-rose-500/30 data-[state=inactive]:bg-rose-500/10"
+                    )}
+                  >
+                    <Bell className="w-4 h-4" />
+                    <span>Needs</span>
+                    {needsAttentionCount > 0 && (
+                      <span className="min-w-[18px] h-[18px] flex items-center justify-center bg-rose-500 group-data-[state=active]:bg-white group-data-[state=active]:text-rose-500 text-white text-[10px] font-bold rounded-full">
+                        {needsAttentionCount}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="shop"
+                    data-tutorial="tab-shop"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                  >
+                    <Store className="w-4 h-4" />
+                    <span>Shop</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="games"
+                    data-tutorial="tab-games"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                  >
+                    <Gamepad2 className="w-4 h-4" />
+                    <span>Play</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="tasks"
+                    data-tutorial="tab-tasks"
+                    className="group flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                  >
+                    <ClipboardCheck className="w-4 h-4" />
+                    <span>Tasks</span>
+                    {state.dailyTasks.some(task => task.completed) && !state.dailyBonusClaimed && (
+                      <span className="w-2 h-2 rounded-full bg-orange-500 group-data-[state=active]:bg-white" />
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="finance"
+                    data-tutorial="tab-finance"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                  >
+                    <Wallet className="w-4 h-4" />
+                    <span>Budget</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="achievements"
+                    data-tutorial="tab-achievements"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-sky-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                  >
+                    <Trophy className="w-4 h-4" />
+                    <span>Awards</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
-              <TabsContent value="alerts" className="mt-0 h-full">
-                <NotificationsPanel />
-              </TabsContent>
+              {/* Tab content with consistent card styling */}
+              <div className="bg-card/30 backdrop-blur-sm rounded-2xl border border-border/20 p-1 flex-1 min-h-0 overflow-y-auto">
+                <TabsContent value="alerts" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <NotificationsPanel />
+                </TabsContent>
 
-              <TabsContent value="shop" className="mt-0">
-                <Shop />
-              </TabsContent>
+                <TabsContent value="shop" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <Shop />
+                </TabsContent>
 
-              <TabsContent value="games" className="mt-0">
-                <MiniGames />
-              </TabsContent>
+                <TabsContent value="games" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <MiniGames />
+                </TabsContent>
 
-              <TabsContent value="tasks" className="mt-0">
-                <Tasks />
-              </TabsContent>
+                <TabsContent value="tasks" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <Tasks />
+                </TabsContent>
 
-              <TabsContent value="finance" className="mt-0">
-                <FinancePanel />
-              </TabsContent>
+                <TabsContent value="finance" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <FinancePanel />
+                </TabsContent>
 
-              <TabsContent value="achievements" className="mt-0">
-                <Achievements />
-              </TabsContent>
+                <TabsContent value="achievements" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <Achievements />
+                </TabsContent>
+              </div>
             </Tabs>
           </div>
         </div>
@@ -621,36 +687,15 @@ const GameDashboard: React.FC = () => {
       {/* Event Modal */}
       <EventModal />
 
-      {/* Footer */}
-      <footer className="border-t border-border/30 glass-card mt-8">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-5 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-rose-400 shadow-sm shadow-rose-400/40" />
-                <span>Stats above 30%</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-violet-400 shadow-sm shadow-violet-400/40" />
-                <span>Play games for money</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/40" />
-                <span>Streaks = bonuses</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 text-[11px] text-muted-foreground/60">
-                <Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link>
-                <span>•</span>
-                <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-                <span>•</span>
-                <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
-              </div>
-              <div className="text-[11px] text-muted-foreground/50 font-mono tracking-wide">
-                Day {state.totalDaysPlayed} of your adventure
-              </div>
-            </div>
+      {/* Minimal Footer */}
+      <footer className="mt-12 pb-6">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground/50">
+            <Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link>
+            <span>•</span>
+            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <span>•</span>
+            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
           </div>
         </div>
       </footer>

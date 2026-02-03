@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { PawPrint, ArrowLeft, HelpCircle, ChevronDown, ChevronUp, Search, Sparkles } from 'lucide-react';
+import { PawPrint, ArrowLeft, ChevronDown, Search, MessageCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import FAQChatbot from '@/components/FAQChatbot';
+import { cn } from '@/lib/utils';
 
 interface FAQItem {
   id: number;
@@ -14,17 +14,21 @@ interface FAQItem {
 }
 
 const FAQ: React.FC = () => {
-  const [openItems, setOpenItems] = useState<number[]>([]);
+  const [openItems, setOpenItems] = useState<number[]>([1]); // First one open by default
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const categories = [
-    { id: 'all', label: 'All Questions', icon: '🌟' },
-    { id: 'getting-started', label: 'Getting Started', icon: '🚀' },
-    { id: 'pet-care', label: 'Pet Care', icon: '🐾' },
-    { id: 'finances', label: 'Finances', icon: '💰' },
-    { id: 'games', label: 'Mini-Games', icon: '🎮' },
-    { id: 'account', label: 'Account', icon: '👤' },
+    { id: 'all', label: 'All', emoji: '✨' },
+    { id: 'getting-started', label: 'Getting Started', emoji: '🚀' },
+    { id: 'pet-care', label: 'Pet Care', emoji: '🐾' },
+    { id: 'finances', label: 'Money', emoji: '💰' },
+    { id: 'games', label: 'Games', emoji: '🎮' },
+    { id: 'account', label: 'Account', emoji: '👤' },
   ];
 
   const faqs: FAQItem[] = [
@@ -128,6 +132,16 @@ const FAQ: React.FC = () => {
     );
   };
 
+  const renderAnswer = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={index} className="text-foreground font-semibold">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
   const filteredFaqs = faqs.filter(faq => {
     const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
@@ -135,200 +149,178 @@ const FAQ: React.FC = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const expandAll = () => setOpenItems(filteredFaqs.map(faq => faq.id));
-  const collapseAll = () => setOpenItems([]);
-
   return (
-    <div className="min-h-screen flex flex-col paper-texture relative overflow-hidden">
-      {/* Atmospheric background layers */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-15%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-br from-chart-3/8 via-chart-3/4 to-transparent blur-3xl animate-breathe" />
-        <div className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-primary/8 via-primary/4 to-transparent blur-3xl animate-breathe" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-[15%] left-[12%] text-chart-3/15 text-3xl animate-gentle-drift" style={{ animationDelay: '0s' }}>❓</div>
-        <div className="absolute bottom-[25%] right-[15%] text-primary/10 text-2xl animate-gentle-drift" style={{ animationDelay: '3s' }}>💡</div>
-        <div className="absolute top-[40%] right-[8%] text-secondary/10 text-2xl animate-gentle-drift" style={{ animationDelay: '5s' }}>🐾</div>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-accent/20">
+      {/* Subtle decorative elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[10%] right-[5%] w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-[20%] left-[10%] w-48 h-48 bg-secondary/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Top nav */}
-      <nav className="relative z-10 flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <PawPrint className="w-6 h-6 text-primary" />
-          <Link to="/" className="text-xl font-serif font-bold bg-gradient-to-br from-primary to-chart-5 bg-clip-text text-transparent">
-            Paws Up
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/20">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="p-1.5 bg-primary/10 rounded-lg transition-colors group-hover:bg-primary/20">
+              <PawPrint className="w-4 h-4 text-primary" />
+            </div>
+            <span className="font-serif font-bold bg-gradient-to-r from-primary to-chart-5 bg-clip-text text-transparent">
+              Paws Up
+            </span>
           </Link>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="rounded-xl gap-1.5">
-              <ArrowLeft className="w-4 h-4" />
-              Home
-            </Button>
-          </Link>
-          <Link to="/dashboard">
-            <Button variant="ghost" size="sm" className="rounded-xl">
-              Dashboard
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Home</span>
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button size="sm" className="bg-primary/10 hover:bg-primary/20 text-primary border-0">
+                Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
-      {/* Content */}
-      <div className="flex-1 flex flex-col items-center p-4 pb-12 relative z-10">
-        <div className="max-w-4xl w-full">
-          {/* Header */}
-          <div className="text-center mb-8 animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 glass-card rounded-full text-sm font-medium text-accent-foreground mb-6 shadow-sm">
-              <HelpCircle className="w-4 h-4 text-chart-3" />
-              <span>Got questions? We've got answers!</span>
-              <Sparkles className="w-4 h-4 text-chart-1" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 tracking-tight">
-              <span className="bg-gradient-to-br from-chart-3 via-primary to-chart-5 bg-clip-text text-transparent">
-                Frequently Asked Questions
-              </span>
-            </h1>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Find answers to common questions about Paws Up! If you can't find what you're looking for, feel free to reach out.
-            </p>
+      {/* Main Content */}
+      <main className="relative z-10 max-w-4xl mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/50 rounded-full text-sm mb-6">
+            <MessageCircle className="w-4 h-4 text-primary" />
+            <span className="text-muted-foreground">Help Center</span>
           </div>
+          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
+            How can we help?
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-md mx-auto">
+            Find answers to common questions about caring for your virtual pet.
+          </p>
+        </div>
 
-          {/* Search and Controls */}
-          <Card className="glass-card rounded-2xl shadow-lg mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col md:flex-row gap-4 items-center">
-                <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Search questions..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 rounded-xl border-border/50 bg-background/50"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={expandAll} className="rounded-xl text-xs">
-                    Expand All
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={collapseAll} className="rounded-xl text-xs">
-                    Collapse All
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Search */}
+        <div className="relative max-w-xl mx-auto mb-8">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/60 z-10 pointer-events-none" />
+          <Input
+            type="text"
+            placeholder="Search for answers..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="relative z-0 pl-12 pr-4 py-6 text-base rounded-2xl border-border/30 bg-card/50 backdrop-blur-sm focus:bg-card transition-colors"
+          />
+        </div>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-6 justify-center animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
-            {categories.map((cat) => (
+        {/* Category Pills */}
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
+          {categories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={cn(
+                "flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                activeCategory === cat.id
+                  ? "bg-foreground text-background shadow-lg"
+                  : "bg-card/50 text-muted-foreground hover:bg-card hover:text-foreground border border-border/30"
+              )}
+            >
+              <span>{cat.emoji}</span>
+              <span>{cat.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* FAQ List */}
+        <div className="space-y-3">
+          {filteredFaqs.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="text-5xl mb-4">🔍</div>
+              <p className="text-muted-foreground mb-4">No questions match your search.</p>
               <Button
-                key={cat.id}
-                variant={activeCategory === cat.id ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveCategory(cat.id)}
-                className={`rounded-xl gap-1.5 transition-all duration-200 ${
-                  activeCategory === cat.id
-                    ? 'bg-gradient-to-r from-primary to-chart-5 text-primary-foreground shadow-md'
-                    : 'hover:bg-primary/10'
-                }`}
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery('');
+                  setActiveCategory('all');
+                }}
               >
-                <span>{cat.icon}</span>
-                <span className="hidden sm:inline">{cat.label}</span>
+                Clear filters
               </Button>
-            ))}
-          </div>
+            </div>
+          ) : (
+            filteredFaqs.map((faq, index) => {
+              const isOpen = openItems.includes(faq.id);
+              const category = categories.find(c => c.id === faq.category);
 
-          {/* FAQ Items */}
-          <div className="space-y-3">
-            {filteredFaqs.length === 0 ? (
-              <Card className="glass-card rounded-2xl shadow-lg animate-fade-in-up">
-                <CardContent className="p-8 text-center">
-                  <div className="text-4xl mb-4">🔍</div>
-                  <p className="text-muted-foreground">No questions found matching your search.</p>
-                  <Button
-                    variant="link"
-                    onClick={() => {
-                      setSearchQuery('');
-                      setActiveCategory('all');
-                    }}
-                    className="text-primary mt-2"
-                  >
-                    Clear filters
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              filteredFaqs.map((faq, index) => (
-                <Card
+              return (
+                <div
                   key={faq.id}
-                  className={`glass-card rounded-2xl shadow-lg animate-fade-in-up overflow-hidden transition-all duration-300 ${
-                    openItems.includes(faq.id) ? 'ring-2 ring-primary/30' : ''
-                  }`}
-                  style={{ animationDelay: `${0.2 + index * 0.03}s` }}
+                  className={cn(
+                    "rounded-2xl border transition-all duration-300",
+                    isOpen
+                      ? "bg-card border-border/50 shadow-lg"
+                      : "bg-card/30 border-border/20 hover:bg-card/60 hover:border-border/30"
+                  )}
+                  style={{ animationDelay: `${index * 30}ms` }}
                 >
                   <button
                     onClick={() => toggleItem(faq.id)}
-                    className="w-full text-left p-4 md:p-5 flex items-start gap-4 hover:bg-primary/5 transition-colors duration-200"
-                    aria-expanded={openItems.includes(faq.id)}
+                    className="w-full text-left p-5 flex items-start gap-4"
+                    aria-expanded={isOpen}
                   >
-                    <div className={`p-2 rounded-xl transition-colors duration-200 ${
-                      openItems.includes(faq.id)
-                        ? 'bg-gradient-to-br from-primary to-chart-5 text-primary-foreground'
-                        : 'bg-primary/10 text-primary'
-                    }`}>
-                      <HelpCircle className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground text-sm md:text-base">
+                    <span className="text-xl mt-0.5 flex-shrink-0">{category?.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={cn(
+                        "font-semibold pr-8 transition-colors",
+                        isOpen ? "text-foreground" : "text-foreground/80"
+                      )}>
                         {faq.question}
                       </h3>
-                      <span className="text-xs text-muted-foreground mt-1 inline-block">
-                        {categories.find(c => c.id === faq.category)?.icon}{' '}
-                        {categories.find(c => c.id === faq.category)?.label}
-                      </span>
                     </div>
-                    <div className={`transition-transform duration-200 ${openItems.includes(faq.id) ? 'rotate-180' : ''}`}>
-                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                    </div>
+                    <ChevronDown className={cn(
+                      "w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-300",
+                      isOpen && "rotate-180"
+                    )} />
                   </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      openItems.includes(faq.id) ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-                    }`}
-                  >
-                    <div className="px-4 md:px-5 pb-4 md:pb-5 ml-12 md:ml-14">
-                      <div className="p-4 bg-muted/30 rounded-xl border border-border/30">
-                        <p className="text-foreground/90 leading-relaxed whitespace-pre-line text-sm md:text-base">
-                          {faq.answer}
-                        </p>
+
+                  <div className={cn(
+                    "overflow-hidden transition-all duration-300",
+                    isOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0"
+                  )}>
+                    <div className="px-5 pb-5 pl-14">
+                      <div className="text-muted-foreground leading-relaxed whitespace-pre-line text-[15px]">
+                        {renderAnswer(faq.answer)}
                       </div>
                     </div>
                   </div>
-                </Card>
-              ))
-            )}
-          </div>
-
-          {/* Results Count */}
-          {filteredFaqs.length > 0 && (
-            <div className="mt-6 text-center text-sm text-muted-foreground animate-fade-in-up">
-              Showing {filteredFaqs.length} of {faqs.length} questions
-            </div>
+                </div>
+              );
+            })
           )}
+        </div>
 
-          {/* Footer links */}
-          <div className="mt-8 text-center animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
-            <p className="text-muted-foreground text-sm mb-4">
-              Still have questions? Check out our other resources:
+        {/* Results count */}
+        {filteredFaqs.length > 0 && searchQuery && (
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            Found {filteredFaqs.length} {filteredFaqs.length === 1 ? 'result' : 'results'}
+          </p>
+        )}
+
+        {/* Still need help? */}
+        <div className="mt-16 text-center">
+          <div className="inline-block p-8 rounded-3xl bg-gradient-to-br from-primary/5 via-accent/30 to-secondary/5 border border-border/20">
+            <h2 className="font-serif font-semibold text-xl mb-2">Still have questions?</h2>
+            <p className="text-muted-foreground mb-4">
+              Try our AI assistant or check our policies below.
             </p>
             <div className="flex items-center justify-center gap-4 text-sm">
               <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
-              <span className="text-muted-foreground">•</span>
+              <span className="text-border">•</span>
               <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
       {/* AI Chatbot */}
       <FAQChatbot />

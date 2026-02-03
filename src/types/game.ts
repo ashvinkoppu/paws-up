@@ -207,6 +207,7 @@ export interface GameState {
   petDead: boolean;
   tutorialCompleted: boolean;
   dailyGameRewards: Record<string, string>;
+  gameTime: number; // Minutes from 00:00 (0-1439)
 }
 
 // Personality modifiers

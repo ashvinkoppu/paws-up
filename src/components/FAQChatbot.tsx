@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, X, Send, Bot, User, Sparkles, Loader2 } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { Pet, GameState } from '@/types/game';
+import { cn } from '@/lib/utils';
 
 interface Message {
   id: string;
@@ -28,7 +28,8 @@ interface FAQChatbotProps {
 
 const FAQChatbot: React.FC<FAQChatbotProps> = ({ context }) => {
   const [isOpen, setIsOpen] = useState(false);
-  
+  const [isHovering, setIsHovering] = useState(false);
+
   // Build personalized greeting based on context
   const getGreeting = () => {
     if (context?.pet) {
@@ -39,13 +40,13 @@ const FAQChatbot: React.FC<FAQChatbotProps> = ({ context }) => {
       if (context.pet.stats.energy <= 40) lowStats.push('tired');
       if (context.pet.stats.cleanliness <= 40) lowStats.push('dirty');
       if (context.pet.stats.health <= 40) lowStats.push('unwell');
-      
+
       if (lowStats.length > 0) {
-        return `Hi! I noticed ${petName} might need some attention - they seem ${lowStats.join(' and ')}. 🐾 How can I help you take better care of them?`;
+        return `Hi! I noticed ${petName} might need some attention - they seem ${lowStats.join(' and ')}. How can I help you take better care of them?`;
       }
-      return `Hey there! ${petName} looks happy and healthy! 🐾 I'm Paws, your assistant. Ask me anything about caring for ${petName}, earning coins, or playing games!`;
+      return `Hey there! ${petName} looks happy and healthy! I'm Paws, your assistant. Ask me anything about caring for ${petName}, earning coins, or playing games!`;
     }
-    return "Hi there! 🐾 I'm Paws, your helpful assistant! Ask me anything about Paws Up - pet care, finances, mini-games, or how to get started. I'm here to help!";
+    return "Hi there! I'm Paws, your helpful assistant! Ask me anything about Paws Up - pet care, finances, mini-games, or how to get started. I'm here to help!";
   };
 
   const [messages, setMessages] = useState<Message[]>([
@@ -60,6 +61,7 @@ const FAQChatbot: React.FC<FAQChatbotProps> = ({ context }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -244,148 +246,287 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
   const suggestedQuestions = getSuggestedQuestions();
 
   return (
-    <>
-      {/* Chat Toggle Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 ${
-          isOpen 
-            ? 'bg-muted text-muted-foreground rotate-0' 
-            : 'bg-gradient-to-r from-primary to-chart-5 text-primary-foreground'
-        }`}
-        aria-label={isOpen ? 'Close chat' : 'Open chat'}
-      >
-        {isOpen ? (
-          <X className="w-6 h-6" />
-        ) : (
-          <MessageCircle className="w-6 h-6" />
-        )}
-      </button>
+    <div ref={containerRef} className="fixed bottom-6 right-6 z-50">
+      {/* Decorative ambient particles when open */}
+      {isOpen && (
+        <div className="absolute inset-0 pointer-events-none overflow-visible">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1.5 h-1.5 rounded-full bg-primary/40"
+              style={{
+                right: `${-20 + Math.random() * 400}px`,
+                bottom: `${50 + Math.random() * 450}px`,
+                animation: `sparkle ${2 + Math.random() * 2}s ease-in-out infinite`,
+                animationDelay: `${i * 0.4}s`
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Chat Window */}
       <div
-        className={`fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-48px)] transition-all duration-300 transform ${
-          isOpen 
-            ? 'opacity-100 scale-100 translate-y-0' 
-            : 'opacity-0 scale-95 translate-y-4 pointer-events-none'
-        }`}
+        className={cn(
+          "absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-48px)] transition-all duration-500 origin-bottom-right",
+          isOpen
+            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 scale-90 translate-y-8 pointer-events-none"
+        )}
       >
-        <Card className="glass-card rounded-2xl shadow-2xl border-primary/20 overflow-hidden">
-          {/* Header */}
-          <CardHeader className="bg-gradient-to-r from-primary to-chart-5 text-primary-foreground p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-xl">
-                <Bot className="w-5 h-5" />
-              </div>
-              <div className="flex-1">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  Ask Paws
-                  <Sparkles className="w-4 h-4" />
-                </CardTitle>
-                <p className="text-xs text-primary-foreground/80">AI-powered help assistant</p>
+        {/* Main chat container with organic shape */}
+        <div className="relative">
+          {/* Main card */}
+          <div className="relative bg-card/95 backdrop-blur-xl rounded-[1.5rem] border border-border/40 shadow-2xl overflow-hidden">
+            {/* Decorative top edge with gradient */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-secondary" />
+
+            {/* Header */}
+            <div className="relative px-5 pt-5 pb-4">
+              <div className="relative flex items-center gap-4">
+                {/* Paws avatar */}
+                <div className="relative">
+                  <div className="relative w-12 h-12 bg-muted rounded-2xl flex items-center justify-center">
+                    <span className="text-2xl">🐾</span>
+                  </div>
+                  {/* Online indicator */}
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-secondary rounded-full border-2 border-card" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-serif font-bold text-lg text-foreground tracking-tight">
+                    Paws
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Your friendly guide
+                  </p>
+                </div>
+
+                {/* Close button */}
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 rounded-xl bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-105"
+                  aria-label="Close chat"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
-          </CardHeader>
 
-          {/* Messages */}
-          <CardContent className="p-0 bg-gradient-to-b from-background to-muted/30">
-            <div className="h-[320px] overflow-y-auto p-4 space-y-4">
-              {messages.map((message) => (
+            {/* Messages area */}
+            <div className="h-[340px] overflow-y-auto px-4 pb-3 space-y-3 scrollbar-hide">
+              {messages.map((message, index) => (
                 <div
                   key={message.id}
-                  className={`flex items-start gap-2 ${
-                    message.role === 'user' ? 'flex-row-reverse' : ''
-                  }`}
+                  className={cn(
+                    "flex gap-2.5",
+                    message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                  )}
+                  style={{
+                    animation: 'fadeInUp 0.4s ease-out forwards',
+                    animationDelay: `${index * 0.05}s`
+                  }}
                 >
+                  {message.role === 'assistant' && (
+                    <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                      <span className="text-sm">🐾</span>
+                    </div>
+                  )}
                   <div
-                    className={`p-2 rounded-xl shrink-0 ${
+                    className={cn(
+                      "max-w-[80%] px-4 py-2.5 text-sm leading-relaxed",
                       message.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-gradient-to-br from-amber-100 to-orange-100 text-amber-700'
-                    }`}
-                  >
-                    {message.role === 'user' ? (
-                      <User className="w-4 h-4" />
-                    ) : (
-                      <Bot className="w-4 h-4" />
+                        ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-2xl rounded-br-lg shadow-md"
+                        : "bg-gradient-to-br from-muted/80 to-muted/40 text-foreground rounded-2xl rounded-bl-lg border border-border/30"
                     )}
-                  </div>
-                  <div
-                    className={`px-4 py-3 rounded-2xl max-w-[85%] ${
-                      message.role === 'user'
-                        ? 'bg-primary text-primary-foreground rounded-br-md'
-                        : 'bg-gradient-to-br from-amber-50 to-orange-50 text-foreground border border-amber-200/50 rounded-bl-md shadow-sm'
-                    }`}
                   >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                      {message.content}
-                    </p>
+                    <p className="whitespace-pre-wrap">{message.content}</p>
                   </div>
+                  {message.role === 'user' && (
+                    <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+                      <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               ))}
-              
+
               {isLoading && (
-                <div className="flex items-start gap-2">
-                  <div className="p-2 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 text-amber-700 shrink-0">
-                    <Bot className="w-4 h-4" />
+                <div className="flex gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <span className="text-sm">🐾</span>
                   </div>
-                  <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-amber-600" />
-                      <span className="text-sm text-amber-700">Thinking...</span>
+                  <div className="bg-gradient-to-br from-muted/80 to-muted/40 rounded-2xl rounded-bl-lg border border-border/30 px-4 py-3">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex gap-1">
+                        {[0, 1, 2].map((i) => (
+                          <div
+                            key={i}
+                            className="w-2 h-2 rounded-full bg-primary/60"
+                            style={{
+                              animation: 'bounce 1.4s ease-in-out infinite',
+                              animationDelay: `${i * 0.16}s`
+                            }}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               <div ref={messagesEndRef} />
             </div>
 
             {/* Suggested Questions */}
             {messages.length <= 2 && (
-              <div className="px-4 pb-2 flex flex-wrap gap-2">
-                {suggestedQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setInputValue(question);
-                      inputRef.current?.focus();
-                    }}
-                    className="text-xs px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-                  >
-                    {question}
-                  </button>
-                ))}
+              <div className="px-4 pb-3">
+                <div className="flex flex-wrap gap-1.5">
+                  {suggestedQuestions.map((question, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setInputValue(question);
+                        inputRef.current?.focus();
+                      }}
+                      className="text-xs px-3 py-1.5 rounded-full bg-accent/50 hover:bg-accent text-accent-foreground border border-border/30 transition-all duration-200 hover:scale-[1.02] hover:shadow-sm"
+                      style={{
+                        animation: 'fadeInUp 0.3s ease-out forwards',
+                        animationDelay: `${0.2 + index * 0.08}s`,
+                        opacity: 0
+                      }}
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Input */}
-            <div className="p-4 border-t border-border/50 bg-transparent">
-              <div className="flex gap-2">
-                <Input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Type your question..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  disabled={isLoading}
-                  className="flex-1 rounded-xl border-border/50 bg-muted/30 focus:bg-background transition-colors"
-                />
+            {/* Input area */}
+            <div className="p-4 pt-2 border-t border-border/30 bg-muted/20">
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-1">
+                  <Input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Ask anything..."
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    disabled={isLoading}
+                    className="pr-4 rounded-xl bg-background/80 border-border/40 focus:border-primary/50 focus:bg-background focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 placeholder:text-muted-foreground/60"
+                  />
+                </div>
                 <Button
                   onClick={sendMessage}
                   disabled={!inputValue.trim() || isLoading}
                   size="icon"
-                  className="rounded-xl bg-gradient-to-r from-primary to-chart-5 hover:opacity-90 transition-opacity"
+                  className={cn(
+                    "rounded-xl h-10 w-10 transition-all duration-300",
+                    inputValue.trim()
+                      ? "bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 scale-100"
+                      : "bg-muted text-muted-foreground scale-95"
+                  )}
                 >
-                  <Send className="w-4 h-4" />
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+        </div>
       </div>
-    </>
+
+      {/* Floating Toggle Button - Enchanted Creature Style */}
+      <div className="relative">
+        {/* Hover tooltip */}
+        <div
+          className={cn(
+            "absolute bottom-full right-0 mb-3 whitespace-nowrap transition-all duration-300",
+            isHovering && !isOpen
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-2 pointer-events-none"
+          )}
+        >
+          <div className="px-3 py-1.5 bg-card rounded-lg shadow-lg border border-border/50 text-sm font-medium">
+            Need help? Ask Paws!
+          </div>
+          <div className="absolute -bottom-1 right-6 w-2 h-2 bg-card border-r border-b border-border/50 rotate-45" />
+        </div>
+
+        {/* Ambient glow ring */}
+        <div
+          className={cn(
+            "absolute inset-0 rounded-full transition-all duration-500",
+            isOpen
+              ? "scale-100 opacity-0"
+              : "scale-150 opacity-100"
+          )}
+          style={{
+            background: 'radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)',
+            animation: !isOpen ? 'breathe 3s ease-in-out infinite' : 'none'
+          }}
+        />
+
+        {/* Main button */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+          className={cn(
+            "relative w-14 h-14 rounded-full shadow-xl transition-all duration-500 transform",
+            "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background",
+            isOpen
+              ? "bg-muted hover:bg-muted/80 rotate-0 scale-90"
+              : "bg-gradient-to-br from-primary via-primary to-chart-5 hover:scale-110 hover:shadow-2xl hover:shadow-primary/30"
+          )}
+          aria-label={isOpen ? 'Close chat' : 'Open chat'}
+          style={{
+            animation: !isOpen && !isHovering ? 'float 4s ease-in-out infinite' : 'none'
+          }}
+        >
+          {/* Button content */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            {isOpen ? (
+              <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <span className="text-2xl transform transition-transform duration-300 group-hover:scale-110">
+                🐾
+              </span>
+            )}
+          </div>
+
+          {/* Shine effect on hover */}
+          {!isOpen && (
+            <div
+              className={cn(
+                "absolute inset-0 rounded-full overflow-hidden",
+                "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent",
+                "before:translate-x-[-100%] before:transition-transform before:duration-700",
+                isHovering && "before:translate-x-[100%]"
+              )}
+            />
+          )}
+        </button>
+
+        {/* Notification dot when closed */}
+        {!isOpen && (
+          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-secondary rounded-full border-2 border-background flex items-center justify-center">
+            <div className="w-1.5 h-1.5 bg-secondary-foreground rounded-full" />
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

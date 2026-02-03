@@ -33,6 +33,7 @@ const initialState: GameState = {
   petDead: false,
   tutorialCompleted: false,
   dailyGameRewards: {},
+  gameTime: 7 * 60, // Start at 7:00 AM
 };
 
 type GameAction =
@@ -69,7 +70,9 @@ type GameAction =
   | { type: 'WAKE_PET_UP' }
   | { type: 'PET_DIED' }
   | { type: 'COMPLETE_TUTORIAL' }
-  | { type: 'CLAIM_GAME_REWARD'; payload: { gameId: string; amount: number } };
+  | { type: 'RESTART_TUTORIAL' }
+  | { type: 'CLAIM_GAME_REWARD'; payload: { gameId: string; amount: number } }
+  | { type: 'UPDATE_GAME_TIME'; payload: number };
 
 const ACHIEVEMENT_REWARD = 10;
 
@@ -519,6 +522,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         petDead: action.payload.petDead || false,
         tutorialCompleted: action.payload.tutorialCompleted ?? (action.payload.gameStarted ? true : false),
         dailyGameRewards: action.payload.dailyGameRewards || {},
+        gameTime: action.payload.gameTime || 7 * 60,
       } as GameState;
       // Migrate old pets: add gender and equippedAccessories if missing
       if (loadedState.pet) {
@@ -803,6 +807,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'RESTART_TUTORIAL': {
+      return {
+        ...state,
+        tutorialCompleted: false,
+      };
+    }
+
     case 'CLAIM_GAME_REWARD': {
       const { gameId, amount } = action.payload;
       const today = new Date().toDateString();
@@ -833,6 +844,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             timestamp: Date.now(),
           }
         ]
+      };
+    }
+    
+    case 'UPDATE_GAME_TIME': {
+      return {
+        ...state,
+        gameTime: action.payload,
       };
     }
 
@@ -882,7 +900,9 @@ interface GameContextType {
   putPetToSleep: () => void;
   wakePetUp: () => void;
   completeTutorial: () => void;
+  restartTutorial: () => void;
   claimGameReward: (gameId: string, amount: number) => boolean;
+  updateGameTime: (minutes: number) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -1358,6 +1378,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'COMPLETE_TUTORIAL' });
   };
 
+  const restartTutorial = () => {
+    dispatch({ type: 'RESTART_TUTORIAL' });
+    toast({
+      title: "Tutorial Restarted",
+      description: "The tutorial will now guide you through the game features again.",
+    });
+  };
+
   const expireTimedTask = (taskId: string) => {
     dispatch({ type: 'EXPIRE_TIMED_TASK', payload: taskId });
     toast({
@@ -1374,6 +1402,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     dispatch({ type: 'CLAIM_GAME_REWARD', payload: { gameId, amount } });
     return true;
+  };
+
+  const updateGameTime = (minutes: number) => {
+    dispatch({ type: 'UPDATE_GAME_TIME', payload: minutes });
   };
 
   return (
@@ -1409,7 +1441,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         putPetToSleep,
         wakePetUp,
         completeTutorial,
+        restartTutorial,
         claimGameReward,
+        updateGameTime,
       }}
     >
       {children}
