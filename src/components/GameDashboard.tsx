@@ -336,60 +336,60 @@ const GameDashboard: React.FC = () => {
                     <Menu className="w-4 h-4 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-xl p-2">
+                <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 bg-card/95 backdrop-blur-xl border border-border/30 shadow-2xl">
                   {state.pet && (
                     <>
-                      <div className="px-2 py-2 mb-1">
-                        <p className="text-xs text-muted-foreground">Caring for</p>
-                        <p className="font-semibold text-foreground">{state.pet.name}</p>
+                      <div className="px-3 py-2.5 mb-1">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70">Caring for</p>
+                        <p className="font-serif font-semibold text-foreground">{state.pet.name}</p>
                       </div>
-                      <DropdownMenuSeparator />
+                      <DropdownMenuSeparator className="bg-border/30" />
                     </>
                   )}
 
-                  <DropdownMenuItem onClick={saveGame} className="rounded-lg cursor-pointer">
-                    <Save className="w-4 h-4 mr-2 text-secondary" />
-                    <span>Save Game</span>
+                  <DropdownMenuItem onClick={saveGame} className="rounded-xl cursor-pointer py-2.5 px-3 focus:bg-accent/50">
+                    <Save className="w-4 h-4 mr-3 text-secondary" />
+                    <span className="text-sm">Save Game</span>
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem onClick={handleTriggerEvent} className="rounded-lg cursor-pointer">
-                    <Zap className="w-4 h-4 mr-2 text-violet-500" />
-                    <span>Trigger Event</span>
+                  <DropdownMenuItem onClick={handleTriggerEvent} className="rounded-xl cursor-pointer py-2.5 px-3 focus:bg-accent/50">
+                    <Zap className="w-4 h-4 mr-3 text-violet-500" />
+                    <span className="text-sm">Trigger Event</span>
                   </DropdownMenuItem>
 
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-border/30" />
 
-                  <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                  <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5 px-3 focus:bg-accent/50">
                     <Link to="/faq" className="flex items-center">
-                      <HelpCircle className="w-4 h-4 mr-2 text-muted-foreground" />
-                      <span>Help & FAQ</span>
+                      <HelpCircle className="w-4 h-4 mr-3 text-muted-foreground" />
+                      <span className="text-sm">Help & FAQ</span>
                     </Link>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
                     onClick={restartTutorial}
-                    className="rounded-lg cursor-pointer"
+                    className="rounded-xl cursor-pointer py-2.5 px-3 focus:bg-accent/50"
                   >
-                    <GraduationCap className="w-4 h-4 mr-2 text-muted-foreground" />
-                    <span>Restart Tutorial</span>
+                    <GraduationCap className="w-4 h-4 mr-3 text-muted-foreground" />
+                    <span className="text-sm">Restart Tutorial</span>
                   </DropdownMenuItem>
 
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="bg-border/30" />
 
                   <DropdownMenuItem
                     onClick={() => setShowResetDialog(true)}
-                    className="rounded-lg cursor-pointer text-amber-600 focus:text-amber-600"
+                    className="rounded-xl cursor-pointer py-2.5 px-3 text-amber-600 focus:text-amber-600 focus:bg-amber-500/10"
                   >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    <span>Reset Game</span>
+                    <RotateCcw className="w-4 h-4 mr-3" />
+                    <span className="text-sm">Reset Game</span>
                   </DropdownMenuItem>
 
                   <DropdownMenuItem
                     onClick={handleSignOut}
-                    className="rounded-lg cursor-pointer text-muted-foreground focus:text-foreground"
+                    className="rounded-xl cursor-pointer py-2.5 px-3 text-muted-foreground focus:text-foreground focus:bg-accent/50"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    <span>Sign Out</span>
+                    <LogOut className="w-4 h-4 mr-3" />
+                    <span className="text-sm">Sign Out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
