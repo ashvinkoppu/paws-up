@@ -5,6 +5,19 @@ import { supabase } from '@/lib/supabase';
 import GameDashboard from '@/components/GameDashboard';
 import PetCreationWizard from '@/components/PetCreationWizard';
 import { toast } from '@/hooks/use-toast';
+import { GameState } from '@/types/game';
+
+/** Minimal validation that save data has the expected shape */
+function isValidSaveData(data: unknown): data is GameState {
+  if (typeof data !== 'object' || data === null) return false;
+  const save = data as Record<string, unknown>;
+  return (
+    typeof save.gameStarted === 'boolean' &&
+    typeof save.money === 'number' &&
+    Array.isArray(save.transactions) &&
+    Array.isArray(save.achievements)
+  );
+}
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -49,7 +62,16 @@ const Dashboard: React.FC = () => {
             variant: 'destructive',
           });
         } else if (data?.save_data) {
-          loadGameFromCloud(data.save_data);
+          if (isValidSaveData(data.save_data)) {
+            loadGameFromCloud(data.save_data);
+          } else {
+            console.error('Invalid save data shape, starting fresh');
+            toast({
+              title: 'Save data corrupted',
+              description: 'Your saved game data was invalid. Starting fresh.',
+              variant: 'destructive',
+            });
+          }
         }
       } catch (error) {
         setLoadError('An unexpected error occurred. Please try again.');
@@ -92,7 +114,7 @@ const Dashboard: React.FC = () => {
     return <GameDashboard />;
   }
 
-  return <PetCreationWizard onComplete={() => {}} />;
+  return <PetCreationWizard />;
 };
 
 export default Dashboard;

@@ -60,7 +60,7 @@ const Shop: React.FC = () => {
     }
 
     if (spendMoney(finalPrice, item.category, item.name)) {
-      addToInventory(item as InventoryItem);
+      addToInventory({ ...item, quantity: 1 });
       toast({
         title: "Purchased!",
         description: `${item.name} added to inventory${discount > 0 ? ` (${discount}% off!)` : ''}`,

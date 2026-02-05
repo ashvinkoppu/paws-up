@@ -99,6 +99,7 @@ export interface EventChoice {
   cost?: number;
   effects?: Partial<PetStats>;
   moneyEffect?: number;
+  discountEffect?: number;
   message: string;
 }
 
@@ -201,6 +202,8 @@ export interface GameState {
   lifetimeCounters: {
     totalFeeds: number;
     totalPlays: number;
+    totalGamesWon: number;
+    weeksUnderBudget: number;
   };
   petAsleep: boolean;
   lastSleepDate: string;

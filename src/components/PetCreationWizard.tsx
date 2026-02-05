@@ -40,7 +40,7 @@ const STEP_CONFIG = [
 ];
 
 interface PetCreationWizardProps {
-  onComplete: () => void;
+  onComplete?: () => void;
 }
 
 const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => {
@@ -92,7 +92,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
 
   const handleBack = () => {
     if (step === 1) {
-      onComplete();
+      onComplete?.();
     } else {
       setStep(step - 1);
     }
@@ -109,7 +109,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => 
       personality: selectedPersonality,
       stage: 'baby' as GrowthStage,
     });
-    onComplete();
+    onComplete?.();
   };
 
   const currentStepConfig = STEP_CONFIG[step - 1];

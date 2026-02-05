@@ -5,6 +5,7 @@ import { Send, Loader2, PawPrint } from 'lucide-react';
 import { Pet, GameState } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 const MAX_MESSAGE_LENGTH = 500;
 
@@ -163,21 +164,25 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
     setIsLoading(true);
 
     try {
-      // Call our own backend API instead of OpenAI directly
+      // Get the current session token for authenticated API access
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Not authenticated');
+      }
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini', // Updated to a valid model name
           messages: [
             { role: 'system', content: buildSystemPrompt() },
-            ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
+            ...messages.slice(-10).map(message => ({ role: message.role, content: message.content })),
             { role: 'user', content: userMessage.content }
           ],
           max_tokens: 300,
-          temperature: 0.7
         })
       });
 
@@ -429,7 +434,7 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
                     placeholder="Ask anything..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyPress}
                     disabled={isLoading}
                     className="pr-4 rounded-xl bg-background/80 border-border/40 focus:border-primary/50 focus:bg-background focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 placeholder:text-muted-foreground/60"
                   />

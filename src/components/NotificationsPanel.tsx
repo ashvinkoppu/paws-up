@@ -4,68 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Activity, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PetStats } from '@/types/game';
-
-const STAT_CONFIG: Record<keyof PetStats, {
-  label: string;
-  icon: string;
-  color: string;
-  bgColor: string;
-  action: 'feed' | 'play' | 'rest' | 'clean' | 'vet';
-  actionLabel: string;
-  lowWarning: number;
-  warning: string;
-}> = {
-  hunger: {
-    label: 'Hunger',
-    icon: '🍖',
-    color: 'bg-chart-1',
-    bgColor: 'bg-chart-1/20',
-    action: 'feed',
-    actionLabel: 'Feed',
-    lowWarning: 30,
-    warning: 'Your pet is hungry!',
-  },
-  happiness: {
-    label: 'Happiness',
-    icon: '💕',
-    color: 'bg-chart-2',
-    bgColor: 'bg-chart-2/20',
-    action: 'play',
-    actionLabel: 'Play',
-    lowWarning: 25,
-    warning: 'Your pet needs attention!',
-  },
-  energy: {
-    label: 'Energy',
-    icon: '⚡',
-    color: 'bg-chart-3',
-    bgColor: 'bg-chart-3/20',
-    action: 'rest',
-    actionLabel: 'Rest',
-    lowWarning: 20,
-    warning: 'Your pet is tired!',
-  },
-  cleanliness: {
-    label: 'Clean',
-    icon: '✨',
-    color: 'bg-chart-4',
-    bgColor: 'bg-chart-4/20',
-    action: 'clean',
-    actionLabel: 'Clean',
-    lowWarning: 25,
-    warning: 'Your pet needs grooming!',
-  },
-  health: {
-    label: 'Health',
-    icon: '❤️',
-    color: 'bg-chart-5',
-    bgColor: 'bg-chart-5/20',
-    action: 'vet',
-    actionLabel: 'Vet',
-    lowWarning: 40,
-    warning: 'Visit the vet!',
-  },
-};
+import { STAT_CONFIG } from '@/data/statConfig';
 
 const SleepAction: React.FC = () => {
   const { state, putPetToSleep, wakePetUp } = useGame();

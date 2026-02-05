@@ -132,8 +132,6 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   const { state, lastActionFeedback } = useGame();
   const { petAsleep } = state;
 
-  if (!state.pet) return null;
-
   const [interaction, setInteraction] = useState<'none' | 'happy' | 'sad'>('none');
   const [eatingState, setEatingState] = useState<'idle' | 'eating' | 'done'>('idle');
   const [eatingEmoji, setEatingEmoji] = useState('🍖');
@@ -142,14 +140,15 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   const [itemUseLabel, setItemUseLabel] = useState<string | null>(null);
   const [isEvolving, setIsEvolving] = useState(false);
   const [evolutionTarget, setEvolutionTarget] = useState<GrowthStage | null>(null);
-  const previousStageRef = useRef<GrowthStage>(state.pet!.stage);
+  const previousStageRef = useRef<GrowthStage>(state.pet?.stage ?? 'baby');
   const lastFeedTimestamp = useRef<number>(0);
   const lastItemUseTimestamp = useRef<number>(0);
   const particleIdRef = useRef(0);
 
   // Detect stage evolution
   useEffect(() => {
-    const currentStage = state.pet!.stage;
+    if (!state.pet) return;
+    const currentStage = state.pet.stage;
     const previousStage = previousStageRef.current;
 
     if (currentStage !== previousStage) {
@@ -178,6 +177,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   // Handle eating animation (food items)
   useEffect(() => {
     if (
+      state.pet &&
       lastActionFeedback &&
       lastActionFeedback.action === 'feed' &&
       lastActionFeedback.timestamp !== lastFeedTimestamp.current
@@ -208,6 +208,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   // Handle item-use animation (toys, grooming, medicine, accessories)
   useEffect(() => {
     if (
+      state.pet &&
       lastActionFeedback &&
       lastActionFeedback.action === 'use-item' &&
       lastActionFeedback.timestamp !== lastItemUseTimestamp.current
@@ -248,7 +249,9 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
 
       return () => clearTimeout(clearTimer);
     }
-  }, [lastActionFeedback]);
+  }, [lastActionFeedback, state.pet]);
+
+  if (!state.pet) return null;
 
   const { pet } = state;
   const avgHealth = Object.values(pet.stats).reduce((sum, value) => sum + value, 0) / 5;

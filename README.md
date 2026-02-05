@@ -37,9 +37,42 @@ React + TypeScript, Vite, Tailwind CSS, shadcn/ui, Supabase, Recharts
 
 ## Quick Start
 
+### Prerequisites
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+- An [OpenAI API key](https://platform.openai.com/api-keys) (for the FAQ chatbot)
+
+### Setup
+
+1. Clone the repo and install dependencies:
 ```bash
 npm install
+```
+
+2. Copy the environment template and fill in your keys:
+```bash
+cp .env.example .env.local
+```
+
+Required variables:
+- `VITE_SUPABASE_URL` — Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` — Your Supabase anon/public key
+- `OPENAI_API_KEY` — OpenAI API key for the chatbot
+
+3. Run the Supabase migration to create the database tables:
+```bash
+npx supabase db push
+```
+Or manually run `supabase/migrations/001_initial_schema.sql` in your Supabase SQL editor.
+
+4. Start the development server:
+```bash
 npm run dev
 ```
 
-Open http://localhost:5173
+This starts the Vite frontend at http://localhost:8080.
+
+To also run the chatbot API proxy (requires [Vercel CLI](https://vercel.com/docs/cli)):
+```bash
+npm run dev:full
+```

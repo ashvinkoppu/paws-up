@@ -34,7 +34,9 @@ import NotificationsPanel from '@/components/NotificationsPanel';
 import GameClock from '@/components/GameClock';
 import TutorialOverlay from '@/components/TutorialOverlay';
 import FAQChatbot from '@/components/FAQChatbot';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, Settings, HelpCircle, ChevronRight, GraduationCap } from 'lucide-react';
+import NewDayPopup from '@/components/NewDayPopup';
+import PetDeathOverlay from '@/components/PetDeathOverlay';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, HelpCircle, GraduationCap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -563,139 +565,20 @@ const GameDashboard: React.FC = () => {
 
       {/* New Day Popup Overlay */}
       {showNewDayPopup && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-[2px] cursor-pointer"
-          onClick={() => setShowNewDayPopup(false)}
-          style={{
-            animation: 'newDayFadeIn 0.5s ease-out, newDayFadeOut 0.5s ease-in 3.5s forwards',
-          }}
-        >
-          <div
-            className="bg-card rounded-2xl shadow-xl border border-border/60 overflow-hidden"
-            style={{
-              animation: 'newDayPop 0.6s ease-out',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
-              maxWidth: '320px',
-              width: '90vw',
-            }}
-          >
-            <div className="bg-gradient-to-b from-amber-50 to-transparent px-10 py-8 flex flex-col items-center gap-5">
-              <div
-                className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center"
-                style={{ animation: 'newDaySunSpin 1s ease-out' }}
-              >
-                <Sun className="w-7 h-7 text-amber-500" />
-              </div>
-              <div className="text-center">
-                <h2 className="font-serif font-bold text-xl text-foreground mb-1">
-                  A New Day Dawns!
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Day <span className="font-mono font-bold text-amber-600">{state.totalDaysPlayed}</span> of your adventure
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium bg-emerald-50 px-4 py-2 rounded-full">
-                <span>💰</span>
-                <span>Daily allowance received!</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <NewDayPopup
+          totalDaysPlayed={state.totalDaysPlayed}
+          onClose={() => setShowNewDayPopup(false)}
+        />
       )}
 
       {/* Pet Death Overlay */}
       {state.petDead && state.pet && (
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-md"
-          style={{
-            animation: 'deathFadeIn 1s ease-out',
-          }}
-        >
-          <div
-            className="bg-card rounded-3xl shadow-2xl border border-border/60 overflow-hidden max-w-md w-[90vw]"
-            style={{
-              animation: 'deathCardPop 0.8s ease-out 0.3s both',
-            }}
-          >
-            <div className="bg-gradient-to-b from-rose-100/80 via-rose-50/50 to-transparent px-8 py-10 flex flex-col items-center gap-6">
-              {/* Sad emoji with pulse */}
-              <div
-                className="w-24 h-24 rounded-full bg-rose-100 flex items-center justify-center"
-                style={{ animation: 'deathHeartbeat 2s ease-in-out infinite' }}
-              >
-                <span className="text-5xl">😢</span>
-              </div>
-
-              {/* Message */}
-              <div className="text-center">
-                <h2 className="font-serif font-bold text-2xl text-foreground mb-2">
-                  {state.pet.name} has passed away...
-                </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-                  Your pet was neglected for too long. All their stats became critically low at the same time.
-                </p>
-              </div>
-
-              {/* Stats display (final state) */}
-              <div className="w-full bg-rose-50/50 rounded-xl p-4 border border-rose-200/50">
-                <p className="text-xs text-rose-600 font-medium mb-2 text-center">Final Stats</p>
-                <div className="grid grid-cols-5 gap-2 text-center">
-                  <div>
-                    <span className="text-lg">🍖</span>
-                    <p className="text-[10px] text-rose-700 font-mono">{Math.round(state.pet.stats.hunger)}%</p>
-                  </div>
-                  <div>
-                    <span className="text-lg">😊</span>
-                    <p className="text-[10px] text-rose-700 font-mono">{Math.round(state.pet.stats.happiness)}%</p>
-                  </div>
-                  <div>
-                    <span className="text-lg">⚡</span>
-                    <p className="text-[10px] text-rose-700 font-mono">{Math.round(state.pet.stats.energy)}%</p>
-                  </div>
-                  <div>
-                    <span className="text-lg">🧼</span>
-                    <p className="text-[10px] text-rose-700 font-mono">{Math.round(state.pet.stats.cleanliness)}%</p>
-                  </div>
-                  <div>
-                    <span className="text-lg">❤️</span>
-                    <p className="text-[10px] text-rose-700 font-mono">{Math.round(state.pet.stats.health)}%</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Adventure summary */}
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="text-center">
-                  <p className="font-mono font-bold text-lg text-foreground">{state.totalDaysPlayed}</p>
-                  <p className="text-[10px]">Days</p>
-                </div>
-                <div className="w-px h-8 bg-border" />
-                <div className="text-center">
-                  <p className="font-mono font-bold text-lg text-foreground">{state.pet.level}</p>
-                  <p className="text-[10px]">Level</p>
-                </div>
-                <div className="w-px h-8 bg-border" />
-                <div className="text-center">
-                  <p className="font-mono font-bold text-lg text-foreground">{state.careStreak}</p>
-                  <p className="text-[10px]">Best Streak</p>
-                </div>
-              </div>
-
-              {/* Try Again button */}
-              <Button
-                onClick={resetGame}
-                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-chart-5 hover:from-primary/90 hover:to-chart-5/90 shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl"
-              >
-                <RotateCcw className="w-5 h-5 mr-2" />
-                Try Again
-              </Button>
-
-              <p className="text-[10px] text-muted-foreground/60">
-                This will reset all progress and start a new game.
-              </p>
-            </div>
-          </div>
-        </div>
+        <PetDeathOverlay
+          pet={state.pet}
+          totalDaysPlayed={state.totalDaysPlayed}
+          careStreak={state.careStreak}
+          onReset={resetGame}
+        />
       )}
 
       {/* Tutorial Overlay */}
@@ -730,7 +613,7 @@ const GameDashboard: React.FC = () => {
           careStreak: state.careStreak,
           totalDaysPlayed: state.totalDaysPlayed,
           inventoryCount: state.inventory.reduce((sum, item) => sum + item.quantity, 0),
-          achievementsUnlocked: state.achievements.filter(a => a.unlocked).length,
+          achievementsUnlocked: state.achievements.filter(achievement => achievement.unlocked).length,
           totalAchievements: state.achievements.length,
         } : undefined}
       />
