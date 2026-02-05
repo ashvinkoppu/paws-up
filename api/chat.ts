@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 const ALLOWED_MODEL = 'gpt-4o-mini';
 const MAX_MESSAGES = 15;
 const MAX_MESSAGE_LENGTH = 1000;
+const MAX_SYSTEM_MESSAGE_LENGTH = 3000;
 const MAX_TOKENS_LIMIT = 300;
 
 // Simple in-memory rate limiter (resets on cold start, which is acceptable for serverless)
@@ -85,8 +86,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
       if (!['system', 'user', 'assistant'].includes(message.role)) {
         return response.status(400).json({ error: 'Invalid message role' });
       }
-      if (typeof message.content !== 'string' || message.content.length > MAX_MESSAGE_LENGTH) {
-        return response.status(400).json({ error: `Message content must be a string under ${MAX_MESSAGE_LENGTH} characters` });
+      const lengthLimit = message.role === 'system' ? MAX_SYSTEM_MESSAGE_LENGTH : MAX_MESSAGE_LENGTH;
+      if (typeof message.content !== 'string' || message.content.length > lengthLimit) {
+        return response.status(400).json({ error: `Message content must be a string under ${lengthLimit} characters` });
       }
     }
 
