@@ -1,9 +1,11 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { useGame } from '@/context/GameContext';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { session, loading } = useAuth();
+  const { state } = useGame();
 
   if (loading) {
     return (
@@ -13,7 +15,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
 
-  if (!session) {
+  // Allow access if user is logged in OR in guest mode
+  if (!session && !state.isGuestMode) {
     return <Navigate to="/login" replace />;
   }
 

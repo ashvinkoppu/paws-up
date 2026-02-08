@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect, useState, ReactNode, useCallback, useRef, useMemo } from 'react';
-import { GameState, Pet, PetStats, InventoryItem, DailyTracking, AccessorySlot } from '@/types/game';
+import { GameState, Pet, PetStats, InventoryItem, DailyTracking, AccessorySlot, ActionLogEntry } from '@/types/game';
 import { getRandomEvent } from '@/data/events';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
@@ -9,8 +9,22 @@ import { clampStat, ACHIEVEMENT_REWARD } from '@/context/game/helpers';
 
 export const GameContext = createContext<GameContextType | undefined>(undefined);
 
+const initGame = (initial: GameState): GameState => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('guestGameState');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to load guest save', e);
+      }
+    }
+  }
+  return initial;
+};
+
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [state, dispatch] = useReducer(gameReducer, initialState, initGame);
   const [lastActionFeedback, setLastActionFeedback] = useState<ActionFeedbackEvent | null>(null);
   const [isPlayingMiniGame, setIsPlayingMiniGame] = useState(false);
   const isPlayingMiniGameRef = useRef(isPlayingMiniGame);
@@ -55,6 +69,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } = await supabase.auth.getSession();
 
       if (!session?.user) {
+        if (state.isGuestMode && state.gameStarted) {
+          localStorage.setItem('guestGameState', JSON.stringify(state));
+        }
         hasPendingSaveRef.current = false;
         return;
       }
@@ -157,6 +174,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     cloudSaveLoadedRef.current = true;
     dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Welcome to the family!', description: `${newPet.name} has been adopted!`, icon: '🎉' } });
     dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'achievement', title: 'Achievement Unlocked!', description: 'New Best Friend', icon: '🏆' } });
+    dispatch({ type: 'GENERATE_TOMORROW_REWARD' }); // Initialize daily loop
     toast({
       title: "🎉 Welcome to the family!",
       description: `${newPet.name} has been adopted!`,
@@ -369,6 +387,36 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const performAction = (action: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => {
     if (!state.pet) return;
 
+    // Check if we have daily actions remaining
+    if (state.dailyActionsRemaining <= 0) {
+      toast({
+        title: "❌ No actions left!",
+        description: "Your pet needs rest. Come back tomorrow!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Soft Failure: Disobedient pets may refuse to play
+    if (state.petBehavior === 'disobedient' && action === 'play' && Math.random() < 0.3) {
+      dispatch({ type: 'USE_DAILY_ACTION' }); // Consumes action as penalty
+      toast({
+        title: "😤 Pet Refused!",
+        description: `${state.pet.name} is feeling disobedient and refuses to play!`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Soft Warning: Sad/Grumpy pets give less rewards
+    if ((state.petBehavior === 'sad' || state.petBehavior === 'grumpy') && action === 'play') {
+       toast({
+        title: "😔 Not interested...",
+        description: `${state.pet.name} is ${state.petBehavior} and won't play as much.`,
+      });
+      // Logic for reduced stats is handled in reducer
+    }
+
     const actions: Record<string, { stats: Partial<PetStats>; exp: number; message: string }> = {
       feed: { stats: { hunger: 0 }, exp: 0, message: '' },
       play: { stats: { happiness: 8, energy: -10 }, exp: 8, message: `${state.pet.name} had fun playing!` },
@@ -423,6 +471,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: 'totalPlays' } });
     }
 
+    dispatch({ type: 'USE_DAILY_ACTION' }); // Consume an action point
     dispatch({ type: 'CHECK_MILESTONES' });
     dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Action Complete!', description: actionData.message, icon: '✨' } });
     toast({
@@ -539,9 +588,75 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return true;
   };
 
+  const setGuestMode = useCallback((isGuest: boolean) => {
+    dispatch({ type: 'SET_GUEST_MODE', payload: isGuest });
+    if (isGuest) {
+      cloudSaveLoadedRef.current = true; // Allow local saves in guest mode
+      toast({
+        title: "🎮 Guest Mode",
+        description: "Your progress will be saved locally only.",
+      });
+    }
+  }, []);
+
+  const useDailyAction = useCallback((): boolean => {
+    if (state.dailyActionsRemaining <= 0) {
+      toast({
+        title: "❌ No actions left!",
+        description: "Come back tomorrow for more actions.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    dispatch({ type: 'USE_DAILY_ACTION' });
+    return true;
+  }, [state.dailyActionsRemaining]);
+
+  const initWeeklyGoals = useCallback(() => {
+    dispatch({ type: 'INIT_WEEKLY_GOALS' });
+  }, []);
+
+  const claimWeeklyGoal = useCallback((goalId: string) => {
+    dispatch({ type: 'CLAIM_WEEKLY_GOAL', payload: goalId });
+    toast({
+      title: "🎯 Weekly Goal Complete!",
+      description: "Reward claimed successfully!",
+    });
+  }, []);
+
+  const claimTomorrowReward = useCallback(() => {
+    if (state.tomorrowReward) {
+      dispatch({ type: 'CLAIM_TOMORROW_REWARD' });
+      toast({
+        title: "🎁 Welcome Back!",
+        description: `You received your comeback reward!`,
+      });
+    }
+  }, [state.tomorrowReward]);
+
+  const addActionLog = useCallback((action: string, description: string, icon: string, statChanges?: Partial<PetStats>) => {
+    const logEntry: ActionLogEntry = {
+      id: crypto.randomUUID(),
+      action,
+      description,
+      icon,
+      timestamp: Date.now(),
+      gameTime: stateRef.current.gameTime,
+      statChanges: statChanges as Partial<PetStats> | undefined,
+    };
+    dispatch({ type: 'ADD_ACTION_LOG', payload: logEntry });
+  }, []);
+
   const updateGameTime = useCallback((minutes: number) => {
     dispatch({ type: 'UPDATE_GAME_TIME', payload: minutes });
   }, []);
+
+  // Ensure daily reward loop is active for existing saves
+  React.useEffect(() => {
+    if (state.gameStarted && !state.tomorrowReward) {
+      dispatch({ type: 'GENERATE_TOMORROW_REWARD' });
+    }
+  }, [state.gameStarted, state.tomorrowReward]);
 
   return (
     <GameContext.Provider
@@ -579,6 +694,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         restartTutorial,
         claimGameReward,
         updateGameTime,
+        // New feature functions
+        setGuestMode,
+        useDailyAction,
+        initWeeklyGoals,
+        claimWeeklyGoal,
+        claimTomorrowReward,
+        addActionLog,
       }}
     >
       {children}

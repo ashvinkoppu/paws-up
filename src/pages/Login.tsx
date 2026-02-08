@@ -3,11 +3,20 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { Navigate, Link } from 'react-router-dom';
-import { PawPrint } from 'lucide-react';
+import { useGame } from '@/context/GameContext';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { PawPrint, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Login: React.FC = () => {
   const { session, loading } = useAuth();
+  const { setGuestMode } = useGame();
+  const navigate = useNavigate();
+
+  const handleGuestMode = () => {
+    setGuestMode(true);
+    navigate('/dashboard');
+  };
 
   if (loading) {
     return (
@@ -68,6 +77,29 @@ const Login: React.FC = () => {
             showLinks={true}
             redirectTo={`${window.location.origin}/dashboard`}
           />
+        </div>
+
+        {/* Guest Mode Option */}
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border/40" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-4 text-muted-foreground">or</span>
+            </div>
+          </div>
+          <Button
+            onClick={handleGuestMode}
+            variant="outline"
+            className="w-full mt-4 h-12 rounded-xl border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
+          >
+            <User className="w-4 h-4 mr-2 text-muted-foreground" />
+            <span className="text-muted-foreground">Continue Without Account</span>
+          </Button>
+          <p className="text-[11px] text-center text-muted-foreground/70 mt-2">
+            Your progress will be saved locally only
+          </p>
         </div>
 
         <p className="text-center mt-6 text-sm text-muted-foreground">

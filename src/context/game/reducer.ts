@@ -1,4 +1,4 @@
-import { GameState, PetStats, Transaction, GameNotification, DailyTracking, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS } from '@/types/game';
+import { GameState, PetStats, Transaction, GameNotification, DailyTracking, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, PetBehavior, ActionLogEntry, WeeklyGoal } from '@/types/game';
 import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, DEFAULT_DAILY_TRACKING } from '@/data/tasks';
 import { GameAction } from '@/context/game/types';
 import { initialState } from '@/context/game/types';
@@ -92,39 +92,93 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'ADD_TO_INVENTORY': {
-      const existing = state.inventory.find(item => item.id === action.payload.id);
-      if (existing) {
-        return {
-          ...state,
-          inventory: state.inventory.map(item =>
-            item.id === action.payload.id ? { ...item, quantity: item.quantity + 1 } : item
-          ),
-        };
+      const newItem = action.payload;
+      const existingItemIndex = state.inventory.findIndex(item => item.id === newItem.id);
+
+      // Check if this item is new to collection
+      let newCollection = [...state.collection];
+      const isInCollection = state.collection.some(item => item.id === newItem.id);
+      
+      if (!isInCollection) {
+        // Map inventory category to collection category
+        let collectionCategory: 'toy' | 'outfit' | 'room_theme' | 'decoration' = 'decoration';
+        if (newItem.category === 'accessory') collectionCategory = 'outfit';
+        else if (newItem.category === 'happiness') collectionCategory = 'toy';
+        else if (newItem.category === 'room_theme' as string) collectionCategory = 'room_theme';
+
+        // Map tier/price to rarity
+        let rarity: 'common' | 'rare' | 'epic' | 'legendary' = 'common';
+        if (newItem.tier === 'deluxe' || newItem.price > 500) rarity = 'epic';
+        else if (newItem.tier === 'standard' || newItem.price > 200) rarity = 'rare';
+
+        newCollection.push({
+          id: newItem.id,
+          name: newItem.name,
+          category: collectionCategory,
+          icon: newItem.icon,
+          description: newItem.description,
+          rarity,
+          obtainedAt: Date.now(),
+        });
       }
+
+      let newInventory;
+      if (existingItemIndex > -1) {
+        newInventory = [...state.inventory];
+        newInventory[existingItemIndex] = {
+          ...newInventory[existingItemIndex],
+          quantity: newInventory[existingItemIndex].quantity + newItem.quantity,
+        };
+      } else {
+        newInventory = [...state.inventory, newItem];
+      }
+
       return {
         ...state,
-        inventory: [...state.inventory, { ...action.payload, quantity: 1 }],
+        inventory: newInventory,
+        collection: newCollection,
       };
     }
 
     case 'USE_ITEM': {
       const item = state.inventory.find(inventoryItem => inventoryItem.id === action.payload);
-      if (!item || item.quantity <= 0 || !state.pet) return state;
+      const pet = state.pet;
+      if (!item || item.quantity <= 0 || !pet) return state;
 
-      const newStats = { ...state.pet.stats };
+      // Soft Failure: Calculate effectiveness based on pet behavior
+      let effectiveness = 1;
+      const behavior = state.petBehavior;
+
+      // Toys (happiness items) are less effective if pet is in a bad mood
+      if (item.category === 'happiness') {
+        if (behavior === 'sad') effectiveness = 0.5;
+        else if (behavior === 'grumpy') effectiveness = 0.6;
+        else if (behavior === 'sluggish') effectiveness = 0.7;
+      }
+      
+      // Grooming (cleanliness items) is less effective if pet is grumpy
+      if (item.category === 'cleanliness' && behavior === 'grumpy') {
+         effectiveness = 0.8;
+      }
+
+      const newStats = { ...pet.stats };
       Object.entries(item.effects).forEach(([key, value]) => {
+        // Cast to keyof PetStats is safe because effects are Partial<PetStats>
+        const statKey = key as keyof PetStats;
         if (value !== undefined) {
-          newStats[key as keyof PetStats] = clampStat(newStats[key as keyof PetStats] + value);
+          // Apply effectiveness only to positive changes
+          const change = value > 0 ? value * effectiveness : value;
+          newStats[statKey] = clampStat(newStats[statKey] + change);
         }
       });
 
       // Grant 5 XP for using items
-      const newExperience = state.pet.experience + 5;
+      const newExperience = pet.experience + 5;
       const { level: newLevel } = calculateLevel(newExperience);
 
       return {
         ...state,
-        pet: { ...state.pet, stats: newStats, experience: newExperience, level: newLevel },
+        pet: { ...pet, stats: newStats, experience: newExperience, level: newLevel },
         inventory: state.inventory
           .map(inventoryItem => inventoryItem.id === action.payload ? { ...inventoryItem, quantity: inventoryItem.quantity - 1 } : inventoryItem)
           .filter(inventoryItem => inventoryItem.quantity > 0),
@@ -179,16 +233,28 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const dailyTracking = ensureDailyTracking({ ...state, lastCareDate: today });
       const dailyTasks = ensureDailyTasks({ ...state, dailyTracking });
 
+      // Reset daily actions for the new day
+      const dailyActionsRemaining = state.dailyActionsMax;
+
+      // Make tomorrow reward available if it exists
+      let tomorrowReward = state.tomorrowReward;
+      if (tomorrowReward && !tomorrowReward.available && tomorrowReward.claimedDate !== today) {
+        tomorrowReward = { ...tomorrowReward, available: true };
+      }
+
       const newState = {
         ...state,
         careStreak: newStreak,
         lastCareDate: today,
-        totalDaysPlayed: state.totalDaysPlayed + (state.lastCareDate !== today ? 1 : 0),
+        totalDaysPlayed: state.totalDaysPlayed + 1, // Increment days played
         money: state.money + achievementMoney,
         achievements,
         dailyTracking,
         dailyTasks,
-        dailyBonusClaimed: state.dailyTracking?.date === today ? state.dailyBonusClaimed : false,
+        dailyActionsRemaining, // Reset actions
+        tomorrowReward,
+        // Reset daily bonus claim status
+        dailyBonusClaimed: false, 
       };
 
       return checkAllMilestones(newState);
@@ -256,12 +322,20 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const personality = state.pet.personality;
       const modifiers = PERSONALITY_MODIFIERS[personality];
 
+      // Base decay - affected by personality and current behavior
+      let decayMultiplier = 1;
+      // Sluggish/sad pets decay slower (they're conserving energy)
+      if (state.petBehavior === 'sluggish' || state.petBehavior === 'sad') {
+        decayMultiplier = 0.7;
+      }
+
       const decay: Partial<PetStats> = {
-        hunger: -2 + (modifiers.hunger || 0),
-        happiness: -2 + (modifiers.happiness || 0),
-        energy: -1 + (modifiers.energy || 0),
-        cleanliness: -2 + (modifiers.cleanliness || 0),
-        health: state.pet.stats.hunger < 20 || state.pet.stats.cleanliness < 20 ? -3 : -1,
+        hunger: (-2 + (modifiers.hunger || 0)) * decayMultiplier,
+        happiness: (-2 + (modifiers.happiness || 0)) * decayMultiplier,
+        energy: (-1 + (modifiers.energy || 0)) * decayMultiplier,
+        cleanliness: (-2 + (modifiers.cleanliness || 0)) * decayMultiplier,
+        // Health drops faster when hunger or cleanliness is critically low
+        health: state.pet.stats.hunger < 30 || state.pet.stats.cleanliness < 30 ? -3 : -1,
       };
 
       const newStats = { ...state.pet.stats };
@@ -271,26 +345,72 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
       });
 
-      // Check for pet death condition:
-      // hunger < 20, happiness < 20, energy < 10, cleanliness < 10, health < 20
-      const isDead =
-        newStats.hunger < 20 &&
-        newStats.happiness < 20 &&
-        newStats.energy < 10 &&
-        newStats.cleanliness < 10 &&
-        newStats.health < 20;
+      // Calculate new behavior based on stats
+      const avgStats = Object.values(newStats).reduce((sum, v) => sum + v, 0) / 5;
+      const lowestStat = Math.min(...Object.values(newStats));
+      
+      let newBehavior: PetBehavior = 'normal';
+      if (lowestStat < 10) {
+        newBehavior = 'sad';
+      } else if (lowestStat < 20) {
+        newBehavior = 'grumpy';
+      } else if (newStats.energy < 25) {
+        newBehavior = 'sluggish';
+      } else if (newStats.happiness < 30) {
+        newBehavior = 'disobedient';
+      } else if (avgStats >= 80 && newStats.happiness >= 80) {
+        newBehavior = 'excited';
+      } else if (avgStats >= 60) {
+        newBehavior = 'playful';
+      }
 
-      if (isDead) {
+      // SOFT FAILURE: Pet only dies after EXTREME, prolonged neglect
+      // All stats must be critically low (< 5) for death to occur
+      // This is MUCH harder to trigger than before
+      const isCriticallyNeglected =
+        newStats.hunger < 5 &&
+        newStats.happiness < 5 &&
+        newStats.energy < 5 &&
+        newStats.cleanliness < 5 &&
+        newStats.health < 5;
+
+      if (isCriticallyNeglected) {
         return {
           ...state,
           pet: { ...state.pet, stats: newStats, lastCaredAt: Date.now() },
           petDead: true,
+          petBehavior: 'sad',
         };
+      }
+
+      // Add warning notifications for low stats
+      let notifications = state.notifications;
+      if (lowestStat < 15 && lowestStat >= 5) {
+        const lowStatName = Object.entries(newStats).find(([, v]) => v === lowestStat)?.[0];
+        const existingWarning = notifications.find(n => 
+          n.type === 'alert' && n.title === 'Pet Needs Attention!' && 
+          Date.now() - n.timestamp < 60000 // Within last minute
+        );
+        
+        if (!existingWarning && lowStatName) {
+          const warning: GameNotification = {
+            id: crypto.randomUUID(),
+            type: 'alert',
+            title: 'Pet Needs Attention!',
+            description: `${state.pet.name}'s ${lowStatName} is critically low. They're feeling ${newBehavior}.`,
+            icon: '⚠️',
+            read: false,
+            timestamp: Date.now(),
+          };
+          notifications = [warning, ...notifications].slice(0, 50);
+        }
       }
 
       return {
         ...state,
         pet: { ...state.pet, stats: newStats, lastCaredAt: Date.now() },
+        petBehavior: newBehavior,
+        notifications,
       };
     }
 
@@ -310,11 +430,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         dailyBonusClaimed: action.payload.dailyBonusClaimed || false,
         activeShopDiscount: action.payload.activeShopDiscount || 0,
         lifetimeCounters: {
-          totalFeeds: 0,
-          totalPlays: 0,
-          totalGamesWon: 0,
-          weeksUnderBudget: 0,
-          ...(action.payload.lifetimeCounters || {}),
+          ...(action.payload.lifetimeCounters || { totalFeeds: 0, totalPlays: 0, totalGamesWon: 0, weeksUnderBudget: 0 }),
         },
         petAsleep: action.payload.petAsleep || false,
         lastSleepDate: action.payload.lastSleepDate || '',
@@ -322,6 +438,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         tutorialCompleted: action.payload.tutorialCompleted ?? (action.payload.gameStarted ? true : false),
         dailyGameRewards: action.payload.dailyGameRewards || {},
         gameTime: action.payload.gameTime || 7 * 60,
+        // New feature migrations
+        isGuestMode: action.payload.isGuestMode || false,
+        dailyActionsRemaining: action.payload.dailyActionsRemaining ?? 15,
+        dailyActionsMax: action.payload.dailyActionsMax ?? 15,
+        lastActionResetDate: action.payload.lastActionResetDate || '',
+        petBehavior: action.payload.petBehavior || 'normal',
+        actionLog: action.payload.actionLog || [],
+        weeklyGoals: action.payload.weeklyGoals || [],
+        weeklyGoalProgress: action.payload.weeklyGoalProgress || {},
+        collection: action.payload.collection || [],
+        activeRoomTheme: action.payload.activeRoomTheme || null,
+        tomorrowReward: action.payload.tomorrowReward || null,
+        lastDayRecap: action.payload.lastDayRecap || null,
       } as GameState;
       // Migrate old pets: add gender and equippedAccessories if missing
       if (loadedState.pet) {
@@ -471,7 +600,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         dailyTasks: taskIds.map(id => {
           const taskDef = DAILY_TASK_POOL.find(definition => definition.id === id);
           const timed = !!(taskDef?.timeLimitMinutes);
-          const timerExpiresAt = timed && taskDef ? now + taskDef.timeLimitMinutes * 60 * 1000 : null;
+          const timerExpiresAt = timed && taskDef ? now + (taskDef.timeLimitMinutes ?? 0) * 60 * 1000 : null;
           return { id, progress: 0, completed: false, claimed: false, timed, timerExpiresAt };
         }),
         dailyTracking: { ...DEFAULT_DAILY_TRACKING, date: today },
@@ -685,6 +814,325 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         gameTime: action.payload,
+      };
+    }
+
+    // === NEW FEATURE REDUCERS ===
+
+    case 'SET_GUEST_MODE': {
+      return {
+        ...state,
+        isGuestMode: action.payload,
+      };
+    }
+
+    case 'USE_DAILY_ACTION': {
+      if (state.dailyActionsRemaining <= 0) return state;
+      return {
+        ...state,
+        dailyActionsRemaining: state.dailyActionsRemaining - 1,
+      };
+    }
+
+    case 'RESET_DAILY_ACTIONS': {
+      const today = new Date().toDateString();
+      if (state.lastActionResetDate === today) return state;
+      return {
+        ...state,
+        dailyActionsRemaining: state.dailyActionsMax,
+        lastActionResetDate: today,
+      };
+    }
+
+    case 'UPDATE_PET_BEHAVIOR': {
+      if (!state.pet) return state;
+      const stats = state.pet.stats;
+      const avgStats = Object.values(stats).reduce((sum, v) => sum + v, 0) / 5;
+      const lowestStat = Math.min(...Object.values(stats));
+      
+      let behavior: PetBehavior = 'normal';
+      
+      // Priority-based behavior assignment
+      if (lowestStat < 10) {
+        behavior = 'sad';
+      } else if (lowestStat < 20) {
+        behavior = 'grumpy';
+      } else if (stats.energy < 25) {
+        behavior = 'sluggish';
+      } else if (stats.happiness < 30) {
+        behavior = 'disobedient';
+      } else if (avgStats >= 80 && stats.happiness >= 80) {
+        behavior = 'excited';
+      } else if (avgStats >= 60) {
+        behavior = 'playful';
+      }
+      
+      return {
+        ...state,
+        petBehavior: behavior,
+      };
+    }
+
+    case 'ADD_ACTION_LOG': {
+      const newLog = [action.payload, ...state.actionLog].slice(0, 50); // Keep last 50 entries
+      return {
+        ...state,
+        actionLog: newLog,
+      };
+    }
+
+    case 'INIT_WEEKLY_GOALS': {
+      const today = new Date();
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - today.getDay()); // Sunday
+      const weekStartStr = weekStart.toDateString();
+      
+      // Check if we already have goals for this week
+      if (state.weeklyGoals.length > 0 && state.weeklyGoals[0].startDate === weekStartStr) {
+        return state;
+      }
+      
+      // Generate new weekly goals
+      const newGoals: WeeklyGoal[] = [
+        {
+          id: 'weekly-health-80',
+          name: 'Healthy Week',
+          description: 'Keep health above 80% for 7 days',
+          icon: '❤️',
+          type: 'health',
+          target: 80,
+          currentValue: state.pet?.stats.health ?? 0,
+          startDate: weekStartStr,
+          daysCompleted: 0,
+          completed: false,
+          reward: { xp: 100, money: 50 },
+        },
+        {
+          id: 'weekly-streak-7',
+          name: 'Care Champion',
+          description: 'Maintain a 7-day care streak',
+          icon: '🔥',
+          type: 'streak',
+          target: 7,
+          currentValue: state.careStreak,
+          startDate: weekStartStr,
+          daysCompleted: 0,
+          completed: false,
+          reward: { xp: 150, money: 75 },
+        },
+        {
+          id: 'weekly-budget',
+          name: 'Budget Master',
+          description: 'Stay under budget for the week',
+          icon: '💰',
+          type: 'savings',
+          target: state.weeklyBudget,
+          currentValue: state.weeklySpent,
+          startDate: weekStartStr,
+          daysCompleted: 0,
+          completed: false,
+          reward: { xp: 100, money: 100 },
+        },
+      ];
+      
+      return {
+        ...state,
+        weeklyGoals: newGoals,
+        weeklyGoalProgress: {},
+      };
+    }
+
+    case 'UPDATE_WEEKLY_GOALS': {
+      if (state.weeklyGoals.length === 0) return state;
+      
+      const today = new Date().toDateString();
+      const updatedGoals = state.weeklyGoals.map(goal => {
+        if (goal.completed) return goal;
+        
+        let currentValue = goal.currentValue;
+        let daysCompleted = goal.daysCompleted;
+        
+        switch (goal.type) {
+          case 'health':
+            currentValue = state.pet?.stats.health ?? 0;
+            // Check if today's health met the target
+            const todayProgress = state.weeklyGoalProgress[goal.id] || [];
+            if (!todayProgress.includes(today as unknown as number) && currentValue >= goal.target) {
+              daysCompleted++;
+            }
+            break;
+          case 'streak':
+            currentValue = state.careStreak;
+            daysCompleted = Math.min(currentValue, 7);
+            break;
+          case 'savings':
+            currentValue = state.weeklySpent;
+            break;
+        }
+        
+        const completed = goal.type === 'savings' 
+          ? currentValue <= goal.target && state.totalDaysPlayed % 7 === 0
+          : daysCompleted >= 7;
+        
+        return { ...goal, currentValue, daysCompleted, completed };
+      });
+      
+      return {
+        ...state,
+        weeklyGoals: updatedGoals,
+      };
+    }
+
+    case 'CLAIM_WEEKLY_GOAL': {
+      const goalId = action.payload;
+      const goal = state.weeklyGoals.find(g => g.id === goalId);
+      if (!goal || !goal.completed) return state;
+      
+      const updatedGoals = state.weeklyGoals.filter(g => g.id !== goalId);
+      const resultState = addXpToPet(state, goal.reward.xp);
+      
+      const notification: GameNotification = {
+        id: crypto.randomUUID(),
+        type: 'milestone',
+        title: 'Weekly Goal Complete!',
+        description: `${goal.name} — +${goal.reward.xp} XP, +$${goal.reward.money}`,
+        icon: '🎯',
+        read: false,
+        timestamp: Date.now(),
+      };
+      
+      return {
+        ...resultState,
+        weeklyGoals: updatedGoals,
+        money: resultState.money + goal.reward.money,
+        notifications: [notification, ...resultState.notifications].slice(0, 50),
+      };
+    }
+
+    case 'ADD_TO_COLLECTION': {
+      const existing = state.collection.find(item => item.id === action.payload.id);
+      if (existing) return state;
+      
+      return {
+        ...state,
+        collection: [...state.collection, action.payload],
+      };
+    }
+
+    case 'SET_ROOM_THEME': {
+      return {
+        ...state,
+        activeRoomTheme: action.payload,
+      };
+    }
+
+    case 'GENERATE_TOMORROW_REWARD': {
+      const today = new Date().toDateString();
+      if (state.tomorrowReward?.claimedDate === today) return state;
+      
+      // Generate a random reward type
+      const rewardTypes: Array<'money' | 'xp' | 'discount'> = ['money', 'xp', 'discount'];
+      const type = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
+      
+      let value = 0;
+      let description = '';
+      
+      switch (type) {
+        case 'money':
+          value = 15 + Math.floor(Math.random() * 20);
+          description = `$${value} bonus cash`;
+          break;
+        case 'xp':
+          value = 20 + Math.floor(Math.random() * 30);
+          description = `${value} XP boost`;
+          break;
+        case 'discount':
+          value = 10 + Math.floor(Math.random() * 15);
+          description = `${value}% shop discount`;
+          break;
+      }
+      
+      return {
+        ...state,
+        tomorrowReward: {
+          available: true,
+          type,
+          value,
+          description,
+        },
+      };
+    }
+
+    case 'CLAIM_TOMORROW_REWARD': {
+      if (!state.tomorrowReward?.available) return state;
+      
+      const today = new Date().toDateString();
+      const reward = state.tomorrowReward;
+      
+      let resultState = { ...state };
+      
+      switch (reward.type) {
+        case 'money':
+          resultState.money += reward.value;
+          break;
+        case 'xp':
+          resultState = addXpToPet(resultState, reward.value);
+          break;
+        case 'discount':
+          resultState.activeShopDiscount = Math.max(resultState.activeShopDiscount, reward.value);
+          break;
+      }
+      
+      const notification: GameNotification = {
+        id: crypto.randomUUID(),
+        type: 'milestone',
+        title: 'Welcome Back!',
+        description: `You claimed: ${reward.description}`,
+        icon: '🎁',
+        read: false,
+        timestamp: Date.now(),
+      };
+      
+      return {
+        ...resultState,
+        tomorrowReward: { ...reward, available: false, claimedDate: today },
+        notifications: [notification, ...resultState.notifications].slice(0, 50),
+      };
+    }
+
+    case 'GENERATE_DAY_RECAP': {
+      if (!state.pet) return state;
+      
+      const today = new Date().toDateString();
+      if (state.lastDayRecap?.date === today) return state;
+      
+      const stats = state.pet.stats;
+      const avgStats = Object.values(stats).reduce((sum, v) => sum + v, 0) / 5;
+      const lowestStat = Math.min(...Object.values(stats));
+      
+      let moodScore = Math.round(avgStats);
+      let summary = '';
+      
+      if (lowestStat < 20) {
+        summary = `${state.pet.name} had a rough day and needs more attention. Some stats got critically low.`;
+        moodScore = Math.round(lowestStat);
+      } else if (avgStats >= 80) {
+        summary = `${state.pet.name} had an amazing day! Thriving and full of energy.`;
+      } else if (avgStats >= 60) {
+        summary = `${state.pet.name} had a good day. Well cared for and content.`;
+      } else if (avgStats >= 40) {
+        summary = `${state.pet.name} had an okay day, but could use more attention tomorrow.`;
+      } else {
+        summary = `${state.pet.name} felt a bit neglected today. Try to care for them more tomorrow.`;
+      }
+      
+      return {
+        ...state,
+        lastDayRecap: {
+          summary,
+          moodScore,
+          date: today,
+        },
       };
     }
 

@@ -679,6 +679,47 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
           </div>
         </div>
 
+        {/* Achievement Badges */}
+        {state.achievements && state.achievements.filter(a => a.unlocked).length > 0 && (
+          <div className="w-full mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Achievements</span>
+              <span className="text-[10px] text-muted-foreground">
+                {state.achievements.filter(a => a.unlocked).length}/{state.achievements.length}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {state.achievements
+                .filter(a => a.unlocked)
+                .slice(0, 8)
+                .map((achievement) => (
+                  <div
+                    key={achievement.id}
+                    className="group relative"
+                    title={`${achievement.name}: ${achievement.description}`}
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center bg-gradient-to-br from-amber-400/20 to-amber-500/10 rounded-lg border border-amber-500/30 hover:border-amber-400/50 hover:scale-110 transition-all cursor-pointer shadow-sm hover:shadow-amber-500/20">
+                      <span className="text-sm">{achievement.icon}</span>
+                    </div>
+                    {/* Tooltip on hover */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-card/95 border border-border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 whitespace-nowrap">
+                      <p className="text-xs font-semibold text-foreground">{achievement.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{achievement.description}</p>
+                    </div>
+                  </div>
+                ))}
+              {state.achievements.filter(a => a.unlocked).length > 8 && (
+                <div 
+                  className="w-8 h-8 flex items-center justify-center bg-muted/50 rounded-lg border border-border/50 text-[10px] font-bold text-muted-foreground"
+                  title={`+${state.achievements.filter(a => a.unlocked).length - 8} more achievements`}
+                >
+                  +{state.achievements.filter(a => a.unlocked).length - 8}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Weekly Budget Snapshot */}
         <div
           className="w-full mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15 cursor-pointer hover:bg-emerald-500/10 transition-colors group"

@@ -1,4 +1,4 @@
-import { GameState, Pet, PetStats, Transaction, RandomEvent, InventoryItem, GameNotification, DailyTask, DailyTracking, AccessorySlot } from '@/types/game';
+import { GameState, Pet, PetStats, Transaction, RandomEvent, InventoryItem, GameNotification, DailyTask, DailyTracking, AccessorySlot, ActionLogEntry, WeeklyGoal, CollectionItem } from '@/types/game';
 import { INITIAL_ACHIEVEMENTS } from '@/data/achievements';
 import { DEFAULT_DAILY_TRACKING } from '@/data/tasks';
 
@@ -29,6 +29,19 @@ export const initialState: GameState = {
   tutorialCompleted: false,
   dailyGameRewards: {},
   gameTime: 7 * 60, // Start at 7:00 AM
+  // New features
+  isGuestMode: false,
+  dailyActionsRemaining: 15, // 15 actions per day
+  dailyActionsMax: 15,
+  lastActionResetDate: '',
+  petBehavior: 'normal',
+  actionLog: [],
+  weeklyGoals: [],
+  weeklyGoalProgress: {},
+  collection: [],
+  activeRoomTheme: null,
+  tomorrowReward: null,
+  lastDayRecap: null,
 };
 
 export type GameAction =
@@ -67,7 +80,21 @@ export type GameAction =
   | { type: 'COMPLETE_TUTORIAL' }
   | { type: 'RESTART_TUTORIAL' }
   | { type: 'CLAIM_GAME_REWARD'; payload: { gameId: string; amount: number } }
-  | { type: 'UPDATE_GAME_TIME'; payload: number };
+  | { type: 'UPDATE_GAME_TIME'; payload: number }
+  // New actions
+  | { type: 'SET_GUEST_MODE'; payload: boolean }
+  | { type: 'USE_DAILY_ACTION' }
+  | { type: 'RESET_DAILY_ACTIONS' }
+  | { type: 'UPDATE_PET_BEHAVIOR' }
+  | { type: 'ADD_ACTION_LOG'; payload: ActionLogEntry }
+  | { type: 'INIT_WEEKLY_GOALS' }
+  | { type: 'UPDATE_WEEKLY_GOALS' }
+  | { type: 'CLAIM_WEEKLY_GOAL'; payload: string }
+  | { type: 'ADD_TO_COLLECTION'; payload: CollectionItem }
+  | { type: 'SET_ROOM_THEME'; payload: string | null }
+  | { type: 'GENERATE_TOMORROW_REWARD' }
+  | { type: 'CLAIM_TOMORROW_REWARD' }
+  | { type: 'GENERATE_DAY_RECAP' };
 
 export interface ActionFeedbackEvent {
   action: string;
@@ -113,4 +140,11 @@ export interface GameContextType {
   restartTutorial: () => void;
   claimGameReward: (gameId: string, amount: number) => boolean;
   updateGameTime: (minutes: number) => void;
+  // New features
+  setGuestMode: (isGuest: boolean) => void;
+  useDailyAction: () => boolean;
+  initWeeklyGoals: () => void;
+  claimWeeklyGoal: (goalId: string) => void;
+  claimTomorrowReward: () => void;
+  addActionLog: (action: string, description: string, icon: string, statChanges?: Partial<PetStats>) => void;
 }

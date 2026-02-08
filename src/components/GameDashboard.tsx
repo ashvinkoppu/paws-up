@@ -36,7 +36,8 @@ import TutorialOverlay from '@/components/TutorialOverlay';
 import FAQChatbot from '@/components/FAQChatbot';
 import NewDayPopup from '@/components/NewDayPopup';
 import PetDeathOverlay from '@/components/PetDeathOverlay';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, HelpCircle, GraduationCap } from 'lucide-react';
+import Collections from '@/components/Collections';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, HelpCircle, GraduationCap, Package } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -247,6 +248,11 @@ const GameDashboard: React.FC = () => {
                 <span className="font-mono font-semibold text-emerald-700">{state.money.toFixed(0)}</span>
               </div>
 
+              <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/8 rounded-full border border-blue-500/15" title="Daily Actions Remaining">
+                <Zap className="w-4 h-4 text-blue-600" />
+                <span className="font-mono font-semibold text-blue-700">{state.dailyActionsRemaining}/{state.dailyActionsMax}</span>
+              </div>
+
               <GameClock />
 
               <div className="flex items-center gap-1.5 px-3 py-2 bg-accent/30 rounded-full text-sm">
@@ -447,7 +453,7 @@ const GameDashboard: React.FC = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
               {/* Simplified tab navigation - horizontal scroll on mobile, cleaner look */}
               <div className="mb-4 -mx-4 px-4 overflow-x-auto scrollbar-hide">
-                <TabsList className="inline-flex w-auto min-w-full lg:w-full bg-card/50 backdrop-blur-sm p-1 rounded-xl border border-border/20 gap-1">
+                <TabsList className="inline-flex w-auto min-w-full lg:w-full h-auto bg-card/50 backdrop-blur-sm p-1 rounded-xl border border-border/20 gap-1">
                   {/* Needs tab - only shows badge when there are issues */}
                   <TabsTrigger
                     value="alerts"
@@ -472,6 +478,14 @@ const GameDashboard: React.FC = () => {
                   >
                     <Store className="w-4 h-4" />
                     <span>Shop</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="collections"
+                    data-tutorial="tab-collections"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-pink-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                  >
+                    <Package className="w-4 h-4" />
+                    <span>Collect</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="games"
@@ -519,6 +533,10 @@ const GameDashboard: React.FC = () => {
 
                 <TabsContent value="shop" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
                   <Shop />
+                </TabsContent>
+
+                <TabsContent value="collections" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <Collections />
                 </TabsContent>
 
                 <TabsContent value="games" className="mt-0 focus-visible:outline-none focus-visible:ring-0">

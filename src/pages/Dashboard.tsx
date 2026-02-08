@@ -26,7 +26,10 @@ const Dashboard: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoadingCloudSave(false);
+      return;
+    }
 
     const loadCloudSave = async () => {
       try {

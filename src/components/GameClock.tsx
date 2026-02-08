@@ -3,9 +3,10 @@ import { useGame } from '@/context/GameContext';
 import { Clock, Utensils, Moon, Sun, Coffee, Soup } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Game time progresses at 1 real second = 1 game minute
-// This means 1 real hour = 1 game hour, which feels natural
-const REAL_MS_PER_GAME_MINUTE = 3000; // 3 seconds = 1 game minute
+// Game time progresses faster for more dynamic gameplay
+// 1 real second = 5 game minutes (1 real minute = 300 game minutes = 5 game hours)
+const GAME_MINUTES_PER_TICK = 5; // 5 game minutes per tick
+const REAL_MS_PER_TICK = 1000; // 1 second between ticks
 
 interface MealWindow {
   name: string;
@@ -69,11 +70,11 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
   const lastBedtimeShownRef = useRef(false);
   const lastWakeShownRef = useRef(false);
 
-  // Game clock tick - advances 1 minute per second
+  // Game clock tick - advances 3 game minutes per second
   useEffect(() => {
     const interval = setInterval(() => {
       setGameMinutes((prev) => {
-        const next = prev + 1;
+        const next = prev + GAME_MINUTES_PER_TICK;
         // Reset at midnight (1440 minutes = 24 hours)
         if (next >= 1440) {
           // Reset reminder tracking for new day
@@ -81,11 +82,11 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
           lastMealWindowRef.current = null;
           lastBedtimeShownRef.current = false;
           lastWakeShownRef.current = false;
-          return 0;
+          return next - 1440; // Wrap around properly
         }
         return next;
       });
-    }, REAL_MS_PER_GAME_MINUTE);
+    }, REAL_MS_PER_TICK);
 
     return () => clearInterval(interval);
   }, []);

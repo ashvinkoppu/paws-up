@@ -179,6 +179,57 @@ export interface GameNotification {
   timestamp: number;
 }
 
+// Pet behavior/mood state for soft failure
+export type PetBehavior = 'normal' | 'sluggish' | 'disobedient' | 'sad' | 'grumpy' | 'playful' | 'excited';
+
+// Action log entry
+export interface ActionLogEntry {
+  id: string;
+  timestamp: number;
+  gameTime: number;
+  action: string;
+  description: string;
+  statChanges?: Partial<PetStats>;
+  icon: string;
+}
+
+// Weekly goal tracking
+export interface WeeklyGoal {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  type: 'health' | 'streak' | 'savings' | 'care';
+  target: number;
+  currentValue: number;
+  startDate: string;
+  daysCompleted: number; // Days the goal was met
+  completed: boolean;
+  reward: { xp: number; money: number };
+}
+
+// Collection item (owned cosmetics, toys, etc.)
+export interface CollectionItem {
+  id: string;
+  name: string;
+  category: 'toy' | 'outfit' | 'room_theme' | 'decoration';
+  icon: string;
+  description: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  passiveEffect?: { stat: keyof PetStats; bonus: number };
+  obtainedAt: number;
+  equipped?: boolean;
+}
+
+// Tomorrow reward for comeback incentive
+export interface TomorrowReward {
+  available: boolean;
+  type: 'money' | 'item' | 'xp' | 'discount';
+  value: number;
+  description: string;
+  claimedDate?: string;
+}
+
 export interface GameState {
   pet: Pet | null;
   money: number;
@@ -211,6 +262,19 @@ export interface GameState {
   tutorialCompleted: boolean;
   dailyGameRewards: Record<string, string>;
   gameTime: number; // Minutes from 00:00 (0-1439)
+  // New features
+  isGuestMode: boolean; // Playing without an account
+  dailyActionsRemaining: number; // Limited actions per day (adds pressure)
+  dailyActionsMax: number; // Maximum actions per day
+  lastActionResetDate: string; // When actions were last reset
+  petBehavior: PetBehavior; // Current pet mood/behavior
+  actionLog: ActionLogEntry[]; // Recent action history
+  weeklyGoals: WeeklyGoal[]; // Weekly challenge goals
+  weeklyGoalProgress: Record<string, number[]>; // Track daily goal progress
+  collection: CollectionItem[]; // Owned collectibles
+  activeRoomTheme: string | null; // Currently active room theme
+  tomorrowReward: TomorrowReward | null; // Comeback incentive
+  lastDayRecap: { summary: string; moodScore: number; date: string } | null;
 }
 
 // Personality modifiers

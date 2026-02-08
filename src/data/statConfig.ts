@@ -10,6 +10,9 @@ export interface StatConfigEntry {
   bgColor: string;
   lowWarning: number;
   warning: string;
+  tooltip: string;
+  decayInfo: string;
+  boostInfo: string;
 }
 
 export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
@@ -23,6 +26,9 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     bgColor: 'bg-chart-1/20',
     lowWarning: 30,
     warning: 'Your pet is hungry!',
+    tooltip: 'How full your pet is. Decreases over time.',
+    decayInfo: 'Decays -2 per tick. Faster with playful personality.',
+    boostInfo: 'Increased by: Food items, meals during meal times.',
   },
   happiness: {
     label: 'Happiness',
@@ -34,6 +40,9 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     bgColor: 'bg-chart-2/20',
     lowWarning: 25,
     warning: 'Your pet needs attention!',
+    tooltip: 'How happy your pet feels. Affects behavior.',
+    decayInfo: 'Decays -2 per tick. Faster with curious personality.',
+    boostInfo: 'Increased by: Toys, play sessions, accessories.',
   },
   energy: {
     label: 'Energy',
@@ -45,6 +54,9 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     bgColor: 'bg-chart-3/20',
     lowWarning: 20,
     warning: 'Your pet is tired!',
+    tooltip: 'Energy level. Low energy makes pet sluggish.',
+    decayInfo: 'Decays -1 per tick. Faster with playful personality.',
+    boostInfo: 'Increased by: Sleep, cozy beds, rest items.',
   },
   cleanliness: {
     label: 'Cleanliness',
@@ -56,6 +68,9 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     bgColor: 'bg-chart-4/20',
     lowWarning: 25,
     warning: 'Your pet needs grooming!',
+    tooltip: 'How clean your pet is. Low cleanliness hurts health.',
+    decayInfo: 'Decays -2 per tick. Faster with curious personality.',
+    boostInfo: 'Increased by: Grooming, spa days, baths.',
   },
   health: {
     label: 'Health',
@@ -67,6 +82,9 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     bgColor: 'bg-chart-5/20',
     lowWarning: 40,
     warning: 'Visit the vet!',
+    tooltip: 'Overall health. Critical low = danger!',
+    decayInfo: 'Decays -1 normally, -3 when hunger/cleanliness <30%.',
+    boostInfo: 'Increased by: Vitamins, vet visits, good food.',
   },
 };
 

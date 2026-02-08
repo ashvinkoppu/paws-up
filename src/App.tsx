@@ -24,30 +24,30 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <ScrollToTop />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <GameProvider>
+          <GameProvider>
+            <BrowserRouter>
+              <ScrollToTop />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
                       <Dashboard />
-                    </GameProvider>
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-          <Toaster />
-          <Sonner />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+            <Toaster />
+            <Sonner />
+          </GameProvider>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
@@ -55,3 +55,4 @@ const App = () => (
 );
 
 export default App;
+
