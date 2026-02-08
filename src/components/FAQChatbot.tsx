@@ -182,7 +182,7 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
             ...messages.slice(-10).map(message => ({ role: message.role, content: message.content })),
             { role: 'user', content: userMessage.content }
           ],
-          max_tokens: 300,
+          max_completion_tokens: 300,
         })
       });
 
@@ -275,8 +275,11 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
               style={{
                 right: `${-20 + Math.random() * 400}px`,
                 bottom: `${50 + Math.random() * 450}px`,
-                animation: `sparkle ${2 + Math.random() * 2}s ease-in-out infinite`,
-                animationDelay: `${i * 0.4}s`
+                animationName: 'sparkle',
+                animationDuration: `${2 + Math.random() * 2}s`,
+                animationTimingFunction: 'ease-in-out',
+                animationIterationCount: 'infinite',
+                animationDelay: `${i * 0.4}s`,
               }}
             />
           ))}
@@ -343,8 +346,11 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
                     message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                   )}
                   style={{
-                    animation: 'fadeInUp 0.4s ease-out forwards',
-                    animationDelay: `${index * 0.05}s`
+                    animationName: 'fadeInUp',
+                    animationDuration: '0.4s',
+                    animationTimingFunction: 'ease-out',
+                    animationFillMode: 'forwards',
+                    animationDelay: `${index * 0.05}s`,
                   }}
                 >
                   {message.role === 'assistant' && (
@@ -385,8 +391,11 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
                             key={i}
                             className="w-2 h-2 rounded-full bg-primary/60"
                             style={{
-                              animation: 'bounce 1.4s ease-in-out infinite',
-                              animationDelay: `${i * 0.16}s`
+                              animationName: 'bounce',
+                              animationDuration: '1.4s',
+                              animationTimingFunction: 'ease-in-out',
+                              animationIterationCount: 'infinite',
+                              animationDelay: `${i * 0.16}s`,
                             }}
                           />
                         ))}
@@ -412,9 +421,12 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
                       }}
                       className="text-xs px-3 py-1.5 rounded-full bg-accent/50 hover:bg-accent text-accent-foreground border border-border/30 transition-all duration-200 hover:scale-[1.02] hover:shadow-sm"
                       style={{
-                        animation: 'fadeInUp 0.3s ease-out forwards',
+                        animationName: 'fadeInUp',
+                        animationDuration: '0.3s',
+                        animationTimingFunction: 'ease-out',
+                        animationFillMode: 'forwards',
                         animationDelay: `${0.2 + index * 0.08}s`,
-                        opacity: 0
+                        opacity: 0,
                       }}
                     >
                       {question}

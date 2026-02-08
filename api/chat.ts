@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
-const ALLOWED_MODEL = 'gpt-4o-mini';
+const ALLOWED_MODEL = 'gpt-5-nano';
 const MAX_MESSAGES = 15;
 const MAX_MESSAGE_LENGTH = 1000;
 const MAX_SYSTEM_MESSAGE_LENGTH = 3000;
-const MAX_TOKENS_LIMIT = 300;
+const MAX_COMPLETION_TOKENS_LIMIT = 300;
 
 // Simple in-memory rate limiter (resets on cold start, which is acceptable for serverless)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -49,7 +49,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   const supabase = createClient(supabaseUrl, verificationKey);
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser(token);
 
   if (authError || !user) {
     return response.status(401).json({ error: 'Invalid or expired session' });
@@ -67,7 +70,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   try {
-    const { messages, max_tokens = MAX_TOKENS_LIMIT } = request.body;
+    const { messages, max_tokens, max_completion_tokens } = request.body;
 
     // Validate messages array
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -92,29 +95,34 @@ export default async function handler(request: VercelRequest, response: VercelRe
       }
     }
 
-    // Clamp max_tokens to prevent abuse
-    const clampedMaxTokens = Math.min(
-      typeof max_tokens === 'number' ? max_tokens : MAX_TOKENS_LIMIT,
-      MAX_TOKENS_LIMIT
-    );
+    // Clamp completion tokens to prevent abuse
+    const requestedCompletionTokens =
+      typeof max_completion_tokens === 'number'
+        ? max_completion_tokens
+        : typeof max_tokens === 'number'
+          ? max_tokens
+          : MAX_COMPLETION_TOKENS_LIMIT;
+    const clampedCompletionTokens = Math.min(requestedCompletionTokens, MAX_COMPLETION_TOKENS_LIMIT);
 
     const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: ALLOWED_MODEL,
         messages,
-        max_tokens: clampedMaxTokens,
-        temperature: 0.7
-      })
+        max_completion_tokens: clampedCompletionTokens,
+        reasoning_effort: 'minimal',
+      }),
     });
 
     if (!openAiResponse.ok) {
       const errorData = await openAiResponse.json().catch(() => ({}));
-      return response.status(openAiResponse.status).json({ error: 'OpenAI API Error', details: errorData });
+      const providerErrorMessage =
+        typeof errorData?.error?.message === 'string' ? errorData.error.message : 'OpenAI API Error';
+      return response.status(openAiResponse.status).json({ error: providerErrorMessage, details: errorData });
     }
 
     const data = await openAiResponse.json();
