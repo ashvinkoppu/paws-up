@@ -247,6 +247,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
       }
 
+      // Log the action for the activity log
+      const statChanges: Partial<PetStats> = {};
+      if (item.effects.hunger) statChanges.hunger = item.effects.hunger;
+      if (item.effects.happiness) statChanges.happiness = item.effects.happiness;
+      if (item.effects.energy) statChanges.energy = item.effects.energy;
+      if (item.effects.cleanliness) statChanges.cleanliness = item.effects.cleanliness;
+      if (item.effects.health) statChanges.health = item.effects.health;
+      addActionLog(`Used ${item.name}`, `on ${state.pet.name}`, item.icon || '📦', Object.keys(statChanges).length > 0 ? statChanges : undefined);
+
       if (item.effects.hunger) {
         const newHunger = clampStat(state.pet.stats.hunger + item.effects.hunger);
         setLastActionFeedback({

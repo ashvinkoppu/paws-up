@@ -184,35 +184,39 @@ const NotificationsPanel: React.FC = () => {
         </div>
 
         {/* Action Log Panel */}
-        {showActionLog && actionLog && actionLog.length > 0 && (
+        {showActionLog && (
           <div className="mb-4 p-3 rounded-xl bg-muted/30 border border-border/30 max-h-48 overflow-y-auto">
             <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Recent Actions</h4>
-            <div className="space-y-2">
-              {actionLog.slice(0, 10).map((log) => (
-                <div key={log.id} className="flex items-start gap-2 text-xs">
-                  <span className="text-base flex-shrink-0">{log.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-medium text-foreground">{log.action}</span>
-                    <span className="text-muted-foreground ml-1">— {log.description}</span>
-                    {log.statChanges && (
-                      <div className="flex flex-wrap gap-1 mt-0.5">
-                        {Object.entries(log.statChanges).map(([stat, change]) => (
-                          <span
-                            key={stat}
-                            className={cn(
-                              "text-[10px] px-1.5 py-0.5 rounded-full",
-                              Number(change) >= 0 ? "bg-emerald-500/15 text-emerald-600" : "bg-red-500/15 text-red-600"
-                            )}
-                          >
-                            {STAT_CONFIG[stat as keyof PetStats].icon} {Number(change) >= 0 ? '+' : ''}{change}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+            {!actionLog || actionLog.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-2">No actions yet. Feed or play with your pet!</p>
+            ) : (
+              <div className="space-y-2">
+                {actionLog.slice(0, 10).map((log) => (
+                  <div key={log.id} className="flex items-start gap-2 text-xs">
+                    <span className="text-base flex-shrink-0">{log.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-foreground">{log.action}</span>
+                      <span className="text-muted-foreground ml-1">— {log.description}</span>
+                      {log.statChanges && (
+                        <div className="flex flex-wrap gap-1 mt-0.5">
+                          {Object.entries(log.statChanges).map(([stat, change]) => (
+                            <span
+                              key={stat}
+                              className={cn(
+                                "text-[10px] px-1.5 py-0.5 rounded-full",
+                                Number(change) >= 0 ? "bg-emerald-500/15 text-emerald-600" : "bg-red-500/15 text-red-600"
+                              )}
+                            >
+                              {STAT_CONFIG[stat as keyof PetStats].icon} {Number(change) >= 0 ? '+' : ''}{change}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
