@@ -306,7 +306,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   const growthProgress = getGrowthProgress();
 
   return (
-    <div className="relative p-6 glass-card rounded-3xl shadow-lg overflow-hidden">
+    <div className="relative p-6 glass-card rounded-3xl shadow-lg">
       {/* Scenic room background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-gradient-to-t from-accent/20 via-accent/8 to-transparent" />
