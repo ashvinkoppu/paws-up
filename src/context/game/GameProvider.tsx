@@ -222,7 +222,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'ADD_TO_INVENTORY', payload: item });
   };
 
-  const useItem = (itemId: string) => {
+  const consumeItem = (itemId: string) => {
     const item = state.inventory.find(inventoryItem => inventoryItem.id === itemId);
     dispatch({ type: 'USE_ITEM', payload: itemId });
     dispatch({ type: 'UPDATE_CARE_STREAK' });
@@ -447,7 +447,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (inventoryAction) {
       const item = state.inventory.find(item => item.category === inventoryAction.category && item.quantity > 0);
       if (item) {
-        useItem(item.id);
+        consumeItem(item.id);
         toast({
           title: `${inventoryAction.successIcon} ${inventoryAction.successTitle}`,
           description: `Used ${item.name} from your inventory.`,
@@ -679,7 +679,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         addMoney,
         spendMoney,
         addToInventory,
-        useItem,
+        consumeItem,
         unlockAchievement,
         triggerRandomEvent,
         handleEventChoice,

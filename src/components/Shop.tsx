@@ -20,7 +20,7 @@ const SLOT_LABELS: Record<AccessorySlot, { label: string; icon: string }> = {
 };
 
 const Shop: React.FC = () => {
-  const { state, spendMoney, addToInventory, useItem, equipAccessory, unequipAccessory } = useGame();
+  const { state, spendMoney, addToInventory, consumeItem, equipAccessory, unequipAccessory } = useGame();
   const [activeTab, setActiveTab] = useState('shop');
   const [selectedCategory, setSelectedCategory] = useState('all');
   
@@ -113,7 +113,7 @@ const Shop: React.FC = () => {
   };
 
   const handleUseItem = (item: InventoryItem) => {
-    useItem(item.id);
+    consumeItem(item.id);
     toast({
       title: `Used ${item.name}!`,
       description: `Your pet enjoyed it!`,

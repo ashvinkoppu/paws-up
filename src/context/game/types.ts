@@ -118,7 +118,7 @@ export interface GameContextType {
   addMoney: (amount: number, description?: string) => void;
   spendMoney: (amount: number, category: string, description: string) => boolean;
   addToInventory: (item: InventoryItem) => void;
-  useItem: (itemId: string) => void;
+  consumeItem: (itemId: string) => void;
   unlockAchievement: (achievementId: string) => void;
   triggerRandomEvent: () => void;
   handleEventChoice: (choiceIndex: number) => void;
