@@ -1117,3 +1117,51 @@
 .animate-chatbot-pulse-ring {
   animation: chatbotPulseRing 2s ease-out infinite;
 }
+
+/* Level-up confetti */
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-10px) rotate(0deg) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0) rotate(20deg) scale(1);
+  }
+  100% {
+    transform: translateY(calc(100vh + 40px)) rotate(var(--confetti-spin, 720deg)) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiDrift {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(var(--confetti-drift, 15px)); }
+  75% { transform: translateX(calc(var(--confetti-drift, 15px) * -1)); }
+}
+
+@keyframes levelUpBanner {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.7);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.08);
+  }
+  25% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-15px) scale(0.9);
+  }
+}
+
+.animate-level-up-banner {
+  animation: levelUpBanner 3s ease-out forwards;
+}

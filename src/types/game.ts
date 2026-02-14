@@ -262,6 +262,8 @@ export interface GameState {
   tutorialCompleted: boolean;
   dailyGameRewards: Record<string, string>;
   gameTime: number; // Minutes from 00:00 (0-1439)
+  mealsEatenToday: { breakfast: boolean; lunch: boolean; dinner: boolean };
+  playWindowsSatisfied: boolean[];
   // New features
   isGuestMode: boolean; // Playing without an account
   dailyActionsRemaining: number; // Limited actions per day (adds pressure)
@@ -285,15 +287,15 @@ export const PERSONALITY_MODIFIERS: Record<Personality, Partial<Record<keyof Pet
   lazy: { energy: 0.5, hunger: -1 }, // Regains energy faster, gets hungry slower
 };
 
-// Growth stage thresholds
+// Growth stage thresholds (level-based)
 export const GROWTH_THRESHOLDS = {
   baby: 0,
-  teen: 50,
-  adult: 150,
+  teen: 3,
+  adult: 5,
 };
 
-// XP needed to reach a given level: 30 * level
-export const XP_PER_LEVEL = (level: number): number => 30 * level;
+// XP needed to reach a given level: 15 * level
+export const XP_PER_LEVEL = (level: number): number => 15 * level;
 
 // Gender-based color palettes
 export const GENDER_COLORS: Record<PetGender, { color: PetColor; name: string; hex: string }[]> = {

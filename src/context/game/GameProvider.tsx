@@ -9,6 +9,22 @@ import { clampStat, ACHIEVEMENT_REWARD } from '@/context/game/helpers';
 
 export const GameContext = createContext<GameContextType | undefined>(undefined);
 
+// Play window schedule: [startMinute, endMinute]
+const PLAY_WINDOW_RANGES: [number, number][] = [
+  [610, 630],   // Morning Play: 10:10 AM - 10:30 AM
+  [780, 800],   // Afternoon Play: 1:00 PM - 1:20 PM
+  [1050, 1070], // Evening Play: 5:30 PM - 5:50 PM
+];
+
+/** Returns 0, 1, or 2 if inside a play window, or -1 if not. */
+const getActivePlayWindowIndex = (gameMinutes: number): number => {
+  for (let i = 0; i < PLAY_WINDOW_RANGES.length; i++) {
+    const [start, end] = PLAY_WINDOW_RANGES[i];
+    if (gameMinutes >= start && gameMinutes < end) return i;
+  }
+  return -1;
+};
+
 const initGame = (initial: GameState): GameState => {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('guestGameState');
@@ -156,13 +172,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const newPet: Pet = {
       ...petData,
       id: crypto.randomUUID(),
-      // Initialize all stats at 70/100 as per requirements
+      // Initialize all stats at 50/100 for a more challenging start
       stats: {
-        hunger: 70,
-        happiness: 70,
-        energy: 70,
-        cleanliness: 70,
-        health: 70,
+        hunger: 50,
+        happiness: 50,
+        energy: 50,
+        cleanliness: 50,
+        health: 50,
       },
       experience: 0,
       level: 1,
@@ -478,6 +494,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Track lifetime plays for milestones
     if (action === 'play') {
       dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: 'totalPlays' } });
+
+      // Play window bonus
+      const windowIndex = getActivePlayWindowIndex(stateRef.current.gameTime);
+      if (windowIndex !== -1 && !stateRef.current.playWindowsSatisfied[windowIndex]) {
+        dispatch({ type: 'SATISFY_PLAY_WINDOW', payload: windowIndex });
+        const bonusStats: Partial<PetStats> = { happiness: 5, energy: -5, cleanliness: -5 };
+        dispatch({ type: 'UPDATE_STATS', payload: bonusStats });
+        addActionLog('Play Window Bonus', 'Played during scheduled play time!', '🎮', bonusStats);
+      }
     }
 
     dispatch({ type: 'USE_DAILY_ACTION' }); // Consume an action point
@@ -520,6 +545,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     if (won) {
       dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: 'totalGamesWon' } });
+    }
+
+    // Play window bonus for mini-game completion
+    const windowIndex = getActivePlayWindowIndex(stateRef.current.gameTime);
+    if (windowIndex !== -1 && !stateRef.current.playWindowsSatisfied[windowIndex]) {
+      dispatch({ type: 'SATISFY_PLAY_WINDOW', payload: windowIndex });
+      const bonusStats: Partial<PetStats> = { happiness: 5, energy: -5, cleanliness: -5 };
+      dispatch({ type: 'UPDATE_STATS', payload: bonusStats });
+      addActionLog('Play Window Bonus', 'Mini-game during scheduled play time!', '🎮', bonusStats);
     }
 
     dispatch({ type: 'CHECK_MILESTONES' });
@@ -660,6 +694,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'UPDATE_GAME_TIME', payload: minutes });
   }, []);
 
+  const penalizeMissedPlayWindow = useCallback((index: number) => {
+    dispatch({ type: 'PENALIZE_MISSED_PLAY_WINDOW', payload: index });
+  }, []);
+
+  const resetPlayWindows = useCallback(() => {
+    dispatch({ type: 'RESET_PLAY_WINDOWS' });
+  }, []);
+
   // Ensure daily reward loop is active for existing saves
   React.useEffect(() => {
     if (state.gameStarted && !state.tomorrowReward) {
@@ -710,6 +752,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         claimWeeklyGoal,
         claimTomorrowReward,
         addActionLog,
+        penalizeMissedPlayWindow,
+        resetPlayWindows,
       }}
     >
       {children}

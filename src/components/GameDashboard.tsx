@@ -472,6 +472,25 @@ const GameDashboard: React.FC = () => {
                     )}
                   </TabsTrigger>
                   <TabsTrigger
+                    value="tasks"
+                    data-tutorial="tab-tasks"
+                    className="group flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                  >
+                    <ClipboardCheck className="w-4 h-4" />
+                    <span>Tasks</span>
+                    {state.dailyTasks.some(task => task.completed) && !state.dailyBonusClaimed && (
+                      <span className="w-2 h-2 rounded-full bg-orange-500 group-data-[state=active]:bg-white" />
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="finance"
+                    data-tutorial="tab-finance"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                  >
+                    <Wallet className="w-4 h-4" />
+                    <span>Budget</span>
+                  </TabsTrigger>
+                  <TabsTrigger
                     value="shop"
                     data-tutorial="tab-shop"
                     className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
@@ -496,25 +515,6 @@ const GameDashboard: React.FC = () => {
                     <span>Play</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    value="tasks"
-                    data-tutorial="tab-tasks"
-                    className="group flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
-                  >
-                    <ClipboardCheck className="w-4 h-4" />
-                    <span>Tasks</span>
-                    {state.dailyTasks.some(task => task.completed) && !state.dailyBonusClaimed && (
-                      <span className="w-2 h-2 rounded-full bg-orange-500 group-data-[state=active]:bg-white" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="finance"
-                    data-tutorial="tab-finance"
-                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
-                  >
-                    <Wallet className="w-4 h-4" />
-                    <span>Budget</span>
-                  </TabsTrigger>
-                  <TabsTrigger
                     value="achievements"
                     data-tutorial="tab-achievements"
                     className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-sky-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
@@ -531,6 +531,14 @@ const GameDashboard: React.FC = () => {
                   <NotificationsPanel />
                 </TabsContent>
 
+                <TabsContent value="tasks" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <Tasks />
+                </TabsContent>
+
+                <TabsContent value="finance" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <FinancePanel />
+                </TabsContent>
+
                 <TabsContent value="shop" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
                   <Shop />
                 </TabsContent>
@@ -541,14 +549,6 @@ const GameDashboard: React.FC = () => {
 
                 <TabsContent value="games" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
                   <MiniGames />
-                </TabsContent>
-
-                <TabsContent value="tasks" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-                  <Tasks />
-                </TabsContent>
-
-                <TabsContent value="finance" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-                  <FinancePanel />
                 </TabsContent>
 
                 <TabsContent value="achievements" className="mt-0 focus-visible:outline-none focus-visible:ring-0">

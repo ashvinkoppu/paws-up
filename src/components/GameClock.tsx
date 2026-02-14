@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
-import { Clock, Utensils, Moon, Sun, Coffee, Soup } from 'lucide-react';
+import { Clock, Utensils, Moon, Sun, Coffee, Soup, Gamepad2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Game time progresses faster for more dynamic gameplay
@@ -46,9 +46,45 @@ const MEAL_WINDOWS: MealWindow[] = [
 
 const BEDTIME_HOUR = 22; // 10 PM
 
+interface PlayWindow {
+  name: string;
+  startMinute: number;
+  endMinute: number;
+  icon: React.ReactNode;
+  color: string;
+  bgColor: string;
+}
+
+const PLAY_WINDOWS: PlayWindow[] = [
+  {
+    name: 'Morning Play',
+    startMinute: 610,  // 10:10 AM
+    endMinute: 630,    // 10:30 AM
+    icon: <Gamepad2 className="w-4 h-4" />,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-500/15 border-emerald-500/30',
+  },
+  {
+    name: 'Afternoon Play',
+    startMinute: 780,  // 1:00 PM
+    endMinute: 800,    // 1:20 PM
+    icon: <Gamepad2 className="w-4 h-4" />,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-500/15 border-emerald-500/30',
+  },
+  {
+    name: 'Evening Play',
+    startMinute: 1050, // 5:30 PM
+    endMinute: 1070,   // 5:50 PM
+    icon: <Gamepad2 className="w-4 h-4" />,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-500/15 border-emerald-500/30',
+  },
+];
+
 interface ReminderPopup {
   id: string;
-  type: 'meal' | 'bedtime' | 'wake';
+  type: 'meal' | 'bedtime' | 'wake' | 'play';
   title: string;
   message: string;
   icon: React.ReactNode;
@@ -61,7 +97,7 @@ interface GameClockProps {
 }
 
 const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder }) => {
-  const { state, updateGameTime } = useGame();
+  const { state, updateGameTime, penalizeMissedPlayWindow, resetPlayWindows } = useGame();
   // Start game time from saved state or default to 7:00 AM
   const [gameMinutes, setGameMinutes] = useState(state.gameTime || 7 * 60); 
   const [reminders, setReminders] = useState<ReminderPopup[]>([]);
@@ -82,6 +118,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
           lastMealWindowRef.current = null;
           lastBedtimeShownRef.current = false;
           lastWakeShownRef.current = false;
+          resetPlayWindows();
           return next - 1440; // Wrap around properly
         }
         return next;
@@ -142,6 +179,53 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
       }
     }
 
+    // Check play windows
+    for (let i = 0; i < PLAY_WINDOWS.length; i++) {
+      const playWindow = PLAY_WINDOWS[i];
+      const playStartKey = `play-start-${i}`;
+      const playEndKey = `play-end-${i}`;
+
+      // Show "Play Time!" reminder when entering the window
+      if (gameMinutes >= playWindow.startMinute && gameMinutes < playWindow.startMinute + GAME_MINUTES_PER_TICK && !shownReminders.has(playStartKey)) {
+        const reminder: ReminderPopup = {
+          id: `play-start-${Date.now()}`,
+          type: 'play',
+          title: `Play Time! 🎮`,
+          message: `${playWindow.name} window is open! Play with your pet for a happiness bonus.`,
+          icon: playWindow.icon,
+          color: playWindow.color,
+        };
+        setReminders((prev) => [...prev, reminder]);
+        setShownReminders((prev) => new Set(prev).add(playStartKey));
+
+        setTimeout(() => {
+          setReminders((prev) => prev.filter((r) => r.id !== reminder.id));
+        }, 5000);
+      }
+
+      // Check if window just ended and was missed
+      if (gameMinutes >= playWindow.endMinute && gameMinutes < playWindow.endMinute + GAME_MINUTES_PER_TICK && !shownReminders.has(playEndKey)) {
+        setShownReminders((prev) => new Set(prev).add(playEndKey));
+
+        if (!state.playWindowsSatisfied[i]) {
+          penalizeMissedPlayWindow(i);
+          const reminder: ReminderPopup = {
+            id: `play-miss-${Date.now()}`,
+            type: 'play',
+            title: `Missed Play! 😿`,
+            message: `${playWindow.name} window closed without playing. Happiness dropped!`,
+            icon: playWindow.icon,
+            color: 'text-red-500',
+          };
+          setReminders((prev) => [...prev, reminder]);
+
+          setTimeout(() => {
+            setReminders((prev) => prev.filter((r) => r.id !== reminder.id));
+          }, 5000);
+        }
+      }
+    }
+
     // Bedtime reminder at 10 PM
     if (currentHour === BEDTIME_HOUR && currentMinute === 0 && !lastBedtimeShownRef.current) {
       const reminder: ReminderPopup = {
@@ -180,7 +264,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
         setReminders((prev) => prev.filter((r) => r.id !== reminder.id));
       }, 5000);
     }
-  }, [gameMinutes, shownReminders, onMealReminder, onBedtimeReminder]);
+  }, [gameMinutes, shownReminders, onMealReminder, onBedtimeReminder, state.playWindowsSatisfied, penalizeMissedPlayWindow]);
 
   // Format time display
   const formatTime = () => {
@@ -205,6 +289,16 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
     return null;
   };
 
+  // Get current play window if any
+  const getCurrentPlayWindow = (): PlayWindow | null => {
+    for (const playWindow of PLAY_WINDOWS) {
+      if (gameMinutes >= playWindow.startMinute && gameMinutes < playWindow.endMinute) {
+        return playWindow;
+      }
+    }
+    return null;
+  };
+
   // Check if it's night time (after 10 PM or before 6 AM)
   const isNightTime = () => {
     const currentHour = Math.floor(gameMinutes / 60);
@@ -213,6 +307,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
 
   const { time, period } = formatTime();
   const currentMeal = getCurrentMealWindow();
+  const currentPlay = getCurrentPlayWindow();
   const nightTime = isNightTime();
 
   const dismissReminder = (id: string) => {
@@ -225,30 +320,34 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
       <div 
         className={cn(
           "flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all duration-300",
-          nightTime 
-            ? "bg-indigo-500/10 border-indigo-500/20" 
-            : currentMeal 
-              ? currentMeal.bgColor 
-              : "bg-sky-500/10 border-sky-500/20"
+          nightTime
+            ? "bg-indigo-500/10 border-indigo-500/20"
+            : currentMeal
+              ? currentMeal.bgColor
+              : currentPlay
+                ? currentPlay.bgColor
+                : "bg-sky-500/10 border-sky-500/20"
         )}
       >
         {nightTime ? (
           <Moon className="w-4 h-4 text-indigo-500" />
         ) : currentMeal ? (
           <span className={currentMeal.color}>{currentMeal.icon}</span>
+        ) : currentPlay ? (
+          <span className={currentPlay.color}>{currentPlay.icon}</span>
         ) : (
           <Clock className="w-4 h-4 text-sky-600" />
         )}
         <div className="flex items-baseline gap-1">
           <span className={cn(
             "font-mono font-bold text-sm tracking-tight",
-            nightTime ? "text-indigo-700" : currentMeal ? currentMeal.color : "text-sky-700"
+            nightTime ? "text-indigo-700" : currentMeal ? currentMeal.color : currentPlay ? currentPlay.color : "text-sky-700"
           )}>
             {time}
           </span>
           <span className={cn(
             "text-[10px] font-medium uppercase",
-            nightTime ? "text-indigo-500/70" : currentMeal ? "opacity-70" : "text-sky-500/70"
+            nightTime ? "text-indigo-500/70" : currentMeal ? "opacity-70" : currentPlay ? "opacity-70" : "text-sky-500/70"
           )}>
             {period}
           </span>
@@ -260,6 +359,15 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
             currentMeal.color
           )}>
             {currentMeal.name}
+          </span>
+        )}
+        {currentPlay && !currentMeal && (
+          <span className={cn(
+            "text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full",
+            currentPlay.bgColor,
+            currentPlay.color
+          )}>
+            Play Time!
           </span>
         )}
       </div>
@@ -280,7 +388,8 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
               <div className={cn(
                 "w-10 h-10 rounded-full flex items-center justify-center",
                 reminder.type === 'meal' ? "bg-amber-500/15" :
-                reminder.type === 'bedtime' ? "bg-indigo-500/15" : "bg-amber-500/15"
+                reminder.type === 'bedtime' ? "bg-indigo-500/15" :
+                reminder.type === 'play' ? "bg-emerald-500/15" : "bg-amber-500/15"
               )}>
                 <span className={cn(
                   "text-lg",

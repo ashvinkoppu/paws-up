@@ -29,6 +29,8 @@ export const initialState: GameState = {
   tutorialCompleted: false,
   dailyGameRewards: {},
   gameTime: 7 * 60, // Start at 7:00 AM
+  mealsEatenToday: { breakfast: false, lunch: false, dinner: false },
+  playWindowsSatisfied: [false, false, false],
   // New features
   isGuestMode: false,
   dailyActionsRemaining: 15, // 15 actions per day
@@ -94,7 +96,10 @@ export type GameAction =
   | { type: 'SET_ROOM_THEME'; payload: string | null }
   | { type: 'GENERATE_TOMORROW_REWARD' }
   | { type: 'CLAIM_TOMORROW_REWARD' }
-  | { type: 'GENERATE_DAY_RECAP' };
+  | { type: 'GENERATE_DAY_RECAP' }
+  | { type: 'SATISFY_PLAY_WINDOW'; payload: number }
+  | { type: 'PENALIZE_MISSED_PLAY_WINDOW'; payload: number }
+  | { type: 'RESET_PLAY_WINDOWS' };
 
 export interface ActionFeedbackEvent {
   action: string;
@@ -147,4 +152,6 @@ export interface GameContextType {
   claimWeeklyGoal: (goalId: string) => void;
   claimTomorrowReward: () => void;
   addActionLog: (action: string, description: string, icon: string, statChanges?: Partial<PetStats>) => void;
+  penalizeMissedPlayWindow: (index: number) => void;
+  resetPlayWindows: () => void;
 }

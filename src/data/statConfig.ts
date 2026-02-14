@@ -27,8 +27,8 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     lowWarning: 30,
     warning: 'Your pet is hungry!',
     tooltip: 'How full your pet is. Decreases over time.',
-    decayInfo: 'Decays -2 per tick. Faster with playful personality.',
-    boostInfo: 'Increased by: Food items, meals during meal times.',
+    decayInfo: 'Decays -3 per tick. Missing a meal (breakfast, lunch, dinner) causes an extra -15 drop.',
+    boostInfo: 'Increased by: Food items. Feeding during meal windows prevents the penalty.',
   },
   happiness: {
     label: 'Happiness',

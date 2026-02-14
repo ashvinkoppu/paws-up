@@ -3,6 +3,45 @@ import { SHOP_ITEMS } from '@/data/shopItems';
 import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, MILESTONES, checkMilestone, DEFAULT_DAILY_TRACKING, LifetimeCounters } from '@/data/tasks';
 
 export const ACHIEVEMENT_REWARD = 10;
+
+export const MEAL_WINDOWS = [
+  { name: 'breakfast' as const, start: 420, end: 540 },
+  { name: 'lunch' as const, start: 720, end: 840 },
+  { name: 'dinner' as const, start: 1080, end: 1200 },
+];
+
+export type MealName = 'breakfast' | 'lunch' | 'dinner';
+export type MealsEatenToday = { breakfast: boolean; lunch: boolean; dinner: boolean };
+
+/** Returns the meal name if gameTime falls within a meal window, or null. */
+export function getMealForTime(gameTime: number): MealName | null {
+  for (const meal of MEAL_WINDOWS) {
+    if (gameTime >= meal.start && gameTime < meal.end) {
+      return meal.name;
+    }
+  }
+  return null;
+}
+
+/** Returns meal names whose windows were crossed (end boundary passed) between oldTime and newTime, and weren't eaten. */
+export function getSkippedMeals(
+  oldTime: number,
+  newTime: number,
+  mealsEaten: MealsEatenToday
+): MealName[] {
+  const skipped: MealName[] = [];
+  for (const meal of MEAL_WINDOWS) {
+    // The meal window's end was crossed if oldTime < end <= newTime
+    // Also handle midnight wrap: if newTime < oldTime, we wrapped around
+    const crossed = newTime >= oldTime
+      ? oldTime < meal.end && newTime >= meal.end
+      : oldTime < meal.end || newTime >= meal.end;
+    if (crossed && !mealsEaten[meal.name]) {
+      skipped.push(meal.name);
+    }
+  }
+  return skipped;
+}
 export const MAX_TRANSACTIONS = 200;
 
 export const clampStat = (value: number): number => Math.max(0, Math.min(100, value));

@@ -11,6 +11,8 @@ import {
   addXpToPet,
   checkAllMilestones,
   appendTransaction,
+  getSkippedMeals,
+  getMealForTime,
 } from '@/context/game/helpers';
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -176,12 +178,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const newExperience = pet.experience + 5;
       const { level: newLevel } = calculateLevel(newExperience);
 
+      // Mark current meal as eaten if feeding during a meal window
+      let mealsEatenToday = state.mealsEatenToday;
+      if (item.category === 'hunger') {
+        const currentMeal = getMealForTime(state.gameTime);
+        if (currentMeal && !mealsEatenToday[currentMeal]) {
+          mealsEatenToday = { ...mealsEatenToday, [currentMeal]: true };
+        }
+      }
+
       return {
         ...state,
         pet: { ...pet, stats: newStats, experience: newExperience, level: newLevel },
         inventory: state.inventory
           .map(inventoryItem => inventoryItem.id === action.payload ? { ...inventoryItem, quantity: inventoryItem.quantity - 1 } : inventoryItem)
           .filter(inventoryItem => inventoryItem.quantity > 0),
+        mealsEatenToday,
       };
     }
 
@@ -268,7 +280,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       let achievementMoney = 0;
       let notifications = [...state.notifications];
 
-      if (state.pet.experience >= GROWTH_THRESHOLDS.adult && state.pet.stage !== 'adult') {
+      if (state.pet.level >= GROWTH_THRESHOLDS.adult && state.pet.stage !== 'adult') {
         newStage = 'adult';
         const [updated, reward] = unlockAchievementInList(achievements, 'adult-stage');
         achievements = updated;
@@ -283,7 +295,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           timestamp: Date.now(),
         };
         notifications = [notification, ...notifications].slice(0, 50);
-      } else if (state.pet.experience >= GROWTH_THRESHOLDS.teen && state.pet.stage === 'baby') {
+      } else if (state.pet.level >= GROWTH_THRESHOLDS.teen && state.pet.stage === 'baby') {
         newStage = 'teen';
         const [updated, reward] = unlockAchievementInList(achievements, 'teen-stage');
         achievements = updated;
@@ -330,12 +342,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       const decay: Partial<PetStats> = {
-        hunger: (-2 + (modifiers.hunger || 0)) * decayMultiplier,
-        happiness: (-2 + (modifiers.happiness || 0)) * decayMultiplier,
-        energy: (-1 + (modifiers.energy || 0)) * decayMultiplier,
-        cleanliness: (-2 + (modifiers.cleanliness || 0)) * decayMultiplier,
+        hunger: (-3 + (modifiers.hunger || 0)) * decayMultiplier,
+        happiness: (-3 + (modifiers.happiness || 0)) * decayMultiplier,
+        energy: (-2 + (modifiers.energy || 0)) * decayMultiplier,
+        cleanliness: (-3 + (modifiers.cleanliness || 0)) * decayMultiplier,
         // Health drops faster when hunger or cleanliness is critically low
-        health: state.pet.stats.hunger < 30 || state.pet.stats.cleanliness < 30 ? -3 : -1,
+        health: state.pet.stats.hunger < 30 || state.pet.stats.cleanliness < 30 ? -4 : -2,
       };
 
       const newStats = { ...state.pet.stats };
@@ -345,10 +357,43 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
       });
 
+      // Advance game time by 30 minutes per decay tick
+      const oldGameTime = state.gameTime;
+      const newGameTime = (oldGameTime + 30) % 1440;
+      const crossedMidnight = newGameTime < oldGameTime;
+
+      // Reset meals when crossing midnight
+      let mealsEatenToday = crossedMidnight
+        ? { breakfast: false, lunch: false, dinner: false }
+        : { ...state.mealsEatenToday };
+
+      // Detect skipped meals (meal windows whose end was crossed without feeding)
+      const skippedMeals = getSkippedMeals(oldGameTime, newGameTime, mealsEatenToday);
+      let mealPenalty = 0;
+      let notifications = state.notifications;
+
+      for (const mealName of skippedMeals) {
+        mealPenalty += 15;
+        const notification: GameNotification = {
+          id: crypto.randomUUID(),
+          type: 'alert',
+          title: 'Missed Meal!',
+          description: `${state.pet.name} missed ${mealName}! Hunger dropped sharply.`,
+          icon: '🍽️',
+          read: false,
+          timestamp: Date.now(),
+        };
+        notifications = [notification, ...notifications].slice(0, 50);
+      }
+
+      if (mealPenalty > 0) {
+        newStats.hunger = clampStat(newStats.hunger - mealPenalty);
+      }
+
       // Calculate new behavior based on stats
       const avgStats = Object.values(newStats).reduce((sum, v) => sum + v, 0) / 5;
       const lowestStat = Math.min(...Object.values(newStats));
-      
+
       let newBehavior: PetBehavior = 'normal';
       if (lowestStat < 10) {
         newBehavior = 'sad';
@@ -380,18 +425,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           pet: { ...state.pet, stats: newStats, lastCaredAt: Date.now() },
           petDead: true,
           petBehavior: 'sad',
+          gameTime: newGameTime,
+          mealsEatenToday,
         };
       }
 
       // Add warning notifications for low stats
-      let notifications = state.notifications;
       if (lowestStat < 15 && lowestStat >= 5) {
         const lowStatName = Object.entries(newStats).find(([, v]) => v === lowestStat)?.[0];
-        const existingWarning = notifications.find(n => 
-          n.type === 'alert' && n.title === 'Pet Needs Attention!' && 
+        const existingWarning = notifications.find(n =>
+          n.type === 'alert' && n.title === 'Pet Needs Attention!' &&
           Date.now() - n.timestamp < 60000 // Within last minute
         );
-        
+
         if (!existingWarning && lowStatName) {
           const warning: GameNotification = {
             id: crypto.randomUUID(),
@@ -411,6 +457,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         pet: { ...state.pet, stats: newStats, lastCaredAt: Date.now() },
         petBehavior: newBehavior,
         notifications,
+        gameTime: newGameTime,
+        mealsEatenToday,
       };
     }
 
@@ -438,6 +486,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         tutorialCompleted: action.payload.tutorialCompleted ?? (action.payload.gameStarted ? true : false),
         dailyGameRewards: action.payload.dailyGameRewards || {},
         gameTime: action.payload.gameTime || 7 * 60,
+        mealsEatenToday: action.payload.mealsEatenToday || { breakfast: false, lunch: false, dinner: false },
         // New feature migrations
         isGuestMode: action.payload.isGuestMode || false,
         dailyActionsRemaining: action.payload.dailyActionsRemaining ?? 15,
@@ -451,6 +500,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         activeRoomTheme: action.payload.activeRoomTheme || null,
         tomorrowReward: action.payload.tomorrowReward || null,
         lastDayRecap: action.payload.lastDayRecap || null,
+        playWindowsSatisfied: action.payload.playWindowsSatisfied || [false, false, false],
       } as GameState;
       // Migrate old pets: add gender and equippedAccessories if missing
       if (loadedState.pet) {
@@ -1097,6 +1147,32 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...resultState,
         tomorrowReward: { ...reward, available: false, claimedDate: today },
         notifications: [notification, ...resultState.notifications].slice(0, 50),
+      };
+    }
+
+    case 'SATISFY_PLAY_WINDOW': {
+      const windowIndex = action.payload;
+      if (windowIndex < 0 || windowIndex >= state.playWindowsSatisfied.length) return state;
+      if (state.playWindowsSatisfied[windowIndex]) return state;
+      const updatedWindows = [...state.playWindowsSatisfied];
+      updatedWindows[windowIndex] = true;
+      return { ...state, playWindowsSatisfied: updatedWindows };
+    }
+
+    case 'PENALIZE_MISSED_PLAY_WINDOW': {
+      if (!state.pet) return state;
+      const newStats = { ...state.pet.stats };
+      newStats.happiness = clampStat(newStats.happiness - 8);
+      return {
+        ...state,
+        pet: { ...state.pet, stats: newStats },
+      };
+    }
+
+    case 'RESET_PLAY_WINDOWS': {
+      return {
+        ...state,
+        playWindowsSatisfied: [false, false, false],
       };
     }
 

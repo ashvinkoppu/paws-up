@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Flame, Calendar, AlertTriangle, Heart, Wallet, ArrowRight } from 'lucide-react';
 import { calculateLevel } from '@/data/tasks';
 import { getAccessoryById, ACCESSORY_POSITIONS } from '@/data/accessories';
+import ConfettiOverlay from '@/components/ConfettiOverlay';
 
 // Mood visual config — controls aura, pet animation, and ambient particles
 type MoodVisual = {
@@ -140,7 +141,10 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   const [itemUseLabel, setItemUseLabel] = useState<string | null>(null);
   const [isEvolving, setIsEvolving] = useState(false);
   const [evolutionTarget, setEvolutionTarget] = useState<GrowthStage | null>(null);
+  const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
+  const [levelUpLevel, setLevelUpLevel] = useState(1);
   const previousStageRef = useRef<GrowthStage>(state.pet?.stage ?? 'baby');
+  const previousLevelRef = useRef<number>(state.pet?.level ?? 1);
   const lastFeedTimestamp = useRef<number>(0);
   const lastItemUseTimestamp = useRef<number>(0);
   const particleIdRef = useRef(0);
@@ -173,6 +177,27 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
       previousStageRef.current = currentStage;
     }
   }, [state.pet?.stage]);
+
+  // Detect level up
+  useEffect(() => {
+    if (!state.pet) return;
+    const currentLevel = state.pet.level;
+    const previousLevel = previousLevelRef.current;
+
+    if (currentLevel > previousLevel) {
+      setLevelUpLevel(currentLevel);
+      setShowLevelUpConfetti(true);
+
+      const confettiTimer = setTimeout(() => {
+        setShowLevelUpConfetti(false);
+      }, 3500);
+
+      previousLevelRef.current = currentLevel;
+      return () => clearTimeout(confettiTimer);
+    }
+
+    previousLevelRef.current = currentLevel;
+  }, [state.pet?.level]);
 
   // Handle eating animation (food items)
   useEffect(() => {
@@ -288,18 +313,18 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   const mood = getMood();
   const stageConfig = STAGE_CONFIG[pet.stage];
 
-  // Calculate growth progress
+  // Calculate growth progress (level-based thresholds)
   const getGrowthProgress = () => {
     if (pet.stage === 'adult') return 100;
-    
+
     const currentThreshold = GROWTH_THRESHOLDS[pet.stage];
     const nextStage = pet.stage === 'baby' ? 'teen' : 'adult';
     const nextThreshold = GROWTH_THRESHOLDS[nextStage];
-    
+
     // Safety check to avoid division by zero
     if (nextThreshold === currentThreshold) return 100;
 
-    const progress = ((pet.experience - currentThreshold) / (nextThreshold - currentThreshold)) * 100;
+    const progress = ((pet.level - currentThreshold) / (nextThreshold - currentThreshold)) * 100;
     return Math.min(Math.max(progress, 0), 100);
   };
 
@@ -772,6 +797,9 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
           })()}
         </div>
       </div>
+
+      {/* Level-up confetti overlay */}
+      <ConfettiOverlay show={showLevelUpConfetti} newLevel={levelUpLevel} />
     </div>
   );
 };
