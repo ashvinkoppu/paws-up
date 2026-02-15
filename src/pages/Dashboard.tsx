@@ -1,9 +1,23 @@
+/**
+ * Dashboard - Top-level page component for the main game experience.
+ *
+ * On mount it fetches the authenticated user's cloud save from the
+ * Supabase `game_saves` table, validates its shape with {@link isValidSaveData},
+ * and hydrates the game context via `loadGameFromCloud`. While the save is
+ * loading a pulsing placeholder is shown; on error the user sees a retry prompt.
+ *
+ * After loading, the component conditionally renders:
+ *  - {@link GameDashboard} when a game is already in progress (pet exists).
+ *  - {@link PetCreationWizard} when the player needs to create their first pet.
+ *
+ * @module pages/Dashboard
+ */
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useGame } from '@/context/GameContext';
 import { supabase } from '@/lib/supabase';
-import GameDashboard from '@/components/GameDashboard';
-import PetCreationWizard from '@/components/PetCreationWizard';
+import GameDashboard from '@/components/dashboard/GameDashboard';
+import PetCreationWizard from '@/components/pet/PetCreationWizard';
 import { toast } from '@/hooks/use-toast';
 import { GameState } from '@/types/game';
 

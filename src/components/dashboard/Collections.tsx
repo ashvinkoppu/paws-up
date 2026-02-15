@@ -1,3 +1,12 @@
+/**
+ * @file Collections.tsx
+ *
+ * Displays the player's collected items organized into tabbed categories:
+ * toys, outfits, room themes, and decorations. Each item card is styled
+ * by rarity tier (common, rare, epic, legendary) and optionally shows a
+ * passive stat bonus. Uses the CollectionGrid sub-component for rendering
+ * each category's grid with an empty-state fallback.
+ */
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,6 +17,7 @@ import { CollectionItem } from '@/types/game';
 import { cn } from '@/lib/utils';
 import { Package, Shirt, Armchair, Sparkles, Lock } from 'lucide-react';
 
+/** Renders a responsive grid of collection items, or an empty-state placeholder. */
 const CollectionGrid: React.FC<{ items: CollectionItem[], emptyMessage: string }> = ({ items, emptyMessage }) => {
   if (items.length === 0) {
     return (
@@ -23,6 +33,7 @@ const CollectionGrid: React.FC<{ items: CollectionItem[], emptyMessage: string }
       {items.map((item) => (
         <div
           key={item.id}
+          // Border and background color are determined by rarity tier
           className={cn(
             "group relative flex flex-col items-center p-4 rounded-xl border transition-all duration-300",
             "bg-card hover:shadow-md hover:border-primary/30",

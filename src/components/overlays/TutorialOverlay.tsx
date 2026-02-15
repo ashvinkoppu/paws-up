@@ -1,3 +1,19 @@
+/**
+ * TutorialOverlay - Step-by-step spotlight tutorial that introduces new players
+ * to the game's UI sections.
+ *
+ * Renders a dark overlay with a spotlight cutout around the current target element
+ * (located via `data-tutorial` selectors). A tooltip card beside the spotlight
+ * explains each feature. Steps can switch the active tab (shop, games, etc.) so the
+ * target element is visible when highlighted.
+ *
+ * Uses a box-shadow technique (9999px spread) for the dark backdrop with a transparent
+ * "hole" around the target, avoiding SVG masks.
+ *
+ * @prop {() => void} onComplete - Called when the user finishes or skips the tutorial.
+ * @prop {(tab: string) => void} onTabChange - Called to switch the active content tab
+ *   so the highlighted element is rendered and measurable.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronLeft, X, PawPrint, Store, Gamepad2, ClipboardCheck, Wallet, Trophy, Heart, Bell } from 'lucide-react';
@@ -138,6 +154,8 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ onComplete, onTabChan
     onComplete();
   };
 
+  // Spotlight cutout dimensions: expand the target rect by `padding` on all sides
+  // so the highlight doesn't clip the element's edges.
   const padding = 8;
   const spotlightStyle = targetRect
     ? {
@@ -148,7 +166,9 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ onComplete, onTabChan
       }
     : { top: '50%', left: '50%', width: 0, height: 0 };
 
-  // Calculate tooltip position
+  // Calculate tooltip position relative to the target element.
+  // Each case clamps the tooltip horizontally so it stays within the viewport
+  // (16px minimum margin from screen edges).
   const getTooltipStyle = (): React.CSSProperties => {
     if (!targetRect) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
 

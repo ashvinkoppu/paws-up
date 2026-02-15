@@ -1,4 +1,23 @@
-import React, { useState, useCallback } from 'react';
+/**
+ * PetCreationWizard -- A four-step onboarding flow for creating a new pet.
+ *
+ * Steps:
+ *  1. Species selection (dog, cat, rabbit, hamster) with bounce animation.
+ *  2. Naming -- validates 2-20 chars, letters + spaces only.
+ *  3. Gender + color -- gender choice determines the available color palette
+ *     (male/female/neutral each have four colors). A live preview applies
+ *     the selected color to the pet image via a CSS `mix-blend-mode: color`
+ *     overlay masked to the pet silhouette.
+ *  4. Personality selection (playful, calm, curious, lazy) -- each trait
+ *     modifies stat decay/gain rates during gameplay.
+ *
+ * On completion, dispatches `createPet` with stage set to "baby".
+ * Also cleans up any stale Radix dialog body styles on mount (pointer-events,
+ * overflow) that may linger after a game reset.
+ *
+ * @prop onComplete - Called after pet creation or when the user backs out of step 1.
+ */
+import React, { useState, useCallback, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Species, Personality, PetColor, PetGender, GrowthStage, GENDER_COLORS } from '@/types/game';
 import { Button } from '@/components/ui/button';
@@ -46,6 +65,13 @@ interface PetCreationWizardProps {
 const PetCreationWizard: React.FC<PetCreationWizardProps> = ({ onComplete }) => {
   const { createPet } = useGame();
   const [step, setStep] = useState(1);
+
+  // Clear any stuck overlay styles from Radix dialogs that may not have
+  // cleaned up properly when GameDashboard unmounted during a reset.
+  useEffect(() => {
+    document.body.style.pointerEvents = '';
+    document.body.style.overflow = '';
+  }, []);
   const [selectedSpecies, setSelectedSpecies] = useState<Species | null>(null);
   const [petName, setPetName] = useState('');
   const [selectedGender, setSelectedGender] = useState<PetGender>('male');

@@ -1,12 +1,32 @@
+/**
+ * @file GameClock.tsx
+ *
+ * Manages and displays accelerated in-game time (1 real second = 5 game minutes).
+ * The clock drives several time-based game mechanics:
+ *
+ *  - **Meal windows** (Breakfast 8-10, Lunch 12-14, Dinner 18-20): triggers
+ *    reminder popups when a meal window opens and notifies the parent via
+ *    onMealReminder callback.
+ *  - **Play windows** (3 per day, ~20 game-minutes each): shows a "Play Time"
+ *    reminder when the window opens and applies a happiness penalty via
+ *    penalizeMissedPlayWindow() if the window closes without the player playing.
+ *  - **Bedtime** (10 PM): fires a bedtime reminder and onBedtimeReminder callback.
+ *  - **Day rollover** (midnight): resets all reminder tracking and play windows.
+ *
+ * Local gameMinutes state ticks independently for smooth UI updates, syncing
+ * back to the global GameContext every 5 game-minutes and re-syncing from
+ * context on large drifts (e.g., loading a save).
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Clock, Utensils, Moon, Sun, Coffee, Soup, Gamepad2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Game time progresses faster for more dynamic gameplay
-// 1 real second = 5 game minutes (1 real minute = 300 game minutes = 5 game hours)
-const GAME_MINUTES_PER_TICK = 5; // 5 game minutes per tick
-const REAL_MS_PER_TICK = 1000; // 1 second between ticks
+// Time acceleration constants:
+// 1 real second = 5 game minutes, so 1 real minute = 5 game hours,
+// and a full 24-hour game day passes in ~4.8 real minutes.
+const GAME_MINUTES_PER_TICK = 5;
+const REAL_MS_PER_TICK = 1000;
 
 interface MealWindow {
   name: string;
@@ -102,6 +122,8 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
   const [gameMinutes, setGameMinutes] = useState(state.gameTime || 7 * 60); 
   const [reminders, setReminders] = useState<ReminderPopup[]>([]);
   const [shownReminders, setShownReminders] = useState<Set<string>>(new Set());
+  // Refs track whether one-shot reminders (bedtime, wake) have fired this day cycle.
+  // shownReminders (Set) handles meal and play window dedup by key string.
   const lastMealWindowRef = useRef<string | null>(null);
   const lastBedtimeShownRef = useRef(false);
   const lastWakeShownRef = useRef(false);
@@ -128,21 +150,19 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
     return () => clearInterval(interval);
   }, []);
 
-  // Sync local time with global state (handle loads/resets)
+  // Re-sync local clock from global state when a large jump is detected (e.g., loading a save).
+  // Small diffs (< 20 min) are ignored to avoid jitter from the periodic context sync.
+  // Wrap-around diffs (> 1400 min) are also ignored since 0 and 1439 are only 1 min apart.
   useEffect(() => {
-    // Only update local time if difference is large (> 20 mins) to avoid jitter/loops
-    // This allows local state to "tick" smoothly while context might lag slightly
-    // But detects major shifts like loading a save or resetting the game
     const diff = Math.abs((state.gameTime || 0) - gameMinutes);
-    if (diff > 20 && diff < 1400) { // Ignore small diffs (jitter) and wrap-around diffs (0 vs 1439)
+    if (diff > 20 && diff < 1400) {
       setGameMinutes(state.gameTime || 7 * 60);
     }
   }, [state.gameTime]);
 
-  // Sync global state with local time (periodically)
+  // Push local clock to global context every 5 game-minutes (~1 real second)
+  // so the value persists across saves without flooding the reducer on every tick.
   useEffect(() => {
-    // Every 5 game minutes (15 real seconds), push update to context
-    // This ensures time is saved reasonably often without spamming updates
     if (gameMinutes % 5 === 0) {
       updateGameTime(gameMinutes);
     }
@@ -266,7 +286,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
     }
   }, [gameMinutes, shownReminders, onMealReminder, onBedtimeReminder, state.playWindowsSatisfied, penalizeMissedPlayWindow]);
 
-  // Format time display
+  /** Converts gameMinutes to a 12-hour display string and AM/PM period. */
   const formatTime = () => {
     const hours = Math.floor(gameMinutes / 60);
     const minutes = gameMinutes % 60;

@@ -1,3 +1,25 @@
+/**
+ * PetDisplay -- The main visual hub for the player's pet.
+ *
+ * Renders the pet image inside an animated aura circle whose appearance
+ * (color, particles, animation) is driven by the pet's current mood.
+ * Mood is derived from a two-tier check: any single critically low stat
+ * overrides the average-health-based mood label (see `getMood`).
+ *
+ * Also handles:
+ *  - Growth stage evolution animation (baby -> teen -> adult) with sparkle
+ *    burst, expanding rings, and white-flash overlay.
+ *  - Level-up confetti overlay triggered by XP gains.
+ *  - Eating animation when the pet is fed (food emoji float + "nom nom").
+ *  - Item-use particle effects per category (toy, grooming, medicine, accessory).
+ *  - Equipped accessory emoji overlays positioned per species + slot.
+ *  - Sleep state with floating "zzz" and dimmed image.
+ *  - Top badges for growth stage progress, level/XP, care streak, days played.
+ *  - Achievement badge row and weekly budget snapshot bar.
+ *
+ * @prop onXpClick   - Opens the daily tasks panel when the level badge is clicked.
+ * @prop onFinanceClick - Opens the finance panel when the budget card is clicked.
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Species, GrowthStage, PetColor, AccessorySlot, GROWTH_THRESHOLDS } from '@/types/game';
@@ -5,7 +27,7 @@ import { cn } from '@/lib/utils';
 import { Flame, Calendar, AlertTriangle, Heart, Wallet, ArrowRight } from 'lucide-react';
 import { calculateLevel } from '@/data/tasks';
 import { getAccessoryById, ACCESSORY_POSITIONS } from '@/data/accessories';
-import ConfettiOverlay from '@/components/ConfettiOverlay';
+import ConfettiOverlay from '@/components/overlays/ConfettiOverlay';
 
 // Mood visual config — controls aura, pet animation, and ambient particles
 type MoodVisual = {

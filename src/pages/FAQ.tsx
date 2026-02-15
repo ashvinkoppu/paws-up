@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PawPrint, ArrowLeft, ChevronDown, Search, MessageCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import FAQChatbot from '@/components/FAQChatbot';
+import FAQChatbot from '@/components/chat/FAQChatbot';
 import { cn } from '@/lib/utils';
 
 interface FAQItem {

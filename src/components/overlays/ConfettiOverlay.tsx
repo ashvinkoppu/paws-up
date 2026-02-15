@@ -1,3 +1,13 @@
+/**
+ * ConfettiOverlay - Full-screen confetti animation displayed on level up.
+ *
+ * Generates 50 randomly-shaped confetti pieces (squares, rectangles, circles)
+ * that fall from the top of the viewport with CSS keyframe animations.
+ * A centered "Level Up!" banner slides in alongside the confetti.
+ *
+ * @prop {boolean} show - Controls visibility; pieces are generated when true, cleared when false.
+ * @prop {number} newLevel - The level number to display in the banner.
+ */
 import React, { useEffect, useState } from 'react';
 
 interface ConfettiPiece {
@@ -32,6 +42,12 @@ const ConfettiOverlay: React.FC<ConfettiOverlayProps> = ({ show, newLevel }) => 
       return;
     }
 
+    // Generate 50 confetti pieces with randomized visual properties:
+    // - left: horizontal starting position (0-100%)
+    // - delay: stagger start so pieces don't all appear at once (0-0.8s)
+    // - duration: fall time (2.2-3.4s)
+    // - drift: horizontal sway in pixels (-20 to +20)
+    // - spin: total rotation during fall (360-1080 degrees)
     const generated: ConfettiPiece[] = [];
     for (let index = 0; index < 50; index++) {
       const shapes: ConfettiPiece['shape'][] = ['square', 'rect', 'circle'];
@@ -62,6 +78,7 @@ const ConfettiOverlay: React.FC<ConfettiOverlayProps> = ({ show, newLevel }) => 
             position: 'absolute',
             left: `${piece.left}%`,
             top: '-10px',
+            // Rectangles are narrow and tall; circles are equal; squares are 1:1
             width: piece.shape === 'rect' ? piece.size * 0.5 : piece.size,
             height: piece.shape === 'circle' ? piece.size : piece.size * (piece.shape === 'rect' ? 1.8 : 1),
             backgroundColor: piece.color,

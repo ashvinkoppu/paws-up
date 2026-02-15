@@ -1,3 +1,19 @@
+/**
+ * @file SidePanel.tsx
+ *
+ * A compact "Pet Status" card displayed in the left column of the dashboard,
+ * directly below the PetDisplay. Shows an overall health label (Excellent /
+ * Good / Fair / Needs Care) plus an inline row of all five stat values with
+ * color-coded text and wiggle animation when a stat drops below 30%.
+ *
+ * Overall status logic:
+ * - If any single stat is critically low (<= 10 or <= 25), the label reflects
+ *   that urgency regardless of the average.
+ * - Otherwise the label is derived from the mean of all five stats.
+ *
+ * Uses the shared STAT_CONFIG from `src/data/statConfig.ts` to keep icons,
+ * labels, and color thresholds consistent with NotificationsPanel.
+ */
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { Activity } from 'lucide-react';

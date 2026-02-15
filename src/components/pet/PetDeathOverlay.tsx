@@ -1,3 +1,21 @@
+/**
+ * PetDeathOverlay -- Full-screen modal shown when the pet dies.
+ *
+ * Death occurs when all five stats drop critically low simultaneously.
+ * The overlay displays:
+ *  - An animated heartbeat crying emoji.
+ *  - The pet's final stat snapshot (hunger, happiness, energy, cleanliness, health).
+ *  - A summary of the player's run: total days played, level reached, best care streak.
+ *  - A "Try Again" button that triggers a full game reset via onReset.
+ *
+ * Uses custom CSS keyframe animations (deathFadeIn, deathCardPop, deathHeartbeat)
+ * for the entrance effect rather than Tailwind utility classes.
+ *
+ * @prop pet             - The pet object at time of death (for name, stats, level).
+ * @prop totalDaysPlayed - Number of in-game days the player completed.
+ * @prop careStreak      - The player's best consecutive care streak.
+ * @prop onReset         - Callback to reset the entire game state and return to pet creation.
+ */
 import React from 'react';
 import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -1,3 +1,20 @@
+/**
+ * @file FinancePanel.tsx
+ *
+ * The "Budget" tab content inside the activity hub. Displays four stacked
+ * cards that give the player a full picture of their financial state:
+ *
+ * 1. **Balance card** - current money with a low-funds warning (< $20) and a
+ *    care-streak bonus hint when the streak is >= 3 days.
+ * 2. **Weekly budget card** - a progress bar showing `weeklySpent / weeklyBudget`.
+ *    Turns destructive red when spending exceeds the budget.
+ * 3. **Spending breakdown** - per-category totals derived by reducing the
+ *    transactions array (expenses only) into a `Record<string, number>`.
+ * 4. **Recent transactions** - the last 5 entries (newest first), with
+ *    income/expense color differentiation.
+ *
+ * All monetary values are formatted to two decimal places.
+ */
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

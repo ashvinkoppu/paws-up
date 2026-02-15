@@ -1,3 +1,17 @@
+/**
+ * @file Achievements.tsx
+ *
+ * The "Awards" tab in the activity hub. Renders a responsive grid of all
+ * achievement cards with a global progress bar at the top.
+ *
+ * Each achievement card shows its icon, name, description, and an
+ * unlocked/locked state. Unlocked cards get a warm gradient background and a
+ * "+$10 earned" label; locked cards are desaturated with a dashed border and
+ * a lock icon overlay. Cards stagger-animate in using a per-index delay.
+ *
+ * Progress is calculated as `unlockedCount / totalCount * 100` and shown both
+ * as a percentage and an "X/Y" badge.
+ */
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

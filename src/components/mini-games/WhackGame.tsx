@@ -1,3 +1,18 @@
+/**
+ * WhackGame - A 20-second whack-a-mole style mini-game on a 3x3 grid.
+ *
+ * Critters spawn and despawn every 800ms. Each cycle, existing moles have a 40%
+ * chance to hide, and 1-2 new moles appear in random empty slots. A golden mole
+ * (star emoji) has a 15% chance to spawn each cycle and stays for 1.5s, worth $5
+ * instead of the standard $2.
+ *
+ * Win condition: whack 8+ critters before time expires.
+ *
+ * @prop {(reward: number) => void} onWin - Called with total earnings when score >= 8.
+ * @prop {() => void} onLose - Called when time expires with score < 8.
+ * @prop {number} highScore - Current high score to display and compare against.
+ * @prop {(score: number) => void} onNewHighScore - Called when the player beats the record.
+ */
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Zap, Coins } from 'lucide-react';
@@ -37,7 +52,9 @@ const WhackGame: React.FC<WhackGameProps> = ({ onWin, onLose, highScore, onNewHi
     return () => clearInterval(timer);
   }, [gameActive]);
 
-  // Mole spawning
+  // Mole spawn/despawn loop: runs every 800ms while the game is active.
+  // Each tick randomly hides visible moles (40% chance each) then spawns
+  // 1-2 new moles in empty slots. Golden mole has a 15% chance per tick.
   useEffect(() => {
     if (!gameActive) return;
     const spawnInterval = setInterval(() => {
@@ -47,7 +64,7 @@ const WhackGame: React.FC<WhackGameProps> = ({ onWin, onLose, highScore, onNewHi
         newMoles.forEach((mole, index) => {
           if (mole && Math.random() < 0.4) newMoles[index] = false;
         });
-        // Spawn 1-2 new moles
+        // Spawn 1-2 new moles (30% chance for 2, otherwise 1)
         const spawnCount = Math.random() < 0.3 ? 2 : 1;
         for (let iteration = 0; iteration < spawnCount; iteration++) {
           const emptySlots = newMoles.map((mole, index) => !mole ? index : -1).filter(index => index >= 0);
@@ -88,6 +105,7 @@ const WhackGame: React.FC<WhackGameProps> = ({ onWin, onLose, highScore, onNewHi
     }
   }, [timeLeft, gameActive, score, totalEarned, highScore, onWin, onLose, onNewHighScore]);
 
+  // Handle a tap on a grid cell. Golden moles pay $5; regular moles pay $2.
   const handleWhack = (index: number) => {
     if (!gameActive || !moles[index]) return;
 

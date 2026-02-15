@@ -1,3 +1,30 @@
+/**
+ * @file NotificationsPanel.tsx
+ *
+ * The "Needs" / "Vital Signs" tab in the activity hub. Despite its filename,
+ * this is the detailed pet-stats panel (the header notification dropdown lives
+ * in GameDashboard itself).
+ *
+ * Contains two sub-components:
+ *
+ * **SleepAction** - a small inline widget for putting the pet to sleep or
+ * waking it up. Tracks whether the pet has already slept today via
+ * `lastSleepDate` comparison.
+ *
+ * **NotificationsPanel** (default export) - renders:
+ * - An overall wellness label (same logic as SidePanel).
+ * - A toggleable action log showing the 10 most recent actions and their
+ *   per-stat deltas.
+ * - A full stat list with progress bars, tooltips explaining decay/boost
+ *   info, inline "Fix it" action buttons for low stats, and an expandable
+ *   "Why?" section that cross-references the action log.
+ * - Rapid-drop detection: compares current stats to a `previousStats` ref
+ *   each render. If any stat fell >= 5 points since the last snapshot, it
+ *   gets a pulsing amber highlight that auto-clears after 3 seconds.
+ * - An overall wellness bar (average of all five stats).
+ *
+ * Uses the shared STAT_CONFIG from `src/data/statConfig.ts`.
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';

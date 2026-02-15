@@ -1,3 +1,25 @@
+/**
+ * @file ErrorBoundary.tsx
+ *
+ * React class-based error boundary that catches unhandled exceptions in
+ * its child component tree and displays a user-friendly fallback UI
+ * instead of a blank screen.
+ *
+ * Key behavior:
+ * - Accepts an optional `fallback` prop for a custom error UI; otherwise
+ *   renders a default card with error details, a refresh button, and a
+ *   home button.
+ * - In non-production environments, the raw error message and React
+ *   component stack are shown in an expandable details panel for debugging.
+ * - Provides three recovery actions: reload the page, navigate home, or
+ *   reset the error state to re-attempt rendering the children.
+ * - Logs errors to the console in production (integration point for
+ *   services like Sentry).
+ *
+ * Must be a class component because React's error boundary API
+ * (getDerivedStateFromError / componentDidCatch) is not available to
+ * function components.
+ */
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
@@ -23,10 +45,12 @@ class ErrorBoundary extends Component<Props, State> {
     };
   }
 
+  /** Called during the render phase to update state before the next render. */
   static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
+  /** Called after the error is committed to the DOM; used for side effects like logging. */
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ errorInfo });
     // Log error to monitoring service in production
@@ -36,20 +60,26 @@ class ErrorBoundary extends Component<Props, State> {
     }
   }
 
+  /** Full page reload - bypasses React entirely and re-fetches from server. */
   handleReload = (): void => {
     window.location.reload();
   };
 
+  /** Hard navigate to root - avoids client-side routing so all state is reset. */
   handleGoHome = (): void => {
     window.location.href = '/';
   };
 
+  /** Clear error state in-place so React re-attempts rendering the children
+   *  without a full page reload. Useful for transient errors. */
   handleReset = (): void => {
     this.setState({ hasError: false, error: null, errorInfo: null });
   };
 
   render(): ReactNode {
     if (this.state.hasError) {
+      // If the consumer provided a custom fallback, render that instead of
+      // the default error card below.
       if (this.props.fallback) {
         return this.props.fallback;
       }
@@ -70,6 +100,7 @@ class ErrorBoundary extends Component<Props, State> {
               </p>
             </div>
 
+            {/* Dev-only error details: hidden in production to avoid leaking internals. */}
             {process.env.NODE_ENV !== 'production' && this.state.error && (
               <div className="bg-muted/50 rounded-lg p-4 text-left">
                 <p className="text-sm font-mono text-destructive break-all">

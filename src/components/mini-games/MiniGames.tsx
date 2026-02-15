@@ -1,13 +1,26 @@
+/**
+ * MiniGames - Hub component for the four in-game mini-games:
+ * Catch the Treat, Memory Match, Pet Trivia, and Whack-a-Critter.
+ *
+ * Displays a selection grid when no game is active. Each game card shows its
+ * reward range, current high score, and whether the daily play limit has been
+ * reached (1 play per game per day). Selecting a game renders the corresponding
+ * child component; on completion, a result screen shows earnings before returning
+ * to the selection grid.
+ *
+ * Sets `isPlayingMiniGame` in game context while a game is active so that
+ * other overlays (e.g., EventModal) are suppressed during gameplay.
+ */
 import React, { useState, useEffect } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Gamepad2, Target, Brain, ArrowLeft, Trophy, Coins, HelpCircle, Zap } from 'lucide-react';
-import CatchGame from './mini-games/CatchGame';
-import MemoryGame from './mini-games/MemoryGame';
-import QuizGame from './mini-games/QuizGame';
-import WhackGame from './mini-games/WhackGame';
+import CatchGame from './CatchGame';
+import MemoryGame from './MemoryGame';
+import QuizGame from './QuizGame';
+import WhackGame from './WhackGame';
 
 type MiniGameType = 'catch' | 'memory' | 'quiz' | 'whack' | null;
 
@@ -29,6 +42,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
     return () => setIsPlayingMiniGame(false);
   }, [selectedGame, gameResult, setIsPlayingMiniGame]);
 
+  // On win: credit money, boost happiness, record the play, and show result screen
   const handleWin = (reward: number) => {
     addMoney(reward, 'Mini-game reward');
     updateStats({ happiness: 5 });
@@ -45,6 +59,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
     setGameResult(null);
   };
 
+  // Check if the daily reward for a specific game has already been claimed today
   const isRewardAvailable = (gameId: string) => {
     const today = new Date().toDateString();
     return state.dailyGameRewards?.[gameId] !== today;

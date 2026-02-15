@@ -1,3 +1,22 @@
+/**
+ * FAQChatbot - Floating AI chat assistant ("Paws") that answers game-related questions.
+ *
+ * Renders a fixed-position toggle button (bottom-right) that opens a chat window.
+ * Messages are sent to a `/api/chat` serverless endpoint authenticated via Supabase JWT.
+ * The system prompt is built dynamically from the player's current game context (pet stats,
+ * money, care streak, etc.) so the assistant can give personalized advice.
+ *
+ * Features:
+ * - Context-aware greeting that warns about low pet stats
+ * - Suggested quick-question chips (change based on pet state and money)
+ * - Message history limited to the last 10 messages sent to the API
+ * - 500-character input limit
+ * - Animated floating button with ambient glow, hover tooltip, and notification dot
+ *
+ * @prop {PetContext} [context] - Current game state snapshot for personalized responses.
+ *
+ * @module components/chat/FAQChatbot
+ */
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +54,8 @@ const FAQChatbot: React.FC<FAQChatbotProps> = ({ context }) => {
   const [isHovering, setIsHovering] = useState(false);
   const { toast } = useToast();
 
-  // Build personalized greeting based on context
+  // Build a personalized greeting: if any pet stats are critically low (<=40%),
+  // mention them so the player is nudged to take action.
   const getGreeting = () => {
     if (context?.pet) {
       const petName = context.pet.name;
@@ -164,7 +184,7 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
     setIsLoading(true);
 
     try {
-      // Get the current session token for authenticated API access
+      // Retrieve Supabase JWT for authenticated API access to the chat endpoint
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) {
         throw new Error('Not authenticated');
@@ -177,6 +197,7 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
+          // Send the system prompt + last 10 messages for context window management
           messages: [
             { role: 'system', content: buildSystemPrompt() },
             ...messages.slice(-10).map(message => ({ role: message.role, content: message.content })),
@@ -224,7 +245,8 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
     }
   };
 
-  // Dynamic suggested questions based on context
+  // Generate up to 3 suggested questions. Priority is given to context-specific
+  // suggestions (low stats, low money), backfilled with general questions.
   const getSuggestedQuestions = () => {
     if (context?.pet) {
       const petName = context.pet.name;

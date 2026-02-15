@@ -1,3 +1,23 @@
+/**
+ * PetStats -- Displays all five vital-sign bars (hunger, happiness, energy,
+ * cleanliness, health) with real-time visual feedback.
+ *
+ * Each stat bar shows:
+ *  - Current percentage with a color-coded fill.
+ *  - A "dropping fast" indicator when the stat fell >= 3 points since the
+ *    last 10-second snapshot (tracked via previousStats / lastCheckRef).
+ *  - A low-stat warning with a "Why?" button that opens a modal explaining
+ *    the cause and suggesting remedies.
+ *  - An info tooltip (on hover) describing what increases/decreases the stat.
+ *
+ * Also renders:
+ *  - An overall wellness bar (average of all five stats).
+ *  - An overall status badge (Excellent / Good / Fair / Needs Care) that
+ *    uses a two-tier approach: any single critically-low stat overrides
+ *    the average-based label.
+ *  - A collapsible action log showing the 10 most recent game actions
+ *    with timestamps formatted as 12-hour game time.
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { PetStats as PetStatsType } from '@/types/game';

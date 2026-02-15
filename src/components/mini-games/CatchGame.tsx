@@ -1,3 +1,17 @@
+/**
+ * CatchGame - A 15-second timed "click the target" mini-game.
+ *
+ * A treat (bone emoji) spawns at a random position inside the game area.
+ * The player clicks anywhere to move their pet; if the click lands within a
+ * 12% Euclidean distance of the target, it counts as a catch. Each bone type
+ * has a different dollar value ($2-$8). The player must catch 5+ treats to win.
+ *
+ * @prop {(reward: number) => void} onWin - Called with total earnings when score >= 5.
+ * @prop {() => void} onLose - Called when time expires with score < 5.
+ * @prop {string} petSpecies - Determines which emoji represents the player's pet.
+ * @prop {number} highScore - Current high score to display and compare against.
+ * @prop {(score: number) => void} onNewHighScore - Called when the player beats the record.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Target, Coins } from 'lucide-react';
@@ -21,6 +35,7 @@ const CatchGame: React.FC<CatchGameProps> = ({ onWin, onLose, petSpecies, highSc
   const [currentBoneIndex, setCurrentBoneIndex] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
 
+  // Bone types with escalating dollar values. A random bone is chosen each spawn.
   const BONES = [
     { emoji: '🦴', label: 'Bone', value: 2 },
     { emoji: '🍖', label: 'Meat Bone', value: 3 },
@@ -79,6 +94,7 @@ const CatchGame: React.FC<CatchGameProps> = ({ onWin, onLose, petSpecies, highSc
   const handleAreaClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!gameActive) return;
 
+    // Convert click coordinates to percentage-based position within the game area
     const rect = event.currentTarget.getBoundingClientRect();
     const x = ((event.clientX - rect.left) / rect.width) * 100;
     const y = ((event.clientY - rect.top) / rect.height) * 100;
@@ -87,7 +103,8 @@ const CatchGame: React.FC<CatchGameProps> = ({ onWin, onLose, petSpecies, highSc
     setIsJumping(true);
     setTimeout(() => setIsJumping(false), 300);
 
-    // Check collision
+    // Collision detection: treat the pet and target as circles and check
+    // if the Euclidean distance (in % units) is within the catch radius of 12%.
     const distance = Math.sqrt(Math.pow(x - targetPosition.x, 2) + Math.pow(y - targetPosition.y, 2));
 
     if (distance < 12) {

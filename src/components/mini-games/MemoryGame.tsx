@@ -1,3 +1,20 @@
+/**
+ * MemoryGame - Classic card-matching game with 6 emoji pairs (12 cards total).
+ *
+ * Cards are shuffled on mount. The player flips two cards per turn; matching pairs
+ * stay face-up, mismatches flip back after 800ms. The game ends when all 6 pairs
+ * are matched. Reward is tiered by move count:
+ *   - 10 or fewer moves: $12
+ *   - 11-15 moves: $8
+ *   - 16+ moves: $5
+ *
+ * High score tracks fewest moves (lower is better).
+ *
+ * @prop {(reward: number) => void} onWin - Called with the dollar reward on completion.
+ * @prop {() => void} onLose - Unused (the player always eventually wins this game).
+ * @prop {number} highScore - Best (lowest) move count to display. 0 means no prior game.
+ * @prop {(score: number) => void} onNewHighScore - Called when the player beats their record.
+ */
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +35,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
   const [gameComplete, setGameComplete] = useState(false);
   const [matchMessage, setMatchMessage] = useState<string | null>(null);
 
+  // Initialize board: duplicate emoji array to create pairs, then shuffle
   useEffect(() => {
     const shuffled = [...EMOJIS, ...EMOJIS]
       .sort(() => Math.random() - 0.5)
@@ -25,6 +43,8 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
     setCards(shuffled);
   }, []);
 
+  // When two cards are flipped, check for a match. Matching cards stay face-up;
+  // non-matching cards flip back after an 800ms delay so the player can memorize them.
   useEffect(() => {
     if (flippedCards.length === 2) {
       const [first, second] = flippedCards;
@@ -39,7 +59,8 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
         setMatches((currentMatches) => currentMatches + 1);
         setFlippedCards([]);
 
-        // Show match found message briefly
+        // Flash a "MATCH FOUND!" banner with the per-match reward amount.
+        // Reward per match is higher when total moves are low.
         const currentMoveCount = moves + 1;
         const perMatchReward = currentMoveCount <= 10 ? 2 : currentMoveCount <= 15 ? 1 : 1;
         setMatchMessage(`MATCH FOUND!  +$${perMatchReward}`);
@@ -57,6 +78,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
     }
   }, [flippedCards, cards]);
 
+  // End-of-game: when all 6 pairs matched, calculate tiered reward based on move count
   useEffect(() => {
     if (matches === 6) {
       setGameComplete(true);
@@ -71,6 +93,8 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
     }
   }, [matches, moves, onWin, highScore, onNewHighScore]);
 
+  // Ignore clicks when: two cards already flipped (waiting for match check),
+  // the clicked card is already face-up or matched, or the game is over.
   const handleCardClick = (index: number) => {
     if (
       flippedCards.length === 2 ||

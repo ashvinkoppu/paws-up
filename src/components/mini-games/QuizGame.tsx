@@ -1,3 +1,21 @@
+/**
+ * QuizGame - Pet trivia mini-game with 5 randomly selected multiple-choice questions.
+ *
+ * Questions are shuffled from a pool of 10 on mount. The player selects one answer
+ * per question; correct/incorrect feedback is shown for 1.2s before advancing.
+ * A streak counter appears when the player answers 2+ in a row correctly.
+ *
+ * Win condition: 3+ correct answers. Reward tiers:
+ *   - 5/5 correct: $15
+ *   - 4/5 correct: $10
+ *   - 3/5 correct: $6
+ *   - <3 correct: loss (no reward)
+ *
+ * @prop {(reward: number) => void} onWin - Called with dollar reward if 3+ correct.
+ * @prop {() => void} onLose - Called if fewer than 3 correct.
+ * @prop {number} highScore - Best correct-answer count to display.
+ * @prop {(score: number) => void} onNewHighScore - Called when a new record is set.
+ */
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Zap } from 'lucide-react';
@@ -23,6 +41,7 @@ const QUESTIONS = [
 ];
 
 const QuizGame: React.FC<QuizGameProps> = ({ onWin, onLose, highScore, onNewHighScore }) => {
+  // Shuffle the full question pool once on mount and pick the first 5
   const [shuffledQuestions] = useState(() =>
     [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, 5)
   );
@@ -49,10 +68,12 @@ const QuizGame: React.FC<QuizGameProps> = ({ onWin, onLose, highScore, onNewHigh
       setStreak(0);
     }
 
+    // After 1.2s feedback delay, either advance to the next question or end the game
     setTimeout(() => {
       if (currentQuestion + 1 >= shuffledQuestions.length) {
         setGameComplete(true);
         if (newCorrectCount >= 3) {
+          // Tiered reward: 5 correct = $15, 4 = $10, 3 = $6
           const reward = newCorrectCount === 5 ? 15 : newCorrectCount === 4 ? 10 : 6;
           onWin(reward);
           if (newCorrectCount > highScore) {

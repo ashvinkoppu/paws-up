@@ -1,3 +1,21 @@
+/**
+ * @file Tasks.tsx
+ *
+ * Renders the player's progression dashboard with four sections:
+ *  1. **XP Summary Bar** - Current level, XP progress toward the next level,
+ *     and floating "+XP" animations on task claims.
+ *  2. **Tomorrow Reward** - A daily login reward that becomes claimable
+ *     the next real-world day.
+ *  3. **Weekly Goals** - Long-term objectives (savings targets, streaks)
+ *     initialized once per week, with progress bars and claim buttons.
+ *  4. **Daily Tasks** - A set of tasks drawn from DAILY_TASK_POOL, tracked
+ *     via dailyTracking counters. Supports timed tasks that expire, animated
+ *     claim/slide-out transitions, and a daily bonus for completing all tasks.
+ *  5. **Milestones** - Tiered lifetime achievements (Beginner/Intermediate/Expert)
+ *     that unlock sequentially; later tiers are gated behind earlier completion.
+ *
+ * Uses the useCountdownToMidnight hook to show a live timer until daily reset.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +24,7 @@ import { calculateLevel, DAILY_TASK_POOL, MILESTONES } from '@/data/tasks';
 import { cn } from '@/lib/utils';
 import { Check, Clock, Gift, Lock, Star, Trophy, Target, CalendarDays, Sun } from 'lucide-react';
 
+/** Returns a live "Xh Ym" string counting down to local midnight. Updates every 60s. */
 function useCountdownToMidnight() {
   const [timeLeft, setTimeLeft] = useState('');
 
@@ -38,6 +57,7 @@ const Tasks: React.FC = () => {
   const [xpFloaters, setXpFloaters] = useState<XpFloater[]>([]);
   const [claimingTasks, setClaimingTasks] = useState<Set<string>>(new Set());
 
+  /** Spawns a floating "+N XP" element that auto-removes after the animation completes (1.2s). */
   const triggerXpAnimation = useCallback((amount: number) => {
     const floaterId = Date.now();
     setXpFloaters(previous => [...previous, { id: floaterId, amount }]);
@@ -46,6 +66,11 @@ const Tasks: React.FC = () => {
     }, 1200);
   }, []);
 
+  /**
+   * Two-phase claim: first triggers the XP float animation, then after a short
+   * delay adds the task to claimingTasks (which starts the slide-out CSS animation),
+   * and finally dispatches claimDailyTask to update state after the slide finishes.
+   */
   const handleClaimTask = useCallback((taskId: string, xpReward: number) => {
     triggerXpAnimation(xpReward);
     // Delay the actual claim slightly so the animation starts before the task disappears
@@ -66,7 +91,8 @@ const Tasks: React.FC = () => {
     }, 200);
   }, [claimDailyTask, triggerXpAnimation]);
 
-  // Timed task expiration check — runs every second
+  // Timed task expiration check - runs every second.
+  // forceRender is a dummy counter that triggers re-renders so countdown timers update in the UI.
   const [, forceRender] = useState(0);
 
   useEffect(() => {
@@ -112,13 +138,14 @@ const Tasks: React.FC = () => {
   const claimedCount = state.dailyTasks.filter(task => task.claimed).length;
   const allDailyComplete = state.dailyTasks.length > 0 && completedDailyCount === state.dailyTasks.length;
 
-  // Group milestones by tier
+  // Group milestones by tier for sequential unlock display
   const milestonesByTier = [1, 2, 3].map(tier => ({
     tier,
     milestones: MILESTONES.filter(milestone => milestone.tier === tier),
   }));
 
-  // Determine current tier (first tier with incomplete milestones)
+  // The "current" tier is the first one that still has at least one incomplete milestone.
+  // If all tiers are complete, default to 3 (Expert) so that tier is always visible.
   const currentTier = milestonesByTier.find(group =>
     group.milestones.some(milestone => {
       const milestoneState = state.milestones.find(ms => ms.id === milestone.id);
@@ -271,6 +298,8 @@ const Tasks: React.FC = () => {
           </CardHeader>
           <CardContent className="pt-0 space-y-2">
             {state.weeklyGoals.map(goal => {
+              // Savings goals track spending (lower is better), so progress inverts the ratio.
+              // Streak and other goal types use days completed out of 7.
               const progressPercent = goal.type === 'savings'
                 ? Math.max(0, 100 - (goal.currentValue / goal.target) * 100)
                 : goal.type === 'streak'
@@ -356,6 +385,7 @@ const Tasks: React.FC = () => {
           {visibleTasks.map(task => {
             const taskDef = DAILY_TASK_POOL.find(definition => definition.id === task.id);
             if (!taskDef) return null;
+            // Look up the current counter from dailyTracking (e.g., "feedCount", "playCount")
             const trackingValue = (state.dailyTracking?.[taskDef.trackingKey as keyof typeof state.dailyTracking] as number) || 0;
             const progress = Math.min(trackingValue, taskDef.target);
             const progressPercent = (progress / taskDef.target) * 100;

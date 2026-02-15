@@ -1,3 +1,19 @@
+/**
+ * @file Shop.tsx
+ *
+ * The in-game pet shop with three tabs:
+ *  1. **Shop** - Browse and purchase consumable items (food, toys, medicine).
+ *     Items can be filtered by category. Prices respect an optional active
+ *     discount percentage from game state.
+ *  2. **Wardrobe** - Buy and equip cosmetic accessories filtered by pet gender.
+ *     Shows currently equipped items per slot (head, neck, body, tag) and
+ *     allows equipping/unequipping owned accessories.
+ *  3. **Items (Inventory)** - Lists purchased consumable items with a "Use"
+ *     action that dispatches consumeItem to apply stat effects.
+ *
+ * Budget guidance: when the player cannot afford an item, a cheaper alternative
+ * is suggested via getCheaperAlternative().
+ */
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { SHOP_ITEMS, SHOP_CATEGORIES, getCheaperAlternative } from '@/data/shopItems';
@@ -12,6 +28,7 @@ import { ShoppingCart, Package, Lightbulb, Check, Crown, X } from 'lucide-react'
 import { toast } from '@/hooks/use-toast';
 
 
+/** Display metadata for each accessory equipment slot. */
 const SLOT_LABELS: Record<AccessorySlot, { label: string; icon: string }> = {
   head: { label: 'Head', icon: '🎩' },
   neck: { label: 'Neck', icon: '📿' },
@@ -24,8 +41,10 @@ const Shop: React.FC = () => {
   const [activeTab, setActiveTab] = useState('shop');
   const [selectedCategory, setSelectedCategory] = useState('all');
   
+  // Discount may be granted by completing certain daily tasks (e.g., "Shop Spree")
   const discount = state.activeShopDiscount || 0;
-  
+
+  /** Applies the active percentage discount, flooring to avoid fractional cents. */
   const getDiscountedPrice = (price: number) => {
     if (discount <= 0) return price;
     return Math.floor(price * (1 - discount / 100));
@@ -35,6 +54,7 @@ const Shop: React.FC = () => {
     ? SHOP_ITEMS
     : SHOP_ITEMS.filter(item => item.category === selectedCategory);
 
+  // Accessories use an "acc-" id prefix to distinguish them from consumable items
   const petGender = state.pet?.gender || 'neutral';
   const ownedAccessoryIds = new Set(
     state.inventory
@@ -45,10 +65,12 @@ const Shop: React.FC = () => {
 
   const availableAccessories = getAccessoriesForGender(petGender);
 
+  /** Attempts to buy a consumable shop item. Shows a budget-friendly alternative on failure. */
   const handleBuy = (item: ShopItem) => {
     const finalPrice = getDiscountedPrice(item.price);
-    
+
     if (state.money < finalPrice) {
+      // Suggest a cheaper item in the same category to teach budgeting
       const alternative = getCheaperAlternative(item);
       if (alternative) {
         toast({

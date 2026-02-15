@@ -399,14 +399,26 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const resetGame = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session?.user) {
-      await supabase.from('game_saves').delete().eq('user_id', session.user.id);
-    }
+    // Force-clean any stuck Radix dialog/overlay styles on body.
+    // When dialogs unmount mid-transition, pointer-events:none can get orphaned.
+    document.body.style.pointerEvents = '';
+    document.body.style.overflow = '';
+
+    // Reset local state immediately so UI transitions are instant
+    localStorage.removeItem('guestGameState');
+    cloudSaveLoadedRef.current = false;
     dispatch({ type: 'LOAD_GAME', payload: initialState });
     toast({ title: 'Game Reset', description: 'Starting fresh!' });
+
+    // Clean up cloud save in the background
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase.from('game_saves').delete().eq('user_id', session.user.id);
+      }
+    } catch (error) {
+      console.error('Failed to delete cloud save:', error);
+    }
   };
 
   const performAction = (action: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => {

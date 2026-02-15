@@ -1,9 +1,23 @@
+/**
+ * @file ActionButtons.tsx
+ *
+ * A row of quick-action buttons for core pet interactions: Feed, Play, Rest,
+ * Clean, and Vet. Each action dispatches performAction() which modifies pet
+ * stats in the game reducer.
+ *
+ * When the pet is asleep (state.petAsleep), all buttons are disabled except
+ * "Rest" which transforms into a "Wake Up" button that calls wakePetUp().
+ *
+ * Includes an animated feedback overlay (fixed-position toast) that appears
+ * briefly after each action, showing the action emoji, verb, and pet name.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { Utensils, Gamepad2, Moon, Sparkles, Stethoscope, Zap, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+/** Static config for the five pet care actions. Each entry maps to a performAction() type. */
 const ACTIONS = [
   {
     id: 'feed',
@@ -57,6 +71,7 @@ const ACTIONS = [
   },
 ];
 
+/** Emoji and past-tense verb shown in the feedback overlay after performing an action. */
 const ACTION_FEEDBACK: Record<string, { emoji: string; verb: string }> = {
   feed: { emoji: '🍖', verb: 'Fed' },
   play: { emoji: '🎾', verb: 'Played with' },
@@ -75,6 +90,7 @@ const ActionButtons: React.FC = () => {
   const { state, performAction, wakePetUp } = useGame();
   const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
 
+  // Auto-clear feedback overlay after 2.2s (matches the CSS animation duration)
   useEffect(() => {
     if (!feedback) return;
     const timer = setTimeout(() => setFeedback(null), 2200);
@@ -93,6 +109,7 @@ const ActionButtons: React.FC = () => {
 
   if (!state.pet) return null;
 
+  // Build a synthetic action config for "wake" since it's not in ACTIONS array
   const activeFeedback = feedback ? (feedback.actionId === 'wake' ? {
     id: 'wake',
     label: 'Wake Up',
@@ -172,6 +189,8 @@ const ActionButtons: React.FC = () => {
           let isDisabled = false;
           let clickAction = action.id;
 
+          // When pet is asleep, swap the Rest button into a Wake Up button;
+          // disable all other actions until the pet is awake.
           if (state.petAsleep) {
             if (action.id === 'rest') {
               Icon = Sun;

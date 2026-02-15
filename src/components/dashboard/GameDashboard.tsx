@@ -1,3 +1,24 @@
+/**
+ * @file GameDashboard.tsx
+ *
+ * The main game screen shown after pet creation. Renders the full dashboard
+ * layout: a sticky header with wallet/day/actions info, a two-column body
+ * (left: pet display + stat summary; right: tabbed activity hub), and several
+ * overlay layers (money-earned animations, new-day popup, pet death screen,
+ * tutorial, event modal, and the AI chatbot).
+ *
+ * Key behaviors:
+ * - Money-earned "swoop" animation: when `state.money` increases, a floating
+ *   "+$N" element animates from viewport center toward the wallet indicator
+ *   using CSS custom properties (`--swoop-x`, `--swoop-y`).
+ * - Right column height syncing: a ResizeObserver on the left column keeps
+ *   the right column's max-height matched so both scroll independently.
+ * - Notification dropdown: toggled by the bell icon; clicking outside closes
+ *   it via a mousedown listener.
+ * - New-day popup: auto-shown for 4 seconds whenever `totalDaysPlayed` increments.
+ * - Reset dialog: deliberately delayed 300 ms so the AlertDialog exit animation
+ *   finishes before the full game state resets and unmounts the dashboard.
+ */
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
@@ -22,21 +43,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import PetDisplay from '@/components/PetDisplay';
-import SidePanel from '@/components/SidePanel';
-import Shop from '@/components/Shop';
-import FinancePanel from '@/components/FinancePanel';
-import MiniGames from '@/components/MiniGames';
-import Achievements from '@/components/Achievements';
-import Tasks from '@/components/Tasks';
-import EventModal from '@/components/EventModal';
-import NotificationsPanel from '@/components/NotificationsPanel';
-import GameClock from '@/components/GameClock';
-import TutorialOverlay from '@/components/TutorialOverlay';
-import FAQChatbot from '@/components/FAQChatbot';
-import NewDayPopup from '@/components/NewDayPopup';
-import PetDeathOverlay from '@/components/PetDeathOverlay';
-import Collections from '@/components/Collections';
+import PetDisplay from '@/components/pet/PetDisplay';
+import SidePanel from '@/components/dashboard/SidePanel';
+import Shop from '@/components/dashboard/Shop';
+import FinancePanel from '@/components/dashboard/FinancePanel';
+import MiniGames from '@/components/mini-games/MiniGames';
+import Achievements from '@/components/dashboard/Achievements';
+import Tasks from '@/components/dashboard/Tasks';
+import EventModal from '@/components/overlays/EventModal';
+import NotificationsPanel from '@/components/dashboard/NotificationsPanel';
+import GameClock from '@/components/dashboard/GameClock';
+import TutorialOverlay from '@/components/overlays/TutorialOverlay';
+import FAQChatbot from '@/components/chat/FAQChatbot';
+import NewDayPopup from '@/components/overlays/NewDayPopup';
+import PetDeathOverlay from '@/components/pet/PetDeathOverlay';
+import Collections from '@/components/dashboard/Collections';
 import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, HelpCircle, GraduationCap, Package } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -178,7 +199,11 @@ const GameDashboard: React.FC = () => {
   };
 
   const handleReset = () => {
-    resetGame();
+    // Close the dialog first, then reset after the exit animation completes.
+    // Without this delay, GameDashboard unmounts while the AlertDialog portal
+    // is still animating out, orphaning pointer-events:none on <body>.
+    setShowResetDialog(false);
+    setTimeout(() => resetGame(), 300);
   };
 
   const handleTriggerEvent = () => {

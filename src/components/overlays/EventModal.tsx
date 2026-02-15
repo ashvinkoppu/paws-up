@@ -1,3 +1,13 @@
+/**
+ * EventModal - Full-screen modal presenting random in-game events to the player.
+ *
+ * Events are drawn from game state (e.g., emergencies, sickness, discounts, rewards)
+ * and displayed as a centered card with color-coded borders based on event type.
+ * Each event offers one or more choices; choices with a monetary cost are disabled
+ * when the player cannot afford them.
+ *
+ * Hidden automatically while a mini-game is in progress.
+ */
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
@@ -41,6 +51,7 @@ const EventModal: React.FC = () => {
                 choice.cost && state.money < choice.cost && "opacity-50"
               )}
               onClick={() => handleEventChoice(index)}
+              // Disable choices the player cannot afford
               disabled={choice.cost !== undefined && state.money < choice.cost}
             >
               <div>

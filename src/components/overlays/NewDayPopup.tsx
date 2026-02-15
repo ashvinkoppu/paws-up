@@ -1,3 +1,13 @@
+/**
+ * NewDayPopup - Animated overlay announcing the start of a new in-game day.
+ *
+ * Shows the current day number and a "Daily allowance received!" badge.
+ * Auto-dismisses after 4 seconds via CSS animation (0.5s fade-in, hold, 0.5s fade-out
+ * starting at 3.5s). Clicking anywhere also dismisses it immediately.
+ *
+ * @prop {number} totalDaysPlayed - The day count to display.
+ * @prop {() => void} onClose - Callback fired on click-to-dismiss.
+ */
 import React from 'react';
 import { Sun } from 'lucide-react';
 
