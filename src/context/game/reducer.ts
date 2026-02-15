@@ -1,3 +1,13 @@
+/**
+ * Game Reducer — pure function that handles every state transition.
+ *
+ * Each `GameAction` dispatched from the provider is matched in a
+ * `switch` statement and returns the next immutable `GameState`.
+ * Side-effects (toasts, network calls) live in the provider; this
+ * module stays referentially transparent.
+ *
+ * @module context/game/reducer
+ */
 import { GameState, PetStats, Transaction, GameNotification, DailyTracking, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, PetBehavior, ActionLogEntry, WeeklyGoal } from '@/types/game';
 import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, DEFAULT_DAILY_TRACKING } from '@/data/tasks';
 import { GameAction } from '@/context/game/types';
@@ -15,8 +25,17 @@ import {
   getMealForTime,
 } from '@/context/game/helpers';
 
+/**
+ * Central game reducer. Receives the current state and an action,
+ * then returns the next state without mutation.
+ *
+ * @param state  - The current game state.
+ * @param action - The dispatched action (see {@link GameAction}).
+ * @returns A new `GameState` reflecting the action's effects.
+ */
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
+    // ── Pet Creation ─────────────────────────────────────────────
     case 'CREATE_PET': {
       const [updatedAchievements, reward] = unlockAchievementInList(state.achievements, 'first-pet');
       const newState = {
@@ -29,6 +48,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return newState;
     }
 
+    // ── Stat Manipulation ────────────────────────────────────────
     case 'UPDATE_STATS': {
       if (!state.pet) return state;
       const oldHealth = state.pet.stats.health;
@@ -56,6 +76,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Economy ──────────────────────────────────────────────────
     case 'ADD_MONEY': {
       let newMoney = state.money + action.payload;
       let achievements = state.achievements;
@@ -92,6 +113,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Inventory ────────────────────────────────────────────────
     case 'ADD_TO_INVENTORY': {
       const newItem = action.payload;
       const existingItemIndex = state.inventory.findIndex((item) => item.id === newItem.id);
@@ -141,6 +163,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Consume one unit of an inventory item; apply stat effects with behavior modifiers. */
     case 'USE_ITEM': {
       const item = state.inventory.find((inventoryItem) => inventoryItem.id === action.payload);
       const pet = state.pet;
@@ -196,6 +219,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Achievements ─────────────────────────────────────────────
     case 'UNLOCK_ACHIEVEMENT': {
       const [updatedAchievements, reward] = unlockAchievementInList(state.achievements, action.payload);
       return {
@@ -205,6 +229,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Random Events ────────────────────────────────────────────
     case 'TRIGGER_EVENT': {
       return { ...state, currentEvent: action.payload };
     }
@@ -218,6 +243,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Care Streak & Daily Reset ────────────────────────────────
     case 'UPDATE_CARE_STREAK': {
       const today = new Date().toDateString();
       if (state.lastCareDate === today) return state;
@@ -269,6 +295,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return checkAllMilestones(newState);
     }
 
+    // ── Growth / Evolution ───────────────────────────────────────
     case 'CHECK_GROWTH': {
       if (!state.pet) return state;
 
@@ -325,6 +352,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /**
+     * DECAY_STATS — runs on a 3-minute real-time interval.
+     * Reduces each stat based on personality modifiers and current behavior.
+     * Advances game time by 30 minutes per tick, checks for skipped meals,
+     * evaluates pet behavior, and handles extreme neglect (pet death).
+     */
     case 'DECAY_STATS': {
       if (!state.pet) return state;
 
@@ -451,6 +484,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /**
+     * LOAD_GAME — restores a previously saved state from the cloud.
+     * Performs migration for fields that may be missing in older save
+     * formats, ensuring backwards compatibility.
+     */
     case 'LOAD_GAME': {
       const loadedState = {
         ...initialState,
@@ -511,6 +549,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return loadedState;
     }
 
+    // ── Budget Tracking ──────────────────────────────────────────
     case 'RESET_WEEKLY_BUDGET': {
       // Track weeks under budget for budget-hero achievement
       const wasUnderBudget = state.weeklySpent <= state.weeklyBudget;
@@ -534,6 +573,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Mini-Game High Scores ────────────────────────────────────
     case 'UPDATE_HIGH_SCORE': {
       const { gameId, score } = action.payload;
       const currentHigh = state.highScores[gameId];
@@ -549,6 +589,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return state;
     }
 
+    // ── Notifications ────────────────────────────────────────────
     case 'ADD_NOTIFICATION': {
       const notification: GameNotification = {
         ...action.payload,
@@ -576,6 +617,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Daily Task Tracking ──────────────────────────────────────
     case 'TRACK_ACTION': {
       const { key, amount = 1 } = action.payload;
       const tracking = ensureDailyTracking(state);
@@ -604,6 +646,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...resultState, dailyTasks };
     }
 
+    /** Awards the daily bonus (XP + money) if all daily tasks are completed. */
     case 'CLAIM_DAILY_BONUS': {
       if (state.dailyBonusClaimed) return state;
       const allComplete = state.dailyTasks.length > 0 && state.dailyTasks.every((task) => task.completed);
@@ -630,6 +673,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Generates a fresh set of daily tasks and resets tracking for the new day. */
     case 'RESET_DAILY_TASKS': {
       const today = new Date().toDateString();
       const taskIds = selectDailyTasks(today);
@@ -649,6 +693,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Removes a timed task that has expired and notifies the player. */
     case 'EXPIRE_TIMED_TASK': {
       const expiredTaskId = action.payload;
       const taskDef = DAILY_TASK_POOL.find((definition) => definition.id === expiredTaskId);
@@ -676,6 +721,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return addXpToPet(state, action.payload);
     }
 
+    /** Claims a completed daily task reward (XP, optional discount). */
     case 'CLAIM_DAILY_TASK': {
       const taskId = action.payload;
       const task = state.dailyTasks.find((task) => task.id === taskId);
@@ -714,6 +760,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return claimState;
     }
 
+    /** Bumps a lifetime counter (feeds, plays, wins, etc.) and checks related achievements. */
     case 'INCREMENT_LIFETIME_COUNTER': {
       const { counter, amount = 1 } = action.payload;
       const counters = state.lifetimeCounters || { totalFeeds: 0, totalPlays: 0, totalGamesWon: 0, weeksUnderBudget: 0 };
@@ -745,6 +792,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Accessory Equipment ──────────────────────────────────────
     case 'EQUIP_ACCESSORY': {
       if (!state.pet) return state;
       const { slot, accessoryId } = action.payload;
@@ -774,6 +822,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Sleep System ─────────────────────────────────────────────
     case 'PUT_PET_TO_SLEEP': {
       if (!state.pet) return state;
       const today = new Date().toDateString();
@@ -803,6 +852,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Tutorial ─────────────────────────────────────────────────
     case 'COMPLETE_TUTORIAL': {
       return {
         ...state,
@@ -817,6 +867,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Mini-Game Rewards ────────────────────────────────────────
     case 'CLAIM_GAME_REWARD': {
       const { gameId, amount } = action.payload;
       const today = new Date().toDateString();
@@ -854,8 +905,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    // === NEW FEATURE REDUCERS ===
+    // ═══ NEW FEATURE REDUCERS ════════════════════════════════════
 
+    /** Enables or disables guest mode (local-only saves). */
     case 'SET_GUEST_MODE': {
       return {
         ...state,
@@ -863,6 +915,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Decrements the remaining daily-action counter by 1. */
     case 'USE_DAILY_ACTION': {
       if (state.dailyActionsRemaining <= 0) return state;
       return {
@@ -871,6 +924,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Resets daily actions to the max (once per calendar day). */
     case 'RESET_DAILY_ACTIONS': {
       const today = new Date().toDateString();
       if (state.lastActionResetDate === today) return state;
@@ -881,6 +935,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /**
+     * Recalculates the pet’s behavior label based on current stats.
+     * Priority order: sad > grumpy > sluggish > disobedient > excited > playful > normal.
+     */
     case 'UPDATE_PET_BEHAVIOR': {
       if (!state.pet) return state;
       const stats = state.pet.stats;
@@ -910,6 +968,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Appends an entry to the action log (max 50, most recent first). */
     case 'ADD_ACTION_LOG': {
       const newLog = [action.payload, ...state.actionLog].slice(0, 50); // Keep last 50 entries
       return {
@@ -918,6 +977,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Generates three weekly goals (health, streak, budget) for the current week. */
     case 'INIT_WEEKLY_GOALS': {
       const today = new Date();
       const weekStart = new Date(today);
@@ -979,6 +1039,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Updates progress on all active weekly goals based on current state. */
     case 'UPDATE_WEEKLY_GOALS': {
       if (state.weeklyGoals.length === 0) return state;
 
@@ -1018,6 +1079,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Claims a completed weekly goal and awards its XP + money reward. */
     case 'CLAIM_WEEKLY_GOAL': {
       const goalId = action.payload;
       const goal = state.weeklyGoals.find((g) => g.id === goalId);
@@ -1044,6 +1106,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Collection & Room Themes ─────────────────────────────────
     case 'ADD_TO_COLLECTION': {
       const existing = state.collection.find((item) => item.id === action.payload.id);
       if (existing) return state;
@@ -1061,6 +1124,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Tomorrow Reward (daily login incentive) ──────────────────
     case 'GENERATE_TOMORROW_REWARD': {
       const today = new Date().toDateString();
       if (state.tomorrowReward?.claimedDate === today) return state;
@@ -1098,6 +1162,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    /** Claims the “welcome back” reward and marks it as unavailable until regenerated. */
     case 'CLAIM_TOMORROW_REWARD': {
       if (!state.tomorrowReward?.available) return state;
 
@@ -1135,6 +1200,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── Play Windows ─────────────────────────────────────────────
+    /** Marks a play window as satisfied (prevents double-bonus). */
     case 'SATISFY_PLAY_WINDOW': {
       const windowIndex = action.payload;
       if (windowIndex < 0 || windowIndex >= state.playWindowsSatisfied.length) return state;
@@ -1144,6 +1211,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, playWindowsSatisfied: updatedWindows };
     }
 
+    /** Deducts happiness for missing a scheduled play window. */
     case 'PENALIZE_MISSED_PLAY_WINDOW': {
       if (!state.pet) return state;
       const newStats = { ...state.pet.stats };
@@ -1161,6 +1229,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    // ── End-of-Day Recap ─────────────────────────────────────────
+    /** Generates a summary of the pet’s day based on average stats. */
     case 'GENERATE_DAY_RECAP': {
       if (!state.pet) return state;
 
