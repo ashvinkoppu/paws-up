@@ -22,11 +22,7 @@ interface ConfettiPiece {
   shape: 'square' | 'rect' | 'circle';
 }
 
-const CONFETTI_COLORS = [
-  '#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FF9FF3',
-  '#FECA57', '#FF6348', '#7BED9F', '#70A1FF', '#FFA502',
-  '#A29BFE', '#FD79A8', '#00CEC9', '#E17055', '#6C5CE7',
-];
+const CONFETTI_COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FF9FF3', '#FECA57', '#FF6348', '#7BED9F', '#70A1FF', '#FFA502', '#A29BFE', '#FD79A8', '#00CEC9', '#E17055', '#6C5CE7'];
 
 interface ConfettiOverlayProps {
   show: boolean;
@@ -74,41 +70,40 @@ const ConfettiOverlay: React.FC<ConfettiOverlayProps> = ({ show, newLevel }) => 
       {pieces.map((piece) => (
         <div
           key={piece.id}
-          style={{
-            position: 'absolute',
-            left: `${piece.left}%`,
-            top: '-10px',
-            // Rectangles are narrow and tall; circles are equal; squares are 1:1
-            width: piece.shape === 'rect' ? piece.size * 0.5 : piece.size,
-            height: piece.shape === 'circle' ? piece.size : piece.size * (piece.shape === 'rect' ? 1.8 : 1),
-            backgroundColor: piece.color,
-            borderRadius: piece.shape === 'circle' ? '50%' : '2px',
-            animation: `confettiFall ${piece.duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${piece.delay}s forwards`,
-            '--confetti-drift': `${piece.drift}px`,
-            '--confetti-spin': `${piece.spin}deg`,
-          } as React.CSSProperties}
+          style={
+            {
+              position: 'absolute',
+              left: `${piece.left}%`,
+              top: '-10px',
+              // Rectangles are narrow and tall; circles are equal; squares are 1:1
+              width: piece.shape === 'rect' ? piece.size * 0.5 : piece.size,
+              height: piece.shape === 'circle' ? piece.size : piece.size * (piece.shape === 'rect' ? 1.8 : 1),
+              backgroundColor: piece.color,
+              borderRadius: piece.shape === 'circle' ? '50%' : '2px',
+              animation: `confettiFall ${piece.duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${piece.delay}s forwards`,
+              '--confetti-drift': `${piece.drift}px`,
+              '--confetti-spin': `${piece.spin}deg`,
+            } as React.CSSProperties
+          }
         >
           <div
-            style={{
-              width: '100%',
-              height: '100%',
-              animation: `confettiDrift ${0.8 + Math.random() * 0.6}s ease-in-out ${piece.delay}s infinite`,
-              '--confetti-drift': `${piece.drift}px`,
-            } as React.CSSProperties}
+            style={
+              {
+                width: '100%',
+                height: '100%',
+                animation: `confettiDrift ${0.8 + Math.random() * 0.6}s ease-in-out ${piece.delay}s infinite`,
+                '--confetti-drift': `${piece.drift}px`,
+              } as React.CSSProperties
+            }
           />
         </div>
       ))}
 
       {/* Level up banner */}
-      <div
-        className="absolute top-20 left-1/2 animate-level-up-banner"
-        style={{ zIndex: 51 }}
-      >
+      <div className="absolute top-20 left-1/2 animate-level-up-banner" style={{ zIndex: 51 }}>
         <div className="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 rounded-2xl px-8 py-4 shadow-2xl text-center whitespace-nowrap border-2 border-yellow-300/60">
           <div className="text-xs font-semibold text-yellow-900/80 uppercase tracking-wider">Level Up!</div>
-          <div className="font-serif font-bold text-3xl text-white drop-shadow-md">
-            Level {newLevel}
-          </div>
+          <div className="font-serif font-bold text-3xl text-white drop-shadow-md">Level {newLevel}</div>
           <div className="text-sm font-medium text-yellow-100/90 mt-0.5">+$25 bonus!</div>
         </div>
       </div>

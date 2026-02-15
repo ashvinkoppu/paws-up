@@ -35,16 +35,11 @@ const NewDayPopup: React.FC<NewDayPopupProps> = ({ totalDaysPlayed, onClose }) =
         }}
       >
         <div className="bg-gradient-to-b from-amber-50 to-transparent px-10 py-8 flex flex-col items-center gap-5">
-          <div
-            className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center"
-            style={{ animation: 'newDaySunSpin 1s ease-out' }}
-          >
+          <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center" style={{ animation: 'newDaySunSpin 1s ease-out' }}>
             <Sun className="w-7 h-7 text-amber-500" />
           </div>
           <div className="text-center">
-            <h2 className="font-serif font-bold text-xl text-foreground mb-1">
-              A New Day Dawns!
-            </h2>
+            <h2 className="font-serif font-bold text-xl text-foreground mb-1">A New Day Dawns!</h2>
             <p className="text-sm text-muted-foreground">
               Day <span className="font-mono font-bold text-amber-600">{totalDaysPlayed}</span> of your adventure
             </p>

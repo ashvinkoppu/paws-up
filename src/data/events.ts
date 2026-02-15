@@ -9,7 +9,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
     choices: [
       {
         text: 'Visit the store',
-        message: "You got 50% off in the shop for today! Shop wisely.",
+        message: 'You got 50% off in the shop for today! Shop wisely.',
         discountEffect: 50,
       },
       {
@@ -83,14 +83,14 @@ export const RANDOM_EVENTS: RandomEvent[] = [
   {
     id: 'event-emergency',
     title: '🚨 Emergency!',
-    description: 'Your pet accidentally ate something they shouldn\'t have! They need immediate care.',
+    description: "Your pet accidentally ate something they shouldn't have! They need immediate care.",
     type: 'emergency',
     choices: [
       {
         text: 'Emergency vet ($80)',
         cost: 80,
         effects: { health: 50 },
-        message: 'The vet saved your pet! They\'re recovering well.',
+        message: "The vet saved your pet! They're recovering well.",
       },
       {
         text: 'Home remedy ($20)',
@@ -121,7 +121,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
   {
     id: 'event-contest',
     title: '🏅 Pet Contest',
-    description: 'There\'s a local pet contest happening! Entry fee is $30.',
+    description: "There's a local pet contest happening! Entry fee is $30.",
     type: 'opportunity',
     choices: [
       {
@@ -141,7 +141,7 @@ export const RANDOM_EVENTS: RandomEvent[] = [
   {
     id: 'event-rainy',
     title: '🌧️ Rainy Day',
-    description: 'It\'s raining outside and your pet is feeling cooped up.',
+    description: "It's raining outside and your pet is feeling cooped up.",
     type: 'opportunity',
     choices: [
       {

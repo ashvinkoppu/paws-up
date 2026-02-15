@@ -30,11 +30,14 @@ const FinancePanel: React.FC = () => {
 
   // Calculate spending by category
   const spendingByCategory = state.transactions
-    .filter(transaction => transaction.type === 'expense')
-    .reduce((accumulator, transaction) => {
-      accumulator[transaction.category] = (accumulator[transaction.category] || 0) + transaction.amount;
-      return accumulator;
-    }, {} as Record<string, number>);
+    .filter((transaction) => transaction.type === 'expense')
+    .reduce(
+      (accumulator, transaction) => {
+        accumulator[transaction.category] = (accumulator[transaction.category] || 0) + transaction.amount;
+        return accumulator;
+      },
+      {} as Record<string, number>,
+    );
 
   const recentTransactions = state.transactions.slice(-5).reverse();
 
@@ -49,10 +52,7 @@ const FinancePanel: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Balance Card */}
-      <Card className={cn(
-        "glass-card rounded-2xl transition-all duration-300 overflow-hidden",
-        state.money < 20 ? "ring-2 ring-destructive/30" : ""
-      )}>
+      <Card className={cn('glass-card rounded-2xl transition-all duration-300 overflow-hidden', state.money < 20 ? 'ring-2 ring-destructive/30' : '')}>
         {/* Decorative background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-[-30%] right-[-20%] w-[50%] h-[80%] bg-primary/3 blob-shape" />
@@ -75,9 +75,7 @@ const FinancePanel: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="relative">
-          <div className="text-4xl font-mono font-bold text-foreground mb-2">
-            ${state.money.toFixed(2)}
-          </div>
+          <div className="text-4xl font-mono font-bold text-foreground mb-2">${state.money.toFixed(2)}</div>
           {state.careStreak >= 3 && (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary/10 rounded-full text-secondary text-sm">
               <Flame className="w-4 h-4" />
@@ -105,29 +103,15 @@ const FinancePanel: React.FC = () => {
 
           {/* Progress bar */}
           <div className="h-3.5 bg-accent/40 rounded-full overflow-hidden">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all duration-500 relative",
-                isOverBudget ? "bg-destructive" : "bg-chart-1"
-              )}
-              style={{ width: `${Math.min(budgetUsedPercent, 100)}%` }}
-            >
+            <div className={cn('h-full rounded-full transition-all duration-500 relative', isOverBudget ? 'bg-destructive' : 'bg-chart-1')} style={{ width: `${Math.min(budgetUsedPercent, 100)}%` }}>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             </div>
           </div>
 
           <div className="flex justify-between items-center">
             <span className="text-sm text-muted-foreground">Budget: ${state.weeklyBudget}</span>
-            <span className={cn(
-              "text-sm font-semibold px-3 py-1 rounded-full",
-              isOverBudget
-                ? "bg-destructive/15 text-destructive"
-                : "bg-secondary/15 text-secondary"
-            )}>
-              {isOverBudget
-                ? `Over by $${Math.abs(remainingBudget).toFixed(2)}`
-                : `$${remainingBudget.toFixed(2)} left`
-              }
+            <span className={cn('text-sm font-semibold px-3 py-1 rounded-full', isOverBudget ? 'bg-destructive/15 text-destructive' : 'bg-secondary/15 text-secondary')}>
+              {isOverBudget ? `Over by $${Math.abs(remainingBudget).toFixed(2)}` : `$${remainingBudget.toFixed(2)} left`}
             </span>
           </div>
         </CardContent>
@@ -196,24 +180,12 @@ const FinancePanel: React.FC = () => {
                   style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "p-2 rounded-lg",
-                      transaction.type === 'income' ? "bg-secondary/15" : "bg-chart-1/15"
-                    )}>
-                      {transaction.type === 'income' ? (
-                        <ArrowUpRight className="w-4 h-4 text-secondary" />
-                      ) : (
-                        <ArrowDownRight className="w-4 h-4 text-chart-1" />
-                      )}
+                    <div className={cn('p-2 rounded-lg', transaction.type === 'income' ? 'bg-secondary/15' : 'bg-chart-1/15')}>
+                      {transaction.type === 'income' ? <ArrowUpRight className="w-4 h-4 text-secondary" /> : <ArrowDownRight className="w-4 h-4 text-chart-1" />}
                     </div>
-                    <span className="text-sm truncate max-w-[180px] text-foreground">
-                      {transaction.description}
-                    </span>
+                    <span className="text-sm truncate max-w-[180px] text-foreground">{transaction.description}</span>
                   </div>
-                  <span className={cn(
-                    "font-mono font-semibold",
-                    transaction.type === 'income' ? 'text-secondary' : 'text-muted-foreground'
-                  )}>
+                  <span className={cn('font-mono font-semibold', transaction.type === 'income' ? 'text-secondary' : 'text-muted-foreground')}>
                     {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
                   </span>
                 </div>

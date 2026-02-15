@@ -46,11 +46,16 @@ const CatchGame: React.FC<CatchGameProps> = ({ onWin, onLose, petSpecies, highSc
 
   const getPetEmoji = (species: string) => {
     switch (species) {
-      case 'dog': return '🐕';
-      case 'cat': return '🐈';
-      case 'rabbit': return '🐇';
-      case 'hamster': return '🐹';
-      default: return '🐾';
+      case 'dog':
+        return '🐕';
+      case 'cat':
+        return '🐈';
+      case 'rabbit':
+        return '🐇';
+      case 'hamster':
+        return '🐹';
+      default:
+        return '🐾';
     }
   };
 
@@ -115,11 +120,11 @@ const CatchGame: React.FC<CatchGameProps> = ({ onWin, onLose, petSpecies, highSc
 
       // Add feedback
       const feedbackId = Date.now();
-      setActiveFeedback(previous => [...previous, { id: feedbackId, x: targetPosition.x, y: targetPosition.y, text: `CAUGHT!`, subtext: `$${boneValue} earned` }]);
+      setActiveFeedback((previous) => [...previous, { id: feedbackId, x: targetPosition.x, y: targetPosition.y, text: `CAUGHT!`, subtext: `$${boneValue} earned` }]);
 
       // Remove feedback after animation
       setTimeout(() => {
-        setActiveFeedback(previous => previous.filter(feedback => feedback.id !== feedbackId));
+        setActiveFeedback((previous) => previous.filter((feedback) => feedback.id !== feedbackId));
       }, 1200);
 
       // Delay move to allow "catch" visual, then spawn new bone
@@ -145,33 +150,20 @@ const CatchGame: React.FC<CatchGameProps> = ({ onWin, onLose, petSpecies, highSc
           <Coins className="w-4 h-4 text-secondary" />
           <span className="font-mono font-semibold text-secondary">${totalEarned}</span>
         </div>
-        <div className={cn(
-          "flex items-center gap-2 px-4 py-2 rounded-xl transition-colors duration-300",
-          timeLeft <= 5 ? "bg-destructive/15 text-destructive" : "bg-accent/50"
-        )}>
+        <div className={cn('flex items-center gap-2 px-4 py-2 rounded-xl transition-colors duration-300', timeLeft <= 5 ? 'bg-destructive/15 text-destructive' : 'bg-accent/50')}>
           <span className="font-mono font-semibold">{timeLeft}s</span>
         </div>
       </div>
 
       {/* Progress bar */}
       <div className="h-2.5 bg-accent/30 rounded-full overflow-hidden">
-        <div
-          className={cn(
-            "h-full rounded-full transition-all duration-1000 ease-linear",
-            timeLeft <= 5 ? "bg-destructive" : "bg-secondary"
-          )}
-          style={{ width: `${(timeLeft / 15) * 100}%` }}
-        />
+        <div className={cn('h-full rounded-full transition-all duration-1000 ease-linear', timeLeft <= 5 ? 'bg-destructive' : 'bg-secondary')} style={{ width: `${(timeLeft / 15) * 100}%` }} />
       </div>
 
       {/* (Game Area) */}
       <div
         onClick={handleAreaClick}
-        className={cn(
-          "relative h-72 rounded-2xl border-2 border-dashed overflow-hidden cursor-crosshair",
-          "bg-gradient-to-br from-accent/30 via-card to-secondary/10",
-          "transition-all duration-300"
-        )}
+        className={cn('relative h-72 rounded-2xl border-2 border-dashed overflow-hidden cursor-crosshair', 'bg-gradient-to-br from-accent/30 via-card to-secondary/10', 'transition-all duration-300')}
       >
         {/* Decorative elements */}
         {/* ... */}
@@ -180,17 +172,14 @@ const CatchGame: React.FC<CatchGameProps> = ({ onWin, onLose, petSpecies, highSc
           <>
             {/* The Target (Treat) */}
             <div
-              className={cn(
-                "absolute w-12 h-12 flex items-center justify-center text-3xl pointer-events-none",
-                "transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300"
-              )}
+              className={cn('absolute w-12 h-12 flex items-center justify-center text-3xl pointer-events-none', 'transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300')}
               style={{ left: `${targetPosition.x}%`, top: `${targetPosition.y}%` }}
             >
               {BONES[currentBoneIndex].emoji}
             </div>
 
             {/* Feedback Popups */}
-            {activeFeedback.map(feedback => (
+            {activeFeedback.map((feedback) => (
               <div
                 key={feedback.id}
                 className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-20 whitespace-nowrap animate-fade-in-up text-center"
@@ -204,9 +193,9 @@ const CatchGame: React.FC<CatchGameProps> = ({ onWin, onLose, petSpecies, highSc
             {/* The Pet */}
             <div
               className={cn(
-                "absolute w-16 h-16 flex items-center justify-center text-5xl pointer-events-none",
-                "transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out",
-                isJumping && "scale-125 mb-2"
+                'absolute w-16 h-16 flex items-center justify-center text-5xl pointer-events-none',
+                'transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out',
+                isJumping && 'scale-125 mb-2',
               )}
               style={{ left: `${petPosition.x}%`, top: `${petPosition.y}%` }}
             >
@@ -218,18 +207,9 @@ const CatchGame: React.FC<CatchGameProps> = ({ onWin, onLose, petSpecies, highSc
         {!gameActive && (
           <div className="absolute inset-0 flex items-center justify-center bg-card/90 backdrop-blur-sm z-10 pointer-events-auto">
             <div className="text-center p-6 animate-fade-in-up">
-              <div className={cn(
-                "text-6xl mb-4",
-                score >= 5 ? "animate-wiggle" : ""
-              )}>
-                {score >= 5 ? '🎉' : '😔'}
-              </div>
-              <p className="text-2xl font-serif font-bold text-foreground mb-2">
-                {score >= 5 ? 'Great Catch!' : 'Try Again!'}
-              </p>
-              <p className="text-muted-foreground">
-                You caught {score} treats
-              </p>
+              <div className={cn('text-6xl mb-4', score >= 5 ? 'animate-wiggle' : '')}>{score >= 5 ? '🎉' : '😔'}</div>
+              <p className="text-2xl font-serif font-bold text-foreground mb-2">{score >= 5 ? 'Great Catch!' : 'Try Again!'}</p>
+              <p className="text-muted-foreground">You caught {score} treats</p>
             </div>
           </div>
         )}

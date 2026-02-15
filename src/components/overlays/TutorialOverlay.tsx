@@ -216,9 +216,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ onComplete, onTabChan
         className="absolute inset-0 transition-all duration-400 ease-out"
         style={{
           background: 'transparent',
-          boxShadow: targetRect
-            ? `0 0 0 9999px rgba(0, 0, 0, 0.65)`
-            : '0 0 0 9999px rgba(0, 0, 0, 0.65)',
+          boxShadow: targetRect ? `0 0 0 9999px rgba(0, 0, 0, 0.65)` : '0 0 0 9999px rgba(0, 0, 0, 0.65)',
         }}
         onClick={handleSkip}
       />
@@ -239,86 +237,51 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({ onComplete, onTabChan
       )}
 
       {/* Tooltip card */}
-      <div
-        className={cn(
-          "absolute z-10 bg-card rounded-2xl shadow-2xl border border-border/60 overflow-hidden",
-          isAnimating && "animate-tutorial-tooltip-in"
-        )}
-        style={getTooltipStyle()}
-      >
+      <div className={cn('absolute z-10 bg-card rounded-2xl shadow-2xl border border-border/60 overflow-hidden', isAnimating && 'animate-tutorial-tooltip-in')} style={getTooltipStyle()}>
         {/* Header with gradient */}
         <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent px-5 py-4 flex items-center gap-3 border-b border-border/30">
-          <div className="p-2 bg-primary/15 rounded-xl text-primary">
-            {step.icon}
-          </div>
+          <div className="p-2 bg-primary/15 rounded-xl text-primary">{step.icon}</div>
           <div className="flex-1">
             <h3 className="font-serif font-bold text-base text-foreground">{step.title}</h3>
             <p className="text-[11px] text-muted-foreground">
               Step {currentStep + 1} of {TUTORIAL_STEPS.length}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSkip}
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-          >
+          <Button variant="ghost" size="sm" onClick={handleSkip} className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
             <X className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Body */}
         <div className="px-5 py-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {step.description}
-          </p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
         </div>
 
         {/* Progress bar */}
         <div className="px-5 pb-2">
           <div className="flex gap-1">
             {TUTORIAL_STEPS.map((_, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "h-1 rounded-full flex-1 transition-all duration-300",
-                  index <= currentStep ? "bg-primary" : "bg-border"
-                )}
-              />
+              <div key={index} className={cn('h-1 rounded-full flex-1 transition-all duration-300', index <= currentStep ? 'bg-primary' : 'bg-border')} />
             ))}
           </div>
         </div>
 
         {/* Footer with navigation */}
         <div className="px-5 py-3 flex items-center justify-between border-t border-border/30 bg-accent/20">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSkip}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
+          <Button variant="ghost" size="sm" onClick={handleSkip} className="text-xs text-muted-foreground hover:text-foreground">
             Skip Tutorial
           </Button>
 
           <div className="flex items-center gap-2">
             {currentStep > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevious}
-                className="h-8 px-3 text-xs"
-              >
+              <Button variant="outline" size="sm" onClick={handlePrevious} className="h-8 px-3 text-xs">
                 <ChevronLeft className="w-3 h-3 mr-1" />
                 Back
               </Button>
             )}
-            <Button
-              size="sm"
-              onClick={handleNext}
-              className="h-8 px-4 text-xs bg-gradient-to-r from-primary to-chart-5 hover:from-primary/90 hover:to-chart-5/90 text-white shadow-md"
-            >
+            <Button size="sm" onClick={handleNext} className="h-8 px-4 text-xs bg-gradient-to-r from-primary to-chart-5 hover:from-primary/90 hover:to-chart-5/90 text-white shadow-md">
               {currentStep === TUTORIAL_STEPS.length - 1 ? (
-                "Start Playing!"
+                'Start Playing!'
               ) : (
                 <>
                   Next

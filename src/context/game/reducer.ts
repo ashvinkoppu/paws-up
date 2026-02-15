@@ -18,7 +18,6 @@ import {
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'CREATE_PET': {
-
       const [updatedAchievements, reward] = unlockAchievementInList(state.achievements, 'first-pet');
       const newState = {
         ...state,
@@ -95,18 +94,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'ADD_TO_INVENTORY': {
       const newItem = action.payload;
-      const existingItemIndex = state.inventory.findIndex(item => item.id === newItem.id);
+      const existingItemIndex = state.inventory.findIndex((item) => item.id === newItem.id);
 
       // Check if this item is new to collection
       let newCollection = [...state.collection];
-      const isInCollection = state.collection.some(item => item.id === newItem.id);
-      
+      const isInCollection = state.collection.some((item) => item.id === newItem.id);
+
       if (!isInCollection) {
         // Map inventory category to collection category
         let collectionCategory: 'toy' | 'outfit' | 'room_theme' | 'decoration' = 'decoration';
         if (newItem.category === 'accessory') collectionCategory = 'outfit';
         else if (newItem.category === 'happiness') collectionCategory = 'toy';
-        else if (newItem.category === 'room_theme' as string) collectionCategory = 'room_theme';
+        else if (newItem.category === ('room_theme' as string)) collectionCategory = 'room_theme';
 
         // Map tier/price to rarity
         let rarity: 'common' | 'rare' | 'epic' | 'legendary' = 'common';
@@ -143,7 +142,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'USE_ITEM': {
-      const item = state.inventory.find(inventoryItem => inventoryItem.id === action.payload);
+      const item = state.inventory.find((inventoryItem) => inventoryItem.id === action.payload);
       const pet = state.pet;
       if (!item || item.quantity <= 0 || !pet) return state;
 
@@ -157,10 +156,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         else if (behavior === 'grumpy') effectiveness = 0.6;
         else if (behavior === 'sluggish') effectiveness = 0.7;
       }
-      
+
       // Grooming (cleanliness items) is less effective if pet is grumpy
       if (item.category === 'cleanliness' && behavior === 'grumpy') {
-         effectiveness = 0.8;
+        effectiveness = 0.8;
       }
 
       const newStats = { ...pet.stats };
@@ -191,8 +190,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         pet: { ...pet, stats: newStats, experience: newExperience, level: newLevel },
         inventory: state.inventory
-          .map(inventoryItem => inventoryItem.id === action.payload ? { ...inventoryItem, quantity: inventoryItem.quantity - 1 } : inventoryItem)
-          .filter(inventoryItem => inventoryItem.quantity > 0),
+          .map((inventoryItem) => (inventoryItem.id === action.payload ? { ...inventoryItem, quantity: inventoryItem.quantity - 1 } : inventoryItem))
+          .filter((inventoryItem) => inventoryItem.quantity > 0),
         mealsEatenToday,
       };
     }
@@ -215,9 +214,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         currentEvent: null,
-        ...(discount !== undefined && discount > state.activeShopDiscount
-          ? { activeShopDiscount: discount }
-          : {}),
+        ...(discount !== undefined && discount > state.activeShopDiscount ? { activeShopDiscount: discount } : {}),
       };
     }
 
@@ -266,7 +263,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         dailyActionsRemaining, // Reset actions
         tomorrowReward,
         // Reset daily bonus claim status
-        dailyBonusClaimed: false, 
+        dailyBonusClaimed: false,
       };
 
       return checkAllMilestones(newState);
@@ -313,7 +310,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       const stats = state.pet.stats;
-      if (Object.values(stats).every(v => v >= 90)) {
+      if (Object.values(stats).every((v) => v >= 90)) {
         const [updated, reward] = unlockAchievementInList(achievements, 'perfect-stats');
         achievements = updated;
         achievementMoney += reward;
@@ -363,9 +360,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const crossedMidnight = newGameTime < oldGameTime;
 
       // Reset meals when crossing midnight
-      let mealsEatenToday = crossedMidnight
-        ? { breakfast: false, lunch: false, dinner: false }
-        : { ...state.mealsEatenToday };
+      let mealsEatenToday = crossedMidnight ? { breakfast: false, lunch: false, dinner: false } : { ...state.mealsEatenToday };
 
       // Detect skipped meals (meal windows whose end was crossed without feeding)
       const skippedMeals = getSkippedMeals(oldGameTime, newGameTime, mealsEatenToday);
@@ -412,12 +407,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // SOFT FAILURE: Pet only dies after EXTREME, prolonged neglect
       // All stats must be critically low (< 5) for death to occur
       // This is MUCH harder to trigger than before
-      const isCriticallyNeglected =
-        newStats.hunger < 5 &&
-        newStats.happiness < 5 &&
-        newStats.energy < 5 &&
-        newStats.cleanliness < 5 &&
-        newStats.health < 5;
+      const isCriticallyNeglected = newStats.hunger < 5 && newStats.happiness < 5 && newStats.energy < 5 && newStats.cleanliness < 5 && newStats.health < 5;
 
       if (isCriticallyNeglected) {
         return {
@@ -433,9 +423,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       // Add warning notifications for low stats
       if (lowestStat < 15 && lowestStat >= 5) {
         const lowStatName = Object.entries(newStats).find(([, v]) => v === lowestStat)?.[0];
-        const existingWarning = notifications.find(n =>
-          n.type === 'alert' && n.title === 'Pet Needs Attention!' &&
-          Date.now() - n.timestamp < 60000 // Within last minute
+        const existingWarning = notifications.find(
+          (n) => n.type === 'alert' && n.title === 'Pet Needs Attention!' && Date.now() - n.timestamp < 60000, // Within last minute
         );
 
         if (!existingWarning && lowStatName) {
@@ -513,7 +502,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
       // Migration: ensure dailyTasks have timed fields
       if (loadedState.dailyTasks) {
-        loadedState.dailyTasks = loadedState.dailyTasks.map(task => ({
+        loadedState.dailyTasks = loadedState.dailyTasks.map((task) => ({
           ...task,
           timed: task.timed ?? false,
           timerExpiresAt: task.timerExpiresAt ?? null,
@@ -576,7 +565,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'MARK_NOTIFICATIONS_READ': {
       return {
         ...state,
-        notifications: state.notifications.map(notification => ({ ...notification, read: true })),
+        notifications: state.notifications.map((notification) => ({ ...notification, read: true })),
       };
     }
 
@@ -599,9 +588,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       let dailyTasks = ensureDailyTasks({ ...state, dailyTracking: newTracking });
       let resultState: GameState = { ...state, dailyTracking: newTracking, dailyTasks };
 
-      dailyTasks = dailyTasks.map(task => {
+      dailyTasks = dailyTasks.map((task) => {
         if (task.completed) return task;
-        const taskDef = DAILY_TASK_POOL.find(definition => definition.id === task.id);
+        const taskDef = DAILY_TASK_POOL.find((definition) => definition.id === task.id);
         if (!taskDef) return task;
         const currentProgress = newTracking[taskDef.trackingKey as keyof DailyTracking] as number;
         const completed = currentProgress >= taskDef.target;
@@ -617,7 +606,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'CLAIM_DAILY_BONUS': {
       if (state.dailyBonusClaimed) return state;
-      const allComplete = state.dailyTasks.length > 0 && state.dailyTasks.every(task => task.completed);
+      const allComplete = state.dailyTasks.length > 0 && state.dailyTasks.every((task) => task.completed);
       if (!allComplete) return state;
 
       let resultState = addXpToPet(state, 30);
@@ -647,9 +636,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const now = Date.now();
       return {
         ...state,
-        dailyTasks: taskIds.map(id => {
-          const taskDef = DAILY_TASK_POOL.find(definition => definition.id === id);
-          const timed = !!(taskDef?.timeLimitMinutes);
+        dailyTasks: taskIds.map((id) => {
+          const taskDef = DAILY_TASK_POOL.find((definition) => definition.id === id);
+          const timed = !!taskDef?.timeLimitMinutes;
           const timerExpiresAt = timed && taskDef ? now + (taskDef.timeLimitMinutes ?? 0) * 60 * 1000 : null;
           return { id, progress: 0, completed: false, claimed: false, timed, timerExpiresAt };
         }),
@@ -662,7 +651,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'EXPIRE_TIMED_TASK': {
       const expiredTaskId = action.payload;
-      const taskDef = DAILY_TASK_POOL.find(definition => definition.id === expiredTaskId);
+      const taskDef = DAILY_TASK_POOL.find((definition) => definition.id === expiredTaskId);
       const notification: GameNotification = {
         id: crypto.randomUUID(),
         type: 'alert',
@@ -674,7 +663,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
       return {
         ...state,
-        dailyTasks: state.dailyTasks.filter(task => task.id !== expiredTaskId),
+        dailyTasks: state.dailyTasks.filter((task) => task.id !== expiredTaskId),
         notifications: [notification, ...state.notifications].slice(0, 50),
       };
     }
@@ -689,9 +678,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'CLAIM_DAILY_TASK': {
       const taskId = action.payload;
-      const task = state.dailyTasks.find(task => task.id === taskId);
+      const task = state.dailyTasks.find((task) => task.id === taskId);
       if (!task || !task.completed || task.claimed) return state;
-      const taskDef = DAILY_TASK_POOL.find(definition => definition.id === taskId);
+      const taskDef = DAILY_TASK_POOL.find((definition) => definition.id === taskId);
       if (!taskDef) return state;
 
       let claimState = addXpToPet(state, taskDef.xpReward);
@@ -720,9 +709,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       claimState = {
         ...claimState,
-        dailyTasks: claimState.dailyTasks.map(dailyTask =>
-          dailyTask.id === taskId ? { ...dailyTask, claimed: true } : dailyTask
-        ),
+        dailyTasks: claimState.dailyTasks.map((dailyTask) => (dailyTask.id === taskId ? { ...dailyTask, claimed: true } : dailyTask)),
       };
       return claimState;
     }
@@ -847,7 +834,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         money: state.money + amount,
         dailyGameRewards: {
           ...state.dailyGameRewards,
-          [gameId]: today
+          [gameId]: today,
         },
         transactions: appendTransaction(state.transactions, {
           id: crypto.randomUUID(),
@@ -899,9 +886,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const stats = state.pet.stats;
       const avgStats = Object.values(stats).reduce((sum, v) => sum + v, 0) / 5;
       const lowestStat = Math.min(...Object.values(stats));
-      
+
       let behavior: PetBehavior = 'normal';
-      
+
       // Priority-based behavior assignment
       if (lowestStat < 10) {
         behavior = 'sad';
@@ -916,7 +903,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       } else if (avgStats >= 60) {
         behavior = 'playful';
       }
-      
+
       return {
         ...state,
         petBehavior: behavior,
@@ -936,12 +923,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const weekStart = new Date(today);
       weekStart.setDate(today.getDate() - today.getDay()); // Sunday
       const weekStartStr = weekStart.toDateString();
-      
+
       // Check if we already have goals for this week
       if (state.weeklyGoals.length > 0 && state.weeklyGoals[0].startDate === weekStartStr) {
         return state;
       }
-      
+
       // Generate new weekly goals
       const newGoals: WeeklyGoal[] = [
         {
@@ -984,7 +971,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           reward: { xp: 100, money: 100 },
         },
       ];
-      
+
       return {
         ...state,
         weeklyGoals: newGoals,
@@ -994,14 +981,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'UPDATE_WEEKLY_GOALS': {
       if (state.weeklyGoals.length === 0) return state;
-      
+
       const today = new Date().toDateString();
-      const updatedGoals = state.weeklyGoals.map(goal => {
+      const updatedGoals = state.weeklyGoals.map((goal) => {
         if (goal.completed) return goal;
-        
+
         let currentValue = goal.currentValue;
         let daysCompleted = goal.daysCompleted;
-        
+
         switch (goal.type) {
           case 'health':
             currentValue = state.pet?.stats.health ?? 0;
@@ -1019,14 +1006,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             currentValue = state.weeklySpent;
             break;
         }
-        
-        const completed = goal.type === 'savings' 
-          ? currentValue <= goal.target && state.totalDaysPlayed % 7 === 0
-          : daysCompleted >= 7;
-        
+
+        const completed = goal.type === 'savings' ? currentValue <= goal.target && state.totalDaysPlayed % 7 === 0 : daysCompleted >= 7;
+
         return { ...goal, currentValue, daysCompleted, completed };
       });
-      
+
       return {
         ...state,
         weeklyGoals: updatedGoals,
@@ -1035,12 +1020,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'CLAIM_WEEKLY_GOAL': {
       const goalId = action.payload;
-      const goal = state.weeklyGoals.find(g => g.id === goalId);
+      const goal = state.weeklyGoals.find((g) => g.id === goalId);
       if (!goal || !goal.completed) return state;
-      
-      const updatedGoals = state.weeklyGoals.filter(g => g.id !== goalId);
+
+      const updatedGoals = state.weeklyGoals.filter((g) => g.id !== goalId);
       const resultState = addXpToPet(state, goal.reward.xp);
-      
+
       const notification: GameNotification = {
         id: crypto.randomUUID(),
         type: 'milestone',
@@ -1050,7 +1035,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         read: false,
         timestamp: Date.now(),
       };
-      
+
       return {
         ...resultState,
         weeklyGoals: updatedGoals,
@@ -1060,9 +1045,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'ADD_TO_COLLECTION': {
-      const existing = state.collection.find(item => item.id === action.payload.id);
+      const existing = state.collection.find((item) => item.id === action.payload.id);
       if (existing) return state;
-      
+
       return {
         ...state,
         collection: [...state.collection, action.payload],
@@ -1079,14 +1064,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'GENERATE_TOMORROW_REWARD': {
       const today = new Date().toDateString();
       if (state.tomorrowReward?.claimedDate === today) return state;
-      
+
       // Generate a random reward type
       const rewardTypes: Array<'money' | 'xp' | 'discount'> = ['money', 'xp', 'discount'];
       const type = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
-      
+
       let value = 0;
       let description = '';
-      
+
       switch (type) {
         case 'money':
           value = 15 + Math.floor(Math.random() * 20);
@@ -1101,7 +1086,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           description = `${value}% shop discount`;
           break;
       }
-      
+
       return {
         ...state,
         tomorrowReward: {
@@ -1115,12 +1100,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'CLAIM_TOMORROW_REWARD': {
       if (!state.tomorrowReward?.available) return state;
-      
+
       const today = new Date().toDateString();
       const reward = state.tomorrowReward;
-      
+
       let resultState = { ...state };
-      
+
       switch (reward.type) {
         case 'money':
           resultState.money += reward.value;
@@ -1132,7 +1117,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           resultState.activeShopDiscount = Math.max(resultState.activeShopDiscount, reward.value);
           break;
       }
-      
+
       const notification: GameNotification = {
         id: crypto.randomUUID(),
         type: 'milestone',
@@ -1142,7 +1127,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         read: false,
         timestamp: Date.now(),
       };
-      
+
       return {
         ...resultState,
         tomorrowReward: { ...reward, available: false, claimedDate: today },
@@ -1178,17 +1163,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'GENERATE_DAY_RECAP': {
       if (!state.pet) return state;
-      
+
       const today = new Date().toDateString();
       if (state.lastDayRecap?.date === today) return state;
-      
+
       const stats = state.pet.stats;
       const avgStats = Object.values(stats).reduce((sum, v) => sum + v, 0) / 5;
       const lowestStat = Math.min(...Object.values(stats));
-      
+
       let moodScore = Math.round(avgStats);
       let summary = '';
-      
+
       if (lowestStat < 20) {
         summary = `${state.pet.name} had a rough day and needs more attention. Some stats got critically low.`;
         moodScore = Math.round(lowestStat);
@@ -1201,7 +1186,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       } else {
         summary = `${state.pet.name} felt a bit neglected today. Try to care for them more tomorrow.`;
       }
-      
+
       return {
         ...state,
         lastDayRecap: {

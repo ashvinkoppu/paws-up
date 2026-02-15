@@ -20,12 +20,26 @@ const Index: React.FC = () => {
       {/* Atmospheric background layers */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-15%] left-[-10%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-br from-primary/8 via-primary/4 to-transparent blur-3xl animate-breathe" />
-        <div className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-secondary/8 via-secondary/4 to-transparent blur-3xl animate-breathe" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-[20%] right-[0%] w-[30vw] h-[30vw] rounded-full bg-gradient-to-bl from-accent/30 via-accent/10 to-transparent blur-2xl animate-breathe" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-[15%] left-[12%] text-primary/10 text-3xl animate-gentle-drift" style={{ animationDelay: '0s' }}>🐾</div>
-        <div className="absolute top-[25%] right-[15%] text-secondary/10 text-2xl animate-gentle-drift" style={{ animationDelay: '2s' }}>🐾</div>
-        <div className="absolute bottom-[25%] left-[8%] text-chart-1/10 text-4xl animate-gentle-drift" style={{ animationDelay: '4s' }}>🐾</div>
-        <div className="absolute bottom-[20%] right-[20%] text-chart-2/10 text-2xl animate-gentle-drift" style={{ animationDelay: '6s' }}>🐾</div>
+        <div
+          className="absolute bottom-[-20%] right-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-secondary/8 via-secondary/4 to-transparent blur-3xl animate-breathe"
+          style={{ animationDelay: '2s' }}
+        />
+        <div
+          className="absolute top-[20%] right-[0%] w-[30vw] h-[30vw] rounded-full bg-gradient-to-bl from-accent/30 via-accent/10 to-transparent blur-2xl animate-breathe"
+          style={{ animationDelay: '1s' }}
+        />
+        <div className="absolute top-[15%] left-[12%] text-primary/10 text-3xl animate-gentle-drift" style={{ animationDelay: '0s' }}>
+          🐾
+        </div>
+        <div className="absolute top-[25%] right-[15%] text-secondary/10 text-2xl animate-gentle-drift" style={{ animationDelay: '2s' }}>
+          🐾
+        </div>
+        <div className="absolute bottom-[25%] left-[8%] text-chart-1/10 text-4xl animate-gentle-drift" style={{ animationDelay: '4s' }}>
+          🐾
+        </div>
+        <div className="absolute bottom-[20%] right-[20%] text-chart-2/10 text-2xl animate-gentle-drift" style={{ animationDelay: '6s' }}>
+          🐾
+        </div>
         <div className="absolute top-[30%] left-[25%] w-2 h-2 rounded-full bg-primary/40 animate-sparkle" style={{ animationDelay: '0s' }} />
         <div className="absolute top-[18%] right-[30%] w-1.5 h-1.5 rounded-full bg-chart-3/50 animate-sparkle" style={{ animationDelay: '1s' }} />
         <div className="absolute bottom-[35%] left-[18%] w-2.5 h-2.5 rounded-full bg-secondary/40 animate-sparkle" style={{ animationDelay: '2s' }} />
@@ -37,9 +51,7 @@ const Index: React.FC = () => {
       <nav className="relative z-10 flex items-center justify-between px-6 py-4 max-w-6xl mx-auto w-full">
         <div className="flex items-center gap-2">
           <PawPrint className="w-6 h-6 text-primary" />
-          <span className="text-xl font-serif font-bold bg-gradient-to-br from-primary to-chart-5 bg-clip-text text-transparent">
-            Paws Up
-          </span>
+          <span className="text-xl font-serif font-bold bg-gradient-to-br from-primary to-chart-5 bg-clip-text text-transparent">Paws Up</span>
         </div>
         <div className="flex items-center gap-3">
           {!loading && session ? (
@@ -78,14 +90,10 @@ const Index: React.FC = () => {
             </div>
 
             <h1 className="text-6xl md:text-8xl font-serif font-bold mb-5 tracking-tight">
-              <span className="bg-gradient-to-br from-primary via-primary to-chart-5 bg-clip-text text-transparent drop-shadow-sm">
-                Paws Up
-              </span>
+              <span className="bg-gradient-to-br from-primary via-primary to-chart-5 bg-clip-text text-transparent drop-shadow-sm">Paws Up</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto leading-relaxed font-light">
-              Adopt a furry friend and learn the art of caring while managing your budget wisely.
-            </p>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto leading-relaxed font-light">Adopt a furry friend and learn the art of caring while managing your budget wisely.</p>
           </div>
 
           {/* Feature cards */}
@@ -93,12 +101,10 @@ const Index: React.FC = () => {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <div
-                  key={index}
-                  className="animate-fade-in-up h-full"
-                  style={{ animationDelay: `${0.15 + index * 0.08}s` }}
-                >
-                  <Card className={`h-full border ${feature.border} ${feature.bg} backdrop-blur-sm hover:scale-[1.04] hover:-translate-y-1 transition-all duration-300 cursor-default shadow-sm hover:shadow-lg rounded-2xl`}>
+                <div key={index} className="animate-fade-in-up h-full" style={{ animationDelay: `${0.15 + index * 0.08}s` }}>
+                  <Card
+                    className={`h-full border ${feature.border} ${feature.bg} backdrop-blur-sm hover:scale-[1.04] hover:-translate-y-1 transition-all duration-300 cursor-default shadow-sm hover:shadow-lg rounded-2xl`}
+                  >
                     <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center gap-2.5">
                       <div className={`p-3 rounded-2xl bg-white/50 shadow-sm ${feature.text} ring-1 ring-white/20`}>
                         <Icon className="w-5 h-5" />
@@ -129,11 +135,17 @@ const Index: React.FC = () => {
 
           {/* Footer links */}
           <div className="mt-8 flex items-center justify-center gap-4 text-sm text-muted-foreground animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+            <Link to="/privacy" className="hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
             <span>•</span>
-            <Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link>
+            <Link to="/faq" className="hover:text-primary transition-colors">
+              FAQ
+            </Link>
             <span>•</span>
-            <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+            <Link to="/terms" className="hover:text-primary transition-colors">
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>

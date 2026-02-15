@@ -178,12 +178,10 @@ export const ACCESSORY_POSITIONS: Record<Species, Record<AccessorySlot, { top: s
 };
 
 export function getAccessoryById(id: string): AccessoryDef | undefined {
-  return ACCESSORY_CATALOG.find(accessory => accessory.id === id);
+  return ACCESSORY_CATALOG.find((accessory) => accessory.id === id);
 }
 
 export function getAccessoriesForGender(gender: 'male' | 'female' | 'neutral'): AccessoryDef[] {
   if (gender === 'neutral') return ACCESSORY_CATALOG;
-  return ACCESSORY_CATALOG.filter(
-    accessory => accessory.genderFilter === gender || accessory.genderFilter === 'both'
-  );
+  return ACCESSORY_CATALOG.filter((accessory) => accessory.genderFilter === gender || accessory.genderFilter === 'both');
 }

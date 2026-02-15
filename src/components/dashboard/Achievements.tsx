@@ -22,7 +22,7 @@ import { Trophy, Lock, Sparkles } from 'lucide-react';
 const Achievements: React.FC = () => {
   const { state } = useGame();
 
-  const unlockedCount = state.achievements.filter(achievement => achievement.unlocked).length;
+  const unlockedCount = state.achievements.filter((achievement) => achievement.unlocked).length;
   const totalCount = state.achievements.length;
   const progressPercent = (unlockedCount / totalCount) * 100;
 
@@ -48,10 +48,7 @@ const Achievements: React.FC = () => {
             <span className="font-mono font-semibold text-foreground">{Math.round(progressPercent)}%</span>
           </div>
           <div className="h-2.5 bg-sky-500/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500 relative"
-              style={{ width: `${progressPercent}%` }}
-            >
+            <div className="h-full bg-gradient-to-r from-sky-400 to-sky-500 rounded-full transition-all duration-500 relative" style={{ width: `${progressPercent}%` }}>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
             </div>
           </div>
@@ -63,15 +60,15 @@ const Achievements: React.FC = () => {
             <div
               key={achievement.id}
               className={cn(
-                "relative p-4 rounded-2xl border-2 text-center transition-all duration-300",
-                "animate-fade-in-up opacity-0",
+                'relative p-4 rounded-2xl border-2 text-center transition-all duration-300',
+                'animate-fade-in-up opacity-0',
                 achievement.unlocked
-                  ? "bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-rose-500/10 border-amber-400/40 shadow-md hover:shadow-lg hover:-translate-y-0.5"
-                  : "bg-muted/15 border-dashed border-border/40 hover:border-border/60"
+                  ? 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-rose-500/10 border-amber-400/40 shadow-md hover:shadow-lg hover:-translate-y-0.5'
+                  : 'bg-muted/15 border-dashed border-border/40 hover:border-border/60',
               )}
               style={{
                 animationDelay: `${index * 0.03}s`,
-                animationFillMode: 'forwards'
+                animationFillMode: 'forwards',
               }}
             >
               {/* Lock overlay for locked achievements */}
@@ -82,25 +79,13 @@ const Achievements: React.FC = () => {
               )}
 
               {/* Achievement icon */}
-              <div className={cn(
-                "text-4xl mb-3 transition-all duration-300",
-                !achievement.unlocked && "grayscale opacity-40"
-              )}>
-                {achievement.icon}
-              </div>
+              <div className={cn('text-4xl mb-3 transition-all duration-300', !achievement.unlocked && 'grayscale opacity-40')}>{achievement.icon}</div>
 
               {/* Achievement name */}
-              <h4 className={cn(
-                "font-semibold text-sm mb-1",
-                achievement.unlocked ? "text-foreground" : "text-muted-foreground"
-              )}>
-                {achievement.name}
-              </h4>
+              <h4 className={cn('font-semibold text-sm mb-1', achievement.unlocked ? 'text-foreground' : 'text-muted-foreground')}>{achievement.name}</h4>
 
               {/* Achievement description */}
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {achievement.description}
-              </p>
+              <p className="text-xs text-muted-foreground line-clamp-2">{achievement.description}</p>
 
               {/* Unlocked badge */}
               {achievement.unlocked ? (

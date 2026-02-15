@@ -25,12 +25,7 @@ import { GameState } from '@/types/game';
 function isValidSaveData(data: unknown): data is GameState {
   if (typeof data !== 'object' || data === null) return false;
   const save = data as Record<string, unknown>;
-  return (
-    typeof save.gameStarted === 'boolean' &&
-    typeof save.money === 'number' &&
-    Array.isArray(save.transactions) &&
-    Array.isArray(save.achievements)
-  );
+  return typeof save.gameStarted === 'boolean' && typeof save.money === 'number' && Array.isArray(save.transactions) && Array.isArray(save.achievements);
 }
 
 const Dashboard: React.FC = () => {
@@ -48,11 +43,7 @@ const Dashboard: React.FC = () => {
     const loadCloudSave = async () => {
       try {
         // First check if profile exists (use maybeSingle to avoid 406 error when no rows)
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .maybeSingle();
+        const { error: profileError } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle();
 
         if (profileError) {
           setLoadError('Failed to load profile. Please try refreshing the page.');
@@ -65,11 +56,7 @@ const Dashboard: React.FC = () => {
           return;
         }
 
-        const { data, error } = await supabase
-          .from('game_saves')
-          .select('save_data')
-          .eq('user_id', user.id)
-          .maybeSingle();
+        const { data, error } = await supabase.from('game_saves').select('save_data').eq('user_id', user.id).maybeSingle();
 
         if (error) {
           setLoadError('Failed to load saved game. Starting fresh.');
@@ -117,10 +104,7 @@ const Dashboard: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center paper-texture w-full overflow-x-hidden gap-4">
         <div className="text-muted-foreground text-lg">{loadError}</div>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-        >
+        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
           Try Again
         </button>
       </div>

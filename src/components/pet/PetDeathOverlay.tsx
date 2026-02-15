@@ -43,20 +43,13 @@ const PetDeathOverlay: React.FC<PetDeathOverlayProps> = ({ pet, totalDaysPlayed,
         }}
       >
         <div className="bg-gradient-to-b from-rose-100/80 via-rose-50/50 to-transparent px-8 py-10 flex flex-col items-center gap-6">
-          <div
-            className="w-24 h-24 rounded-full bg-rose-100 flex items-center justify-center"
-            style={{ animation: 'deathHeartbeat 2s ease-in-out infinite' }}
-          >
+          <div className="w-24 h-24 rounded-full bg-rose-100 flex items-center justify-center" style={{ animation: 'deathHeartbeat 2s ease-in-out infinite' }}>
             <span className="text-5xl">{'😢'}</span>
           </div>
 
           <div className="text-center">
-            <h2 className="font-serif font-bold text-2xl text-foreground mb-2">
-              {pet.name} has passed away...
-            </h2>
-            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">
-              Your pet was neglected for too long. All their stats became critically low at the same time.
-            </p>
+            <h2 className="font-serif font-bold text-2xl text-foreground mb-2">{pet.name} has passed away...</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">Your pet was neglected for too long. All their stats became critically low at the same time.</p>
           </div>
 
           <div className="w-full bg-rose-50/50 rounded-xl p-4 border border-rose-200/50">
@@ -110,9 +103,7 @@ const PetDeathOverlay: React.FC<PetDeathOverlayProps> = ({ pet, totalDaysPlayed,
             Try Again
           </Button>
 
-          <p className="text-[10px] text-muted-foreground/60">
-            This will reset all progress and start a new game.
-          </p>
+          <p className="text-[10px] text-muted-foreground/60">This will reset all progress and start a new game.</p>
         </div>
       </div>
     </div>

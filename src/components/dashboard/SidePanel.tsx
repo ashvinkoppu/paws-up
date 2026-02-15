@@ -47,9 +47,7 @@ const SidePanel: React.FC = () => {
   return (
     <div className="glass-card rounded-2xl shadow-md overflow-hidden transition-all duration-300">
       {/* Header - Clickable to toggle */}
-      <div
-        className="px-4 py-3 border-b border-border/30 bg-gradient-to-r from-accent/30 via-accent/15 to-transparent"
-      >
+      <div className="px-4 py-3 border-b border-border/30 bg-gradient-to-r from-accent/30 via-accent/15 to-transparent">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-primary/10 rounded-lg">
@@ -58,12 +56,7 @@ const SidePanel: React.FC = () => {
             <h3 className="font-serif font-semibold text-base text-foreground">Pet Status</h3>
           </div>
           <div className="flex items-center gap-2">
-            <div className={cn(
-              "px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all duration-300",
-              status.color
-            )}>
-              {status.label}
-            </div>
+            <div className={cn('px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all duration-300', status.color)}>{status.label}</div>
           </div>
         </div>
 
@@ -74,23 +67,9 @@ const SidePanel: React.FC = () => {
             const colors = getStatColor(value);
             const config = STAT_CONFIG[stat];
             return (
-              <div
-                key={stat}
-                className="flex items-center gap-1"
-                title={`${config.label}: ${Math.round(value)}%`}
-              >
-                <span className={cn(
-                  "text-sm transition-transform",
-                  value <= 30 && "animate-wiggle"
-                )}>
-                  {config.icon}
-                </span>
-                <span className={cn(
-                  "text-xs font-mono font-bold",
-                  colors.textColor
-                )}>
-                  {Math.round(value)}%
-                </span>
+              <div key={stat} className="flex items-center gap-1" title={`${config.label}: ${Math.round(value)}%`}>
+                <span className={cn('text-sm transition-transform', value <= 30 && 'animate-wiggle')}>{config.icon}</span>
+                <span className={cn('text-xs font-mono font-bold', colors.textColor)}>{Math.round(value)}%</span>
               </div>
             );
           })}

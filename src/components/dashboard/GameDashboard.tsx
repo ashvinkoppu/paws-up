@@ -36,13 +36,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import PetDisplay from '@/components/pet/PetDisplay';
 import SidePanel from '@/components/dashboard/SidePanel';
 import Shop from '@/components/dashboard/Shop';
@@ -93,7 +87,7 @@ const GameDashboard: React.FC = () => {
   const leftColumnRef = useRef<HTMLDivElement>(null);
   const [rightColumnHeight, setRightColumnHeight] = useState<number | null>(null);
 
-  const unreadNotificationCount = state.notifications.filter(notification => !notification.read).length;
+  const unreadNotificationCount = state.notifications.filter((notification) => !notification.read).length;
 
   // Detect when a new day starts
   useEffect(() => {
@@ -154,9 +148,7 @@ const GameDashboard: React.FC = () => {
   }, [state.money]);
 
   // Count stats that need attention (below 40%)
-  const needsAttentionCount = state.pet
-    ? Object.values(state.pet.stats).filter((value) => value <= 40).length
-    : 0;
+  const needsAttentionCount = state.pet ? Object.values(state.pet.stats).filter((value) => value <= 40).length : 0;
 
   // Close notification panel when clicking outside
   useEffect(() => {
@@ -210,18 +202,24 @@ const GameDashboard: React.FC = () => {
     triggerRandomEvent();
     toast({
       title: "Something's happening...",
-      description: "A random event has occurred!",
+      description: 'A random event has occurred!',
     });
   };
 
   const getNotificationTypeColor = (type: string) => {
     switch (type) {
-      case 'achievement': return 'bg-amber-500/15 text-amber-600 border-amber-500/30';
-      case 'alert': return 'bg-rose-500/15 text-rose-600 border-rose-500/30';
-      case 'purchase': return 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30';
-      case 'event': return 'bg-violet-500/15 text-violet-600 border-violet-500/30';
-      case 'milestone': return 'bg-sky-500/15 text-sky-600 border-sky-500/30';
-      default: return 'bg-muted text-muted-foreground';
+      case 'achievement':
+        return 'bg-amber-500/15 text-amber-600 border-amber-500/30';
+      case 'alert':
+        return 'bg-rose-500/15 text-rose-600 border-rose-500/30';
+      case 'purchase':
+        return 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30';
+      case 'event':
+        return 'bg-violet-500/15 text-violet-600 border-violet-500/30';
+      case 'milestone':
+        return 'bg-sky-500/15 text-sky-600 border-sky-500/30';
+      default:
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -265,8 +263,8 @@ const GameDashboard: React.FC = () => {
               <div
                 ref={walletRef}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 bg-emerald-500/8 rounded-full border border-emerald-500/15 transition-all duration-300",
-                  walletPulsing && "animate-wallet-pulse bg-emerald-500/15"
+                  'flex items-center gap-2 px-4 py-2 bg-emerald-500/8 rounded-full border border-emerald-500/15 transition-all duration-300',
+                  walletPulsing && 'animate-wallet-pulse bg-emerald-500/15',
                 )}
               >
                 <DollarSign className="w-4 h-4 text-emerald-600" />
@@ -275,7 +273,9 @@ const GameDashboard: React.FC = () => {
 
               <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/8 rounded-full border border-blue-500/15" title="Daily Actions Remaining">
                 <Zap className="w-4 h-4 text-blue-600" />
-                <span className="font-mono font-semibold text-blue-700">{state.dailyActionsRemaining}/{state.dailyActionsMax}</span>
+                <span className="font-mono font-semibold text-blue-700">
+                  {state.dailyActionsRemaining}/{state.dailyActionsMax}
+                </span>
               </div>
 
               <GameClock />
@@ -294,12 +294,9 @@ const GameDashboard: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   onClick={handleOpenNotifications}
-                  className={cn(
-                    "relative h-9 w-9 rounded-full transition-all duration-200",
-                    showNotificationPanel ? "bg-primary/10" : "hover:bg-muted/50"
-                  )}
+                  className={cn('relative h-9 w-9 rounded-full transition-all duration-200', showNotificationPanel ? 'bg-primary/10' : 'hover:bg-muted/50')}
                 >
-                  <Bell className={cn("w-4 h-4", unreadNotificationCount > 0 ? "text-primary" : "text-muted-foreground")} />
+                  <Bell className={cn('w-4 h-4', unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground')} />
                   {unreadNotificationCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow-sm">
                       {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
@@ -332,23 +329,12 @@ const GameDashboard: React.FC = () => {
                       ) : (
                         <div className="p-2 space-y-1">
                           {state.notifications.slice(0, 20).map((notification) => (
-                            <div
-                              key={notification.id}
-                              className={cn(
-                                "flex items-start gap-3 p-3 rounded-xl transition-colors duration-200",
-                                notification.read ? "opacity-60" : "bg-accent/30"
-                              )}
-                            >
+                            <div key={notification.id} className={cn('flex items-start gap-3 p-3 rounded-xl transition-colors duration-200', notification.read ? 'opacity-60' : 'bg-accent/30')}>
                               <span className="text-lg flex-shrink-0 mt-0.5">{notification.icon}</span>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
                                   <span className="font-semibold text-xs text-foreground truncate">{notification.title}</span>
-                                  <span className={cn(
-                                    "text-[10px] px-1.5 py-0.5 rounded-full border capitalize flex-shrink-0",
-                                    getNotificationTypeColor(notification.type)
-                                  )}>
-                                    {notification.type}
-                                  </span>
+                                  <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full border capitalize flex-shrink-0', getNotificationTypeColor(notification.type))}>{notification.type}</span>
                                 </div>
                                 <p className="text-xs text-muted-foreground truncate">{notification.description}</p>
                                 <span className="text-[10px] text-muted-foreground/60 mt-1 block">{formatTimeAgo(notification.timestamp)}</span>
@@ -399,28 +385,19 @@ const GameDashboard: React.FC = () => {
                     </Link>
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem
-                    onClick={restartTutorial}
-                    className="rounded-xl cursor-pointer py-2.5 px-3 focus:bg-accent/50"
-                  >
+                  <DropdownMenuItem onClick={restartTutorial} className="rounded-xl cursor-pointer py-2.5 px-3 focus:bg-accent/50">
                     <GraduationCap className="w-4 h-4 mr-3 text-muted-foreground" />
                     <span className="text-sm">Restart Tutorial</span>
                   </DropdownMenuItem>
 
                   <DropdownMenuSeparator className="bg-border/30" />
 
-                  <DropdownMenuItem
-                    onClick={() => setShowResetDialog(true)}
-                    className="rounded-xl cursor-pointer py-2.5 px-3 text-amber-600 focus:text-amber-600 focus:bg-amber-500/10"
-                  >
+                  <DropdownMenuItem onClick={() => setShowResetDialog(true)} className="rounded-xl cursor-pointer py-2.5 px-3 text-amber-600 focus:text-amber-600 focus:bg-amber-500/10">
                     <RotateCcw className="w-4 h-4 mr-3" />
                     <span className="text-sm">Reset Game</span>
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem
-                    onClick={handleSignOut}
-                    className="rounded-xl cursor-pointer py-2.5 px-3 text-muted-foreground focus:text-foreground focus:bg-accent/50"
-                  >
+                  <DropdownMenuItem onClick={handleSignOut} className="rounded-xl cursor-pointer py-2.5 px-3 text-muted-foreground focus:text-foreground focus:bg-accent/50">
                     <LogOut className="w-4 h-4 mr-3" />
                     <span className="text-sm">Sign Out</span>
                   </DropdownMenuItem>
@@ -442,10 +419,7 @@ const GameDashboard: React.FC = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleReset}
-              className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
+            <AlertDialogAction onClick={handleReset} className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground">
               Reset Game
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -467,13 +441,13 @@ const GameDashboard: React.FC = () => {
 
           {/* Right Column: Activity Hub (wider, cleaner tabs) */}
           <div
-            className={cn(
-              "lg:col-span-8 xl:col-span-9 animate-fade-in-up lg:flex lg:flex-col lg:overflow-hidden lg:h-[var(--right-column-h)]"
-            )}
-            style={{
-              animationDelay: '0.15s',
-              ...(rightColumnHeight ? { '--right-column-h': `${rightColumnHeight}px` } : {}),
-            } as React.CSSProperties}
+            className={cn('lg:col-span-8 xl:col-span-9 animate-fade-in-up lg:flex lg:flex-col lg:overflow-hidden lg:h-[var(--right-column-h)]')}
+            style={
+              {
+                animationDelay: '0.15s',
+                ...(rightColumnHeight ? { '--right-column-h': `${rightColumnHeight}px` } : {}),
+              } as React.CSSProperties
+            }
           >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
               {/* Simplified tab navigation - horizontal scroll on mobile, cleaner look */}
@@ -484,8 +458,8 @@ const GameDashboard: React.FC = () => {
                     value="alerts"
                     data-tutorial="tab-alerts"
                     className={cn(
-                      "flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-sm",
-                      needsAttentionCount > 0 && "ring-2 ring-rose-500/30 data-[state=inactive]:bg-rose-500/10"
+                      'flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-sm',
+                      needsAttentionCount > 0 && 'ring-2 ring-rose-500/30 data-[state=inactive]:bg-rose-500/10',
                     )}
                   >
                     <Bell className="w-4 h-4" />
@@ -503,9 +477,7 @@ const GameDashboard: React.FC = () => {
                   >
                     <ClipboardCheck className="w-4 h-4" />
                     <span>Tasks</span>
-                    {state.dailyTasks.some(task => task.completed) && !state.dailyBonusClaimed && (
-                      <span className="w-2 h-2 rounded-full bg-orange-500 group-data-[state=active]:bg-white" />
-                    )}
+                    {state.dailyTasks.some((task) => task.completed) && !state.dailyBonusClaimed && <span className="w-2 h-2 rounded-full bg-orange-500 group-data-[state=active]:bg-white" />}
                   </TabsTrigger>
                   <TabsTrigger
                     value="finance"
@@ -587,50 +559,30 @@ const GameDashboard: React.FC = () => {
 
       {/* Money earned animation overlay */}
       {moneyAnimations.map((animation) => (
-        <div
-          key={animation.id}
-          className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center"
-        >
+        <div key={animation.id} className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
           <div
             className="animate-money-swoop flex items-center gap-1.5"
-            style={{
-              '--swoop-x': `${animation.swoopX}px`,
-              '--swoop-y': `${animation.swoopY}px`,
-            } as React.CSSProperties}
+            style={
+              {
+                '--swoop-x': `${animation.swoopX}px`,
+                '--swoop-y': `${animation.swoopY}px`,
+              } as React.CSSProperties
+            }
           >
             <DollarSign className="w-6 h-6 text-emerald-500 drop-shadow-lg" />
-            <span className="text-2xl font-mono font-black text-emerald-500 drop-shadow-lg">
-              +${animation.amount}
-            </span>
+            <span className="text-2xl font-mono font-black text-emerald-500 drop-shadow-lg">+${animation.amount}</span>
           </div>
         </div>
       ))}
 
       {/* New Day Popup Overlay */}
-      {showNewDayPopup && (
-        <NewDayPopup
-          totalDaysPlayed={state.totalDaysPlayed}
-          onClose={() => setShowNewDayPopup(false)}
-        />
-      )}
+      {showNewDayPopup && <NewDayPopup totalDaysPlayed={state.totalDaysPlayed} onClose={() => setShowNewDayPopup(false)} />}
 
       {/* Pet Death Overlay */}
-      {state.petDead && state.pet && (
-        <PetDeathOverlay
-          pet={state.pet}
-          totalDaysPlayed={state.totalDaysPlayed}
-          careStreak={state.careStreak}
-          onReset={resetGame}
-        />
-      )}
+      {state.petDead && state.pet && <PetDeathOverlay pet={state.pet} totalDaysPlayed={state.totalDaysPlayed} careStreak={state.careStreak} onReset={resetGame} />}
 
       {/* Tutorial Overlay */}
-      {showTutorial && (
-        <TutorialOverlay
-          onComplete={completeTutorial}
-          onTabChange={setActiveTab}
-        />
-      )}
+      {showTutorial && <TutorialOverlay onComplete={completeTutorial} onTabChange={setActiveTab} />}
 
       {/* Event Modal */}
       <EventModal />
@@ -639,26 +591,36 @@ const GameDashboard: React.FC = () => {
       <footer className="mt-12 pb-6">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground/50">
-            <Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link>
+            <Link to="/faq" className="hover:text-primary transition-colors">
+              FAQ
+            </Link>
             <span>•</span>
-            <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link to="/privacy" className="hover:text-primary transition-colors">
+              Privacy
+            </Link>
             <span>•</span>
-            <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link to="/terms" className="hover:text-primary transition-colors">
+              Terms
+            </Link>
           </div>
         </div>
       </footer>
 
       {/* AI Chatbot with pet context */}
       <FAQChatbot
-        context={state.pet ? {
-          pet: state.pet,
-          money: state.money,
-          careStreak: state.careStreak,
-          totalDaysPlayed: state.totalDaysPlayed,
-          inventoryCount: state.inventory.reduce((sum, item) => sum + item.quantity, 0),
-          achievementsUnlocked: state.achievements.filter(achievement => achievement.unlocked).length,
-          totalAchievements: state.achievements.length,
-        } : undefined}
+        context={
+          state.pet
+            ? {
+                pet: state.pet,
+                money: state.money,
+                careStreak: state.careStreak,
+                totalDaysPlayed: state.totalDaysPlayed,
+                inventoryCount: state.inventory.reduce((sum, item) => sum + item.quantity, 0),
+                achievementsUnlocked: state.achievements.filter((achievement) => achievement.unlocked).length,
+                totalAchievements: state.achievements.length,
+              }
+            : undefined
+        }
       />
     </div>
   );

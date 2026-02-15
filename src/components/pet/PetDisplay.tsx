@@ -223,12 +223,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
 
   // Handle eating animation (food items)
   useEffect(() => {
-    if (
-      state.pet &&
-      lastActionFeedback &&
-      lastActionFeedback.action === 'feed' &&
-      lastActionFeedback.timestamp !== lastFeedTimestamp.current
-    ) {
+    if (state.pet && lastActionFeedback && lastActionFeedback.action === 'feed' && lastActionFeedback.timestamp !== lastFeedTimestamp.current) {
       lastFeedTimestamp.current = lastActionFeedback.timestamp;
       setEatingEmoji(EATING_FOOD_EMOJIS[Math.floor(Math.random() * EATING_FOOD_EMOJIS.length)]);
       setEatingState('eating');
@@ -254,12 +249,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
 
   // Handle item-use animation (toys, grooming, medicine, accessories)
   useEffect(() => {
-    if (
-      state.pet &&
-      lastActionFeedback &&
-      lastActionFeedback.action === 'use-item' &&
-      lastActionFeedback.timestamp !== lastItemUseTimestamp.current
-    ) {
+    if (state.pet && lastActionFeedback && lastActionFeedback.action === 'use-item' && lastActionFeedback.timestamp !== lastItemUseTimestamp.current) {
       lastItemUseTimestamp.current = lastActionFeedback.timestamp;
       const category = lastActionFeedback.category || 'toy';
       const particleEmojis = CATEGORY_PARTICLES[category] || CATEGORY_PARTICLES.toy;
@@ -310,7 +300,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
     const isHappy = lowestStat >= 20 && avgHealth >= 40;
 
     setInteraction(isHappy ? 'happy' : 'sad');
-    
+
     // Reset animation state after it completes
     setTimeout(() => {
       setInteraction('none');
@@ -368,19 +358,11 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
         <div className="w-full flex flex-wrap justify-between items-center mb-4 gap-2 px-1">
           {/* Stage Badge with Growth Progress */}
           <div className="flex items-center gap-2 px-3 py-2 bg-accent/60 rounded-xl border border-border/50">
-            <span className="text-xs font-semibold text-accent-foreground capitalize">
-              {stageConfig.label}
-            </span>
+            <span className="text-xs font-semibold text-accent-foreground capitalize">{stageConfig.label}</span>
             {pet.stage !== 'adult' && (
               <div className="flex flex-col justify-center h-full">
-                <div
-                  className="w-12 h-1.5 bg-border rounded-full overflow-hidden"
-                  title={`Growth to next stage: ${Math.round(growthProgress)}%`}
-                >
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${growthProgress}%` }}
-                  />
+                <div className="w-12 h-1.5 bg-border rounded-full overflow-hidden" title={`Growth to next stage: ${Math.round(growthProgress)}%`}>
+                  <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${growthProgress}%` }} />
                 </div>
               </div>
             )}
@@ -411,48 +393,59 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
         {(() => {
           const moodVisual = MOOD_VISUALS[mood.key] || MOOD_VISUALS.okay;
           return (
-            <div className={cn(
-              "relative mt-2 mb-6 transition-all duration-500",
-              stageConfig.scale,
-            )}>
+            <div className={cn('relative mt-2 mb-6 transition-all duration-500', stageConfig.scale)}>
               {/* Mood aura — pulsing gradient ring behind the pet circle */}
-              <div className={cn(
-                "absolute inset-0 rounded-full transition-all duration-700",
-                isEvolving
-                  ? "bg-gradient-to-br from-yellow-400/40 via-amber-300/30 to-yellow-400/40 animate-evolution-glow"
-                  : `bg-gradient-to-br ${moodVisual.auraColor}`,
-                !isEvolving && moodVisual.auraIntensity,
-                !isEvolving && mood.key === 'critical' && "animate-pulse",
-                !isEvolving && mood.key === 'needsAttention' && "animate-breathe",
-              )} style={{ transform: 'scale(1.15)' }} />
+              <div
+                className={cn(
+                  'absolute inset-0 rounded-full transition-all duration-700',
+                  isEvolving ? 'bg-gradient-to-br from-yellow-400/40 via-amber-300/30 to-yellow-400/40 animate-evolution-glow' : `bg-gradient-to-br ${moodVisual.auraColor}`,
+                  !isEvolving && moodVisual.auraIntensity,
+                  !isEvolving && mood.key === 'critical' && 'animate-pulse',
+                  !isEvolving && mood.key === 'needsAttention' && 'animate-breathe',
+                )}
+                style={{ transform: 'scale(1.15)' }}
+              />
 
               {/* Inner circle */}
-              <div className={cn(
-                "w-48 h-48 rounded-full flex items-center justify-center relative overflow-hidden",
-                "bg-gradient-to-br from-accent/80 via-card to-card/60",
-                "border-2 border-border/20 shadow-xl ring-4 ring-white/10"
-              )}>
+              <div
+                className={cn(
+                  'w-48 h-48 rounded-full flex items-center justify-center relative overflow-hidden',
+                  'bg-gradient-to-br from-accent/80 via-card to-card/60',
+                  'border-2 border-border/20 shadow-xl ring-4 ring-white/10',
+                )}
+              >
                 {/* Pet image — the pet itself animates based on mood */}
                 <img
                   src={PET_IMAGES[pet.species]}
                   alt={pet.name}
                   onClick={handlePetClick}
                   className={cn(
-                    "object-contain transition-all duration-500 drop-shadow-lg cursor-pointer hover:scale-105 active:scale-95",
+                    'object-contain transition-all duration-500 drop-shadow-lg cursor-pointer hover:scale-105 active:scale-95',
                     stageConfig.imageSize,
-                    isEvolving ? "animate-evolution-scale-burst" :
-                    petAsleep ? "animate-pet-sleeping opacity-80" :
-                    eatingState === 'eating' ? "animate-pet-eating" :
-                    interaction === 'happy' ? "animate-happy-jump" :
-                    interaction === 'sad' ? "animate-sad-shake" :
-                    moodVisual.petAnimation,
+                    isEvolving
+                      ? 'animate-evolution-scale-burst'
+                      : petAsleep
+                        ? 'animate-pet-sleeping opacity-80'
+                        : eatingState === 'eating'
+                          ? 'animate-pet-eating'
+                          : interaction === 'happy'
+                            ? 'animate-happy-jump'
+                            : interaction === 'sad'
+                              ? 'animate-sad-shake'
+                              : moodVisual.petAnimation,
                   )}
                   style={{
-                    filter: [
-                      isEvolving ? `${PET_COLOR_FILTERS[pet.color] || ''} brightness(1.3) saturate(1.4)` :
-                      petAsleep ? `${PET_COLOR_FILTERS[pet.color] || ''} brightness(0.85)` : PET_COLOR_FILTERS[pet.color] || '',
-                      isEvolving ? '' : moodVisual.petFilter,
-                    ].filter(Boolean).join(' ') || undefined,
+                    filter:
+                      [
+                        isEvolving
+                          ? `${PET_COLOR_FILTERS[pet.color] || ''} brightness(1.3) saturate(1.4)`
+                          : petAsleep
+                            ? `${PET_COLOR_FILTERS[pet.color] || ''} brightness(0.85)`
+                            : PET_COLOR_FILTERS[pet.color] || '',
+                        isEvolving ? '' : moodVisual.petFilter,
+                      ]
+                        .filter(Boolean)
+                        .join(' ') || undefined,
                   }}
                 />
 
@@ -479,13 +472,15 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                       <div
                         key={`evo-sparkle-${index}`}
                         className="absolute top-1/2 left-1/2 w-2.5 h-2.5 rounded-full pointer-events-none z-30 animate-evolution-sparkle"
-                        style={{
-                          '--spark-x': position.x,
-                          '--spark-y': position.y,
-                          animationDelay: `${0.3 + index * 0.1}s`,
-                          background: index % 3 === 0 ? '#FFD700' : index % 3 === 1 ? '#FFA500' : '#FFFFFF',
-                          boxShadow: `0 0 6px ${index % 3 === 0 ? '#FFD700' : index % 3 === 1 ? '#FFA500' : '#FFFFFF'}`,
-                        } as React.CSSProperties}
+                        style={
+                          {
+                            '--spark-x': position.x,
+                            '--spark-y': position.y,
+                            animationDelay: `${0.3 + index * 0.1}s`,
+                            background: index % 3 === 0 ? '#FFD700' : index % 3 === 1 ? '#FFA500' : '#FFFFFF',
+                            boxShadow: `0 0 6px ${index % 3 === 0 ? '#FFD700' : index % 3 === 1 ? '#FFA500' : '#FFFFFF'}`,
+                          } as React.CSSProperties
+                        }
                       />
                     ))}
 
@@ -494,11 +489,13 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                       <div
                         key={`evo-star-${index}`}
                         className="absolute top-1/2 left-1/2 text-xl pointer-events-none z-30 animate-evolution-sparkle"
-                        style={{
-                          '--spark-x': `${Math.cos(index * 1.25) * 55}px`,
-                          '--spark-y': `${Math.sin(index * 1.25) * 55}px`,
-                          animationDelay: `${0.5 + index * 0.15}s`,
-                        } as React.CSSProperties}
+                        style={
+                          {
+                            '--spark-x': `${Math.cos(index * 1.25) * 55}px`,
+                            '--spark-y': `${Math.sin(index * 1.25) * 55}px`,
+                            animationDelay: `${0.5 + index * 0.15}s`,
+                          } as React.CSSProperties
+                        }
                       >
                         {emoji}
                       </div>
@@ -562,33 +559,32 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                 )}
 
                 {/* Equipped accessory overlays */}
-                {pet.equippedAccessories && (Object.entries(pet.equippedAccessories) as [AccessorySlot, string][]).map(([slot, accessoryId]) => {
-                  if (!accessoryId) return null;
-                  const accessory = getAccessoryById(accessoryId);
-                  if (!accessory) return null;
-                  if (accessory.condition) {
-                    const statValue = pet.stats[accessory.condition.stat];
-                    if (statValue < accessory.condition.min) return null;
-                  }
-                  const position = ACCESSORY_POSITIONS[pet.species]?.[slot];
-                  if (!position) return null;
-                  return (
-                    <div
-                      key={slot}
-                      className="absolute pointer-events-none z-10 transition-all duration-300"
-                      style={{
-                        top: position.top,
-                        left: position.left,
-                        fontSize: position.fontSize,
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                    >
-                      <span className="drop-shadow-md">
-                        {accessory.emoji}
-                      </span>
-                    </div>
-                  );
-                })}
+                {pet.equippedAccessories &&
+                  (Object.entries(pet.equippedAccessories) as [AccessorySlot, string][]).map(([slot, accessoryId]) => {
+                    if (!accessoryId) return null;
+                    const accessory = getAccessoryById(accessoryId);
+                    if (!accessory) return null;
+                    if (accessory.condition) {
+                      const statValue = pet.stats[accessory.condition.stat];
+                      if (statValue < accessory.condition.min) return null;
+                    }
+                    const position = ACCESSORY_POSITIONS[pet.species]?.[slot];
+                    if (!position) return null;
+                    return (
+                      <div
+                        key={slot}
+                        className="absolute pointer-events-none z-10 transition-all duration-300"
+                        style={{
+                          top: position.top,
+                          left: position.left,
+                          fontSize: position.fontSize,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                      >
+                        <span className="drop-shadow-md">{accessory.emoji}</span>
+                      </div>
+                    );
+                  })}
 
                 {/* Eating animation overlay */}
                 {eatingState === 'eating' && (
@@ -619,11 +615,14 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                       <div
                         key={particle.id}
                         className={cn(
-                          "absolute pointer-events-none z-10 text-2xl",
-                          particle.category === 'toy' ? "animate-item-bounce" :
-                          particle.category === 'grooming' ? "animate-item-sparkle" :
-                          particle.category === 'medicine' ? "animate-item-float-up" :
-                          "animate-item-twinkle"
+                          'absolute pointer-events-none z-10 text-2xl',
+                          particle.category === 'toy'
+                            ? 'animate-item-bounce'
+                            : particle.category === 'grooming'
+                              ? 'animate-item-sparkle'
+                              : particle.category === 'medicine'
+                                ? 'animate-item-float-up'
+                                : 'animate-item-twinkle',
                         )}
                         style={{
                           left: `${particle.x}%`,
@@ -637,14 +636,11 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                     ))}
                     {itemUseLabel && (
                       <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none animate-item-label">
-                        <span className="font-serif font-bold text-lg text-secondary whitespace-nowrap">
-                          {itemUseLabel}!
-                        </span>
+                        <span className="font-serif font-bold text-lg text-secondary whitespace-nowrap">{itemUseLabel}!</span>
                       </div>
                     )}
                   </>
                 )}
-
               </div>
 
               {/* Evolution announcement — positioned above the circle */}
@@ -652,9 +648,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-40 pointer-events-none animate-evolution-text">
                   <div className="bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 rounded-2xl px-6 py-3 shadow-2xl text-center whitespace-nowrap border-2 border-yellow-300/50">
                     <div className="text-xs font-semibold text-yellow-900/80 uppercase tracking-wider">Evolving!</div>
-                    <div className="font-serif font-bold text-xl text-white drop-shadow-md capitalize">
-                      {evolutionTarget === 'teen' ? 'Teen Stage' : 'Adult Stage'}
-                    </div>
+                    <div className="font-serif font-bold text-xl text-white drop-shadow-md capitalize">{evolutionTarget === 'teen' ? 'Teen Stage' : 'Adult Stage'}</div>
                   </div>
                 </div>
               )}
@@ -673,9 +667,15 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
               {petAsleep && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                   <div className="absolute top-8 right-6 flex flex-col items-end gap-0">
-                    <span className="text-xs font-bold text-indigo-500/80 animate-float-zzz" style={{ animationDelay: '0s' }}>z</span>
-                    <span className="text-sm font-bold text-indigo-500/60 animate-float-zzz" style={{ animationDelay: '0.5s' }}>z</span>
-                    <span className="text-base font-bold text-indigo-500/40 animate-float-zzz" style={{ animationDelay: '1s' }}>z</span>
+                    <span className="text-xs font-bold text-indigo-500/80 animate-float-zzz" style={{ animationDelay: '0s' }}>
+                      z
+                    </span>
+                    <span className="text-sm font-bold text-indigo-500/60 animate-float-zzz" style={{ animationDelay: '0.5s' }}>
+                      z
+                    </span>
+                    <span className="text-base font-bold text-indigo-500/40 animate-float-zzz" style={{ animationDelay: '1s' }}>
+                      z
+                    </span>
                   </div>
                 </div>
               )}
@@ -686,9 +686,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
         {/* Sleeping label - outside circle */}
         {petAsleep && (
           <div className="flex justify-center -mt-1 mb-1">
-            <span className="text-xs bg-indigo-500/15 text-indigo-600 px-3 py-1 rounded-full font-medium border border-indigo-500/20">
-              Sleeping
-            </span>
+            <span className="text-xs bg-indigo-500/15 text-indigo-600 px-3 py-1 rounded-full font-medium border border-indigo-500/20">Sleeping</span>
           </div>
         )}
 
@@ -696,19 +694,11 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
         <div className="text-center mb-5">
           <h2 className="text-3xl font-serif font-bold text-foreground mb-1.5 tracking-tight">{pet.name}</h2>
           <p className="text-sm text-muted-foreground capitalize mb-2.5">
-            {pet.gender && pet.gender !== 'neutral' ? `${pet.gender} ` : ''}{pet.color} {pet.species} · {pet.personality}
+            {pet.gender && pet.gender !== 'neutral' ? `${pet.gender} ` : ''}
+            {pet.color} {pet.species} · {pet.personality}
           </p>
-          <div className={cn(
-            "inline-flex items-center gap-2 px-3 py-1.5 rounded-full",
-            avgHealth >= 60 ? "bg-secondary/10" : avgHealth >= 30 ? "bg-chart-3/10" : "bg-destructive/10"
-          )}>
-            <span className={cn(
-              "text-sm font-semibold",
-              mood.color,
-              mood.key === 'critical' && "animate-urgent-shake"
-            )}>
-              {mood.text}
-            </span>
+          <div className={cn('inline-flex items-center gap-2 px-3 py-1.5 rounded-full', avgHealth >= 60 ? 'bg-secondary/10' : avgHealth >= 30 ? 'bg-chart-3/10' : 'bg-destructive/10')}>
+            <span className={cn('text-sm font-semibold', mood.color, mood.key === 'critical' && 'animate-urgent-shake')}>{mood.text}</span>
           </div>
         </div>
 
@@ -727,24 +717,20 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
         </div>
 
         {/* Achievement Badges */}
-        {state.achievements && state.achievements.filter(a => a.unlocked).length > 0 && (
+        {state.achievements && state.achievements.filter((a) => a.unlocked).length > 0 && (
           <div className="w-full mt-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Achievements</span>
               <span className="text-[10px] text-muted-foreground">
-                {state.achievements.filter(a => a.unlocked).length}/{state.achievements.length}
+                {state.achievements.filter((a) => a.unlocked).length}/{state.achievements.length}
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {state.achievements
-                .filter(a => a.unlocked)
+                .filter((a) => a.unlocked)
                 .slice(0, 8)
                 .map((achievement) => (
-                  <div
-                    key={achievement.id}
-                    className="group relative"
-                    title={`${achievement.name}: ${achievement.description}`}
-                  >
+                  <div key={achievement.id} className="group relative" title={`${achievement.name}: ${achievement.description}`}>
                     <div className="w-8 h-8 flex items-center justify-center bg-gradient-to-br from-amber-400/20 to-amber-500/10 rounded-lg border border-amber-500/30 hover:border-amber-400/50 hover:scale-110 transition-all cursor-pointer shadow-sm hover:shadow-amber-500/20">
                       <span className="text-sm">{achievement.icon}</span>
                     </div>
@@ -755,12 +741,12 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                     </div>
                   </div>
                 ))}
-              {state.achievements.filter(a => a.unlocked).length > 8 && (
-                <div 
+              {state.achievements.filter((a) => a.unlocked).length > 8 && (
+                <div
                   className="w-8 h-8 flex items-center justify-center bg-muted/50 rounded-lg border border-border/50 text-[10px] font-bold text-muted-foreground"
-                  title={`+${state.achievements.filter(a => a.unlocked).length - 8} more achievements`}
+                  title={`+${state.achievements.filter((a) => a.unlocked).length - 8} more achievements`}
                 >
-                  +{state.achievements.filter(a => a.unlocked).length - 8}
+                  +{state.achievements.filter((a) => a.unlocked).length - 8}
                 </div>
               )}
             </div>
@@ -768,10 +754,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
         )}
 
         {/* Weekly Budget Snapshot */}
-        <div
-          className="w-full mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15 cursor-pointer hover:bg-emerald-500/10 transition-colors group"
-          onClick={() => onFinanceClick?.()}
-        >
+        <div className="w-full mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15 cursor-pointer hover:bg-emerald-500/10 transition-colors group" onClick={() => onFinanceClick?.()}>
           <div className="flex items-center justify-between mb-2">
             <span className="flex items-center gap-2">
               <Wallet className="w-4 h-4 text-emerald-600" />
@@ -782,19 +765,14 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
             </span>
           </div>
           {(() => {
-            const budgetUsedPercent = state.weeklyBudget > 0
-              ? (state.weeklySpent / state.weeklyBudget) * 100
-              : 0;
+            const budgetUsedPercent = state.weeklyBudget > 0 ? (state.weeklySpent / state.weeklyBudget) * 100 : 0;
             const isOverBudget = state.weeklySpent > state.weeklyBudget;
             const remaining = state.weeklyBudget - state.weeklySpent;
             return (
               <>
                 <div className="h-2.5 bg-emerald-500/10 rounded-full overflow-hidden mb-1.5">
                   <div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-500 relative",
-                      isOverBudget ? "bg-red-500" : budgetUsedPercent > 75 ? "bg-amber-500" : "bg-emerald-500"
-                    )}
+                    className={cn('h-full rounded-full transition-all duration-500 relative', isOverBudget ? 'bg-red-500' : budgetUsedPercent > 75 ? 'bg-amber-500' : 'bg-emerald-500')}
                     style={{ width: `${Math.min(budgetUsedPercent, 100)}%` }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
@@ -804,14 +782,8 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                   <span className="text-xs text-muted-foreground font-mono font-semibold">
                     ${state.weeklySpent.toFixed(0)} / ${state.weeklyBudget}
                   </span>
-                  <span className={cn(
-                    "text-xs font-bold font-mono",
-                    isOverBudget ? "text-red-500" : "text-emerald-600"
-                  )}>
-                    {isOverBudget
-                      ? `Over $${Math.abs(remaining).toFixed(0)}`
-                      : `$${remaining.toFixed(0)} left`
-                    }
+                  <span className={cn('text-xs font-bold font-mono', isOverBudget ? 'text-red-500' : 'text-emerald-600')}>
+                    {isOverBudget ? `Over $${Math.abs(remaining).toFixed(0)}` : `$${remaining.toFixed(0)} left`}
                   </span>
                 </div>
               </>

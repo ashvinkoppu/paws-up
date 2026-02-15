@@ -37,9 +37,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
 
   // Initialize board: duplicate emoji array to create pairs, then shuffle
   useEffect(() => {
-    const shuffled = [...EMOJIS, ...EMOJIS]
-      .sort(() => Math.random() - 0.5)
-      .map((emoji, index) => ({ id: index, emoji, flipped: false, matched: false }));
+    const shuffled = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5).map((emoji, index) => ({ id: index, emoji, flipped: false, matched: false }));
     setCards(shuffled);
   }, []);
 
@@ -51,11 +49,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
       setMoves((currentMoves) => currentMoves + 1);
 
       if (cards[first].emoji === cards[second].emoji) {
-        setCards((previous) =>
-          previous.map((card) =>
-            card.id === first || card.id === second ? { ...card, matched: true } : card
-          )
-        );
+        setCards((previous) => previous.map((card) => (card.id === first || card.id === second ? { ...card, matched: true } : card)));
         setMatches((currentMatches) => currentMatches + 1);
         setFlippedCards([]);
 
@@ -67,11 +61,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
         setTimeout(() => setMatchMessage(null), 1200);
       } else {
         setTimeout(() => {
-          setCards((previous) =>
-            previous.map((card) =>
-              card.id === first || card.id === second ? { ...card, flipped: false } : card
-            )
-          );
+          setCards((previous) => previous.map((card) => (card.id === first || card.id === second ? { ...card, flipped: false } : card)));
           setFlippedCards([]);
         }, 800);
       }
@@ -96,17 +86,9 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
   // Ignore clicks when: two cards already flipped (waiting for match check),
   // the clicked card is already face-up or matched, or the game is over.
   const handleCardClick = (index: number) => {
-    if (
-      flippedCards.length === 2 ||
-      cards[index].flipped ||
-      cards[index].matched ||
-      gameComplete
-    )
-      return;
+    if (flippedCards.length === 2 || cards[index].flipped || cards[index].matched || gameComplete) return;
 
-    setCards((previous) =>
-      previous.map((card, cardIndex) => (cardIndex === index ? { ...card, flipped: true } : card))
-    );
+    setCards((previous) => previous.map((card, cardIndex) => (cardIndex === index ? { ...card, flipped: true } : card)));
     setFlippedCards((previous) => [...previous, index]);
   };
 
@@ -120,9 +102,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
               <span className="text-sm text-muted-foreground mr-1">Moves:</span>
               <span className="font-mono font-semibold text-foreground">{moves}</span>
             </div>
-            {highScore !== 0 && (
-              <span className="text-xs text-muted-foreground">Best: {highScore}</span>
-            )}
+            {highScore !== 0 && <span className="text-xs text-muted-foreground">Best: {highScore}</span>}
           </div>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-secondary/10 rounded-xl">
@@ -150,23 +130,14 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
               key={card.id}
               onClick={() => handleCardClick(index)}
               className={cn(
-                "h-18 rounded-xl transition-all duration-300 text-2xl flex items-center justify-center border-2",
-                "transform hover:scale-105",
-                card.flipped || card.matched
-                  ? "bg-primary/15 border-primary shadow-md"
-                  : "bg-accent/40 border-border/50 hover:border-primary/50 hover:bg-accent/60"
+                'h-18 rounded-xl transition-all duration-300 text-2xl flex items-center justify-center border-2',
+                'transform hover:scale-105',
+                card.flipped || card.matched ? 'bg-primary/15 border-primary shadow-md' : 'bg-accent/40 border-border/50 hover:border-primary/50 hover:bg-accent/60',
               )}
               disabled={card.matched}
             >
-              <span className={cn(
-                "transition-all duration-300",
-                card.flipped || card.matched ? "scale-100 opacity-100" : "scale-0 opacity-0"
-              )}>
-                {card.emoji}
-              </span>
-              {!card.flipped && !card.matched && (
-                <span className="text-muted-foreground/50 text-xl">?</span>
-              )}
+              <span className={cn('transition-all duration-300', card.flipped || card.matched ? 'scale-100 opacity-100' : 'scale-0 opacity-0')}>{card.emoji}</span>
+              {!card.flipped && !card.matched && <span className="text-muted-foreground/50 text-xl">?</span>}
             </button>
           ))}
         </div>
@@ -177,9 +148,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
         <div className="text-center p-5 bg-secondary/15 rounded-2xl border border-secondary/30 animate-fade-in-up">
           <div className="text-4xl mb-2 animate-wiggle">🎉</div>
           <p className="text-xl font-serif font-bold text-secondary">You Won!</p>
-          <p className="text-sm text-muted-foreground">
-            Completed in {moves} moves
-          </p>
+          <p className="text-sm text-muted-foreground">Completed in {moves} moves</p>
         </div>
       )}
 

@@ -1,10 +1,32 @@
+/**
+ * Game Context Types — central type definitions for the game state layer.
+ *
+ * Contains:
+ * - `initialState`          — default values used when no save data exists.
+ * - `GameAction`            — discriminated union of every reducer action.
+ * - `ActionFeedbackEvent`   — lightweight data object surfaced by the UI
+ *                             layer after the player performs an action.
+ * - `GameContextType`       — shape of the React context value consumed
+ *                             by `useGame()`.
+ *
+ * @module context/game/types
+ */
 import { GameState, Pet, PetStats, Transaction, RandomEvent, InventoryItem, GameNotification, DailyTask, DailyTracking, AccessorySlot, ActionLogEntry, WeeklyGoal, CollectionItem } from '@/types/game';
 import { INITIAL_ACHIEVEMENTS } from '@/data/achievements';
 import { DEFAULT_DAILY_TRACKING } from '@/data/tasks';
 
+/**
+ * Default game state used for brand-new games or after a reset.
+ *
+ * All monetary values are in the game's dollar unit.
+ * Stats start at 50/100 (set in `createPet`), time at 7:00 AM,
+ * and the player receives 15 daily actions.
+ */
 export const initialState: GameState = {
   pet: null,
+  /** Starting cash for a new player */
   money: 100,
+  /** Weekly spending budget cap */
   weeklyBudget: 300,
   weeklySpent: 0,
   inventory: [],
@@ -46,6 +68,13 @@ export const initialState: GameState = {
   lastDayRecap: null,
 };
 
+/**
+ * Discriminated union of every action the game reducer can handle.
+ *
+ * Each variant is a plain object with a `type` string literal and an
+ * optional `payload`. New features should add their actions at the bottom
+ * of this union and implement the matching case in `reducer.ts`.
+ */
 export type GameAction =
   | { type: 'CREATE_PET'; payload: Pet }
   | { type: 'UPDATE_STATS'; payload: Partial<PetStats> }
@@ -101,16 +130,33 @@ export type GameAction =
   | { type: 'PENALIZE_MISSED_PLAY_WINDOW'; payload: number }
   | { type: 'RESET_PLAY_WINDOWS' };
 
+/**
+ * Lightweight event emitted after a player action so the UI can
+ * display contextual animations or stat-change toasts.
+ */
 export interface ActionFeedbackEvent {
+  /** The type of action performed (e.g. 'feed', 'play', 'use-item') */
   action: string;
+  /** Item/stat category the action belongs to */
   category?: string;
+  /** Name of the primary stat affected */
   statName?: string;
+  /** New value of the primary stat after the action */
   statValue?: number;
+  /** Emoji/icon of the item used */
   itemIcon?: string;
+  /** Display name of the item used */
   itemName?: string;
+  /** Epoch-ms timestamp for animation deduplication */
   timestamp: number;
 }
 
+/**
+ * Shape of the value provided by the GameContext React context.
+ *
+ * Consumed via the {@link useGame} hook. Includes the full game state
+ * object and every action function the UI can invoke.
+ */
 export interface GameContextType {
   state: GameState;
   lastActionFeedback: ActionFeedbackEvent | null;

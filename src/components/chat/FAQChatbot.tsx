@@ -79,8 +79,8 @@ const FAQChatbot: React.FC<FAQChatbotProps> = ({ context }) => {
       id: '1',
       role: 'assistant',
       content: getGreeting(),
-      timestamp: new Date()
-    }
+      timestamp: new Date(),
+    },
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -120,7 +120,7 @@ Key information about Paws Up:
     if (context?.pet) {
       const pet = context.pet;
       const stats = pet.stats;
-      
+
       basePrompt += `
 
 CURRENT USER CONTEXT (use this to personalize your responses):
@@ -165,9 +165,9 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
 
     if (inputValue.trim().length > MAX_MESSAGE_LENGTH) {
       toast({
-        title: "Message too long",
+        title: 'Message too long',
         description: `Please keep your message under ${MAX_MESSAGE_LENGTH} characters.`,
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
@@ -176,16 +176,18 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
       id: Date.now().toString(),
       role: 'user',
       content: inputValue.trim(),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
 
     try {
       // Retrieve Supabase JWT for authenticated API access to the chat endpoint
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session?.access_token) {
         throw new Error('Not authenticated');
       }
@@ -194,17 +196,17 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           // Send the system prompt + last 10 messages for context window management
           messages: [
             { role: 'system', content: buildSystemPrompt() },
-            ...messages.slice(-10).map(message => ({ role: message.role, content: message.content })),
-            { role: 'user', content: userMessage.content }
+            ...messages.slice(-10).map((message) => ({ role: message.role, content: message.content })),
+            { role: 'user', content: userMessage.content },
           ],
           max_completion_tokens: 300,
-        })
+        }),
       });
 
       if (!response.ok) {
@@ -220,19 +222,19 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: assistantContent,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: "Oops! I'm having trouble connecting right now. 🐾 Please try again in a moment, or check out the FAQ questions above for quick answers!",
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -251,7 +253,7 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
     if (context?.pet) {
       const petName = context.pet.name;
       const questions = [];
-      
+
       // Add context-specific suggestions
       if (context.pet.stats.hunger <= 40) {
         questions.push(`What should I feed ${petName}?`);
@@ -260,27 +262,23 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
         questions.push(`How can I make ${petName} happier?`);
       }
       if (context.money < 20) {
-        questions.push("How do I earn more coins?");
+        questions.push('How do I earn more coins?');
       }
-      
+
       // Fill with general questions if needed
       if (questions.length < 3) {
         questions.push(`Tips for caring for ${petName}?`);
       }
       if (questions.length < 3) {
-        questions.push("What games can I play?");
+        questions.push('What games can I play?');
       }
       if (questions.length < 3) {
-        questions.push("How do achievements work?");
+        questions.push('How do achievements work?');
       }
-      
+
       return questions.slice(0, 3);
     }
-    return [
-      "How do I care for my pet?",
-      "How do I earn coins?",
-      "What are mini-games?"
-    ];
+    return ['How do I care for my pet?', 'How do I earn coins?', 'What are mini-games?'];
   };
 
   const suggestedQuestions = getSuggestedQuestions();
@@ -311,10 +309,8 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
       {/* Chat Window */}
       <div
         className={cn(
-          "absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-48px)] transition-all duration-500 origin-bottom-right",
-          isOpen
-            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 scale-90 translate-y-8 pointer-events-none"
+          'absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-48px)] transition-all duration-500 origin-bottom-right',
+          isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-90 translate-y-8 pointer-events-none',
         )}
       >
         {/* Main chat container with organic shape */}
@@ -337,12 +333,8 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-serif font-bold text-lg text-foreground tracking-tight">
-                    Paws
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Your friendly guide
-                  </p>
+                  <h3 className="font-serif font-bold text-lg text-foreground tracking-tight">Paws</h3>
+                  <p className="text-xs text-muted-foreground">Your friendly guide</p>
                 </div>
 
                 {/* Close button */}
@@ -363,10 +355,7 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
               {messages.map((message, index) => (
                 <div
                   key={message.id}
-                  className={cn(
-                    "flex gap-2.5",
-                    message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                  )}
+                  className={cn('flex gap-2.5', message.role === 'user' ? 'flex-row-reverse' : 'flex-row')}
                   style={{
                     animationName: 'fadeInUp',
                     animationDuration: '0.4s',
@@ -382,10 +371,10 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
                   )}
                   <div
                     className={cn(
-                      "max-w-[80%] px-4 py-2.5 text-sm leading-relaxed",
+                      'max-w-[80%] px-4 py-2.5 text-sm leading-relaxed',
                       message.role === 'user'
-                        ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-2xl rounded-br-lg shadow-md"
-                        : "bg-gradient-to-br from-muted/80 to-muted/40 text-foreground rounded-2xl rounded-bl-lg border border-border/30"
+                        ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-2xl rounded-br-lg shadow-md'
+                        : 'bg-gradient-to-br from-muted/80 to-muted/40 text-foreground rounded-2xl rounded-bl-lg border border-border/30',
                     )}
                   >
                     <p className="whitespace-pre-wrap">{message.content}</p>
@@ -478,22 +467,17 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
                   disabled={!inputValue.trim() || isLoading}
                   size="icon"
                   className={cn(
-                    "rounded-xl h-10 w-10 transition-all duration-300",
+                    'rounded-xl h-10 w-10 transition-all duration-300',
                     inputValue.trim()
-                      ? "bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 scale-100"
-                      : "bg-muted text-muted-foreground scale-95"
+                      ? 'bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 scale-100'
+                      : 'bg-muted text-muted-foreground scale-95',
                   )}
                 >
-                  {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </Button>
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -502,29 +486,20 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
         {/* Hover tooltip */}
         <div
           className={cn(
-            "absolute bottom-full right-0 mb-3 whitespace-nowrap transition-all duration-300",
-            isHovering && !isOpen
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-2 pointer-events-none"
+            'absolute bottom-full right-0 mb-3 whitespace-nowrap transition-all duration-300',
+            isHovering && !isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none',
           )}
         >
-          <div className="px-3 py-1.5 bg-card rounded-lg shadow-lg border border-border/50 text-sm font-medium">
-            Need help? Ask Paws!
-          </div>
+          <div className="px-3 py-1.5 bg-card rounded-lg shadow-lg border border-border/50 text-sm font-medium">Need help? Ask Paws!</div>
           <div className="absolute -bottom-1 right-6 w-2 h-2 bg-card border-r border-b border-border/50 rotate-45" />
         </div>
 
         {/* Ambient glow ring */}
         <div
-          className={cn(
-            "absolute inset-0 rounded-full transition-all duration-500",
-            isOpen
-              ? "scale-100 opacity-0"
-              : "scale-150 opacity-100"
-          )}
+          className={cn('absolute inset-0 rounded-full transition-all duration-500', isOpen ? 'scale-100 opacity-0' : 'scale-150 opacity-100')}
           style={{
             background: 'radial-gradient(circle, rgba(217, 106, 74, 0.2) 0%, transparent 70%)',
-            animation: !isOpen ? 'breathe 3s ease-in-out infinite' : 'none'
+            animation: !isOpen ? 'breathe 3s ease-in-out infinite' : 'none',
           }}
         />
 
@@ -534,15 +509,13 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
           className={cn(
-            "relative w-14 h-14 rounded-full shadow-xl transition-all duration-500 transform",
-            "focus:outline-none focus:ring-2 focus:ring-[#D96A4A]/50 focus:ring-offset-2 focus:ring-offset-background",
-            isOpen
-              ? "bg-muted hover:bg-muted/80 rotate-0 scale-90"
-              : "bg-[#D96A4A] hover:bg-[#C55A3A] hover:scale-110 hover:shadow-2xl hover:shadow-[#D96A4A]/40"
+            'relative w-14 h-14 rounded-full shadow-xl transition-all duration-500 transform',
+            'focus:outline-none focus:ring-2 focus:ring-[#D96A4A]/50 focus:ring-offset-2 focus:ring-offset-background',
+            isOpen ? 'bg-muted hover:bg-muted/80 rotate-0 scale-90' : 'bg-[#D96A4A] hover:bg-[#C55A3A] hover:scale-110 hover:shadow-2xl hover:shadow-[#D96A4A]/40',
           )}
           aria-label={isOpen ? 'Close chat' : 'Open chat'}
           style={{
-            animation: !isOpen && !isHovering ? 'float 4s ease-in-out infinite' : 'none'
+            animation: !isOpen && !isHovering ? 'float 4s ease-in-out infinite' : 'none',
           }}
         >
           {/* Button content */}
@@ -560,10 +533,10 @@ ${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when releva
           {!isOpen && (
             <div
               className={cn(
-                "absolute inset-0 rounded-full overflow-hidden",
-                "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent",
-                "before:translate-x-[-100%] before:transition-transform before:duration-700",
-                isHovering && "before:translate-x-[100%]"
+                'absolute inset-0 rounded-full overflow-hidden',
+                'before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent',
+                'before:translate-x-[-100%] before:transition-transform before:duration-700',
+                isHovering && 'before:translate-x-[100%]',
               )}
             />
           )}

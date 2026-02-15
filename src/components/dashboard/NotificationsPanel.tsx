@@ -32,22 +32,17 @@ import { Activity, AlertCircle, HelpCircle, ChevronDown, ChevronUp, History } fr
 import { cn } from '@/lib/utils';
 import { PetStats } from '@/types/game';
 import { STAT_CONFIG } from '@/data/statConfig';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const SleepAction: React.FC = () => {
   const { state, putPetToSleep, wakePetUp } = useGame();
   const { pet, petAsleep, lastSleepDate } = state;
-  
+
   if (!pet) return null;
-  
+
   const today = new Date().toDateString();
   const hasSleptToday = lastSleepDate === today;
-  
+
   return (
     <div className="mt-5 pt-4 border-t border-border/50">
       <div className="flex items-center justify-between">
@@ -55,13 +50,9 @@ const SleepAction: React.FC = () => {
           <span className="text-lg">🌙</span>
           <span className="text-sm font-medium text-foreground">Nightly Rest</span>
         </div>
-        
+
         {petAsleep ? (
-          <Button
-            size="sm"
-            onClick={wakePetUp}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center gap-2"
-          >
+          <Button size="sm" onClick={wakePetUp} className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center gap-2">
             <span className="animate-pulse">☀️</span>
             Wake Up
           </Button>
@@ -81,7 +72,7 @@ const SleepAction: React.FC = () => {
           </Button>
         )}
       </div>
-      
+
       {petAsleep && (
         <div className="mt-3 p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 flex items-center gap-3 animate-fade-in">
           <div className="relative">
@@ -117,28 +108,28 @@ const NotificationsPanel: React.FC = () => {
   // Detect rapid stat drops (more than 5 points in 3 seconds)
   useEffect(() => {
     if (!pet) return;
-    
+
     if (previousStats.current) {
       const newRapidDrops = new Set<keyof PetStats>();
-      
-      (Object.keys(pet.stats) as (keyof PetStats)[]).forEach(stat => {
+
+      (Object.keys(pet.stats) as (keyof PetStats)[]).forEach((stat) => {
         const prev = previousStats.current![stat];
         const curr = pet.stats[stat];
         const drop = prev - curr;
-        
+
         if (drop >= 5) {
           newRapidDrops.add(stat);
         }
       });
-      
+
       if (newRapidDrops.size > 0) {
-        setRapidDropStats(prev => {
+        setRapidDropStats((prev) => {
           const combined = new Set([...prev, ...newRapidDrops]);
           // Clear after 3 seconds
           setTimeout(() => {
-            setRapidDropStats(current => {
+            setRapidDropStats((current) => {
               const updated = new Set(current);
-              newRapidDrops.forEach(stat => updated.delete(stat));
+              newRapidDrops.forEach((stat) => updated.delete(stat));
               return updated;
             });
           }, 3000);
@@ -146,7 +137,7 @@ const NotificationsPanel: React.FC = () => {
         });
       }
     }
-    
+
     previousStats.current = { ...pet.stats };
   }, [pet?.stats]);
 
@@ -172,9 +163,7 @@ const NotificationsPanel: React.FC = () => {
   // Get recent actions that affected a stat
   const getRecentActionsForStat = (stat: keyof PetStats) => {
     if (!actionLog) return [];
-    return actionLog
-      .filter(log => log.statChanges && log.statChanges[stat] !== undefined)
-      .slice(0, 5);
+    return actionLog.filter((log) => log.statChanges && log.statChanges[stat] !== undefined).slice(0, 5);
   };
 
   return (
@@ -189,24 +178,11 @@ const NotificationsPanel: React.FC = () => {
             <h3 className="font-serif font-semibold text-lg text-foreground">Vital Signs</h3>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowActionLog(!showActionLog)}
-              className={cn(
-                "h-7 px-2 text-xs",
-                showActionLog && "bg-primary/10"
-              )}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setShowActionLog(!showActionLog)} className={cn('h-7 px-2 text-xs', showActionLog && 'bg-primary/10')}>
               <History className="w-3 h-3 mr-1" />
               Log
             </Button>
-            <div className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300",
-              status.color
-            )}>
-              {status.label}
-            </div>
+            <div className={cn('px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300', status.color)}>{status.label}</div>
           </div>
         </div>
 
@@ -227,14 +203,9 @@ const NotificationsPanel: React.FC = () => {
                       {log.statChanges && (
                         <div className="flex flex-wrap gap-1 mt-0.5">
                           {Object.entries(log.statChanges).map(([stat, change]) => (
-                            <span
-                              key={stat}
-                              className={cn(
-                                "text-[10px] px-1.5 py-0.5 rounded-full",
-                                Number(change) >= 0 ? "bg-emerald-500/15 text-emerald-600" : "bg-red-500/15 text-red-600"
-                              )}
-                            >
-                              {STAT_CONFIG[stat as keyof PetStats].icon} {Number(change) >= 0 ? '+' : ''}{change}
+                            <span key={stat} className={cn('text-[10px] px-1.5 py-0.5 rounded-full', Number(change) >= 0 ? 'bg-emerald-500/15 text-emerald-600' : 'bg-red-500/15 text-red-600')}>
+                              {STAT_CONFIG[stat as keyof PetStats].icon} {Number(change) >= 0 ? '+' : ''}
+                              {change}
                             </span>
                           ))}
                         </div>
@@ -259,25 +230,12 @@ const NotificationsPanel: React.FC = () => {
             const recentActions = getRecentActionsForStat(stat);
 
             return (
-              <div
-                key={stat}
-                className={cn(
-                  "animate-slide-in-left opacity-0",
-                  isLow && "relative"
-                )}
-                style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
-              >
+              <div key={stat} className={cn('animate-slide-in-left opacity-0', isLow && 'relative')} style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}>
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="flex items-center gap-2">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className={cn(
-                          "text-lg transition-transform duration-300 cursor-help",
-                          isLow && "animate-wiggle",
-                          isRapidDrop && "animate-pulse"
-                        )}>
-                          {config.icon}
-                        </span>
+                        <span className={cn('text-lg transition-transform duration-300 cursor-help', isLow && 'animate-wiggle', isRapidDrop && 'animate-pulse')}>{config.icon}</span>
                       </TooltipTrigger>
                       <TooltipContent side="right" className="max-w-[220px] p-3">
                         <p className="font-semibold mb-1">{config.label}</p>
@@ -291,46 +249,31 @@ const NotificationsPanel: React.FC = () => {
                     <span className="font-medium text-base text-foreground">{config.label}</span>
                     {/* "Why?" Button */}
                     {isLow && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setExpandedStat(isExpanded ? null : stat)}
-                        className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setExpandedStat(isExpanded ? null : stat)} className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground">
                         <HelpCircle className="w-3 h-3 mr-0.5" />
                         Why?
                         {isExpanded ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
                       </Button>
                     )}
                   </span>
-                  <span className={cn(
-                    "font-mono text-base font-bold transition-colors duration-300",
-                    isCritical ? "text-destructive" :
-                    isRapidDrop ? "text-amber-500 animate-pulse" :
-                    isLow ? "text-chart-1" :
-                    "text-muted-foreground"
-                  )}>
+                  <span
+                    className={cn(
+                      'font-mono text-base font-bold transition-colors duration-300',
+                      isCritical ? 'text-destructive' : isRapidDrop ? 'text-amber-500 animate-pulse' : isLow ? 'text-chart-1' : 'text-muted-foreground',
+                    )}
+                  >
                     {Math.round(value)}%
                   </span>
                 </div>
 
                 {/* Progress bar */}
                 <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "h-3 flex-1 rounded-full overflow-hidden transition-all duration-300",
-                    isRapidDrop ? "bg-amber-500/20 ring-2 ring-amber-500/30" : config.bgColor
-                  )}>
+                  <div className={cn('h-3 flex-1 rounded-full overflow-hidden transition-all duration-300', isRapidDrop ? 'bg-amber-500/20 ring-2 ring-amber-500/30' : config.bgColor)}>
                     <div
-                      className={cn(
-                        "h-full rounded-full transition-all duration-500 ease-out relative",
-                        isRapidDrop ? "bg-amber-500" : config.color,
-                        isCritical && "animate-pulse"
-                      )}
+                      className={cn('h-full rounded-full transition-all duration-500 ease-out relative', isRapidDrop ? 'bg-amber-500' : config.color, isCritical && 'animate-pulse')}
                       style={{ width: `${Math.max(value, 2)}%` }}
                     >
-                      {value > 30 && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                      )}
+                      {value > 30 && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />}
                     </div>
                   </div>
 
@@ -339,12 +282,7 @@ const NotificationsPanel: React.FC = () => {
                     <Button
                       size="sm"
                       onClick={() => performAction(config.action)}
-                      className={cn(
-                        "shrink-0 h-7 text-xs font-semibold px-3",
-                        isCritical
-                          ? "bg-red-500 hover:bg-red-600 text-white"
-                          : "bg-orange-500 hover:bg-orange-600 text-white"
-                      )}
+                      className={cn('shrink-0 h-7 text-xs font-semibold px-3', isCritical ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-orange-500 hover:bg-orange-600 text-white')}
                     >
                       {config.actionLabel}
                     </Button>
@@ -356,8 +294,12 @@ const NotificationsPanel: React.FC = () => {
                   <div className="mt-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 animate-fade-in">
                     <p className="text-xs font-semibold text-amber-700 mb-2">Why is {config.label} low?</p>
                     <div className="text-xs text-muted-foreground space-y-1">
-                      <p>📉 <span className="font-medium">Natural decay:</span> {config.decayInfo}</p>
-                      <p>⬆️ <span className="font-medium">To increase:</span> {config.boostInfo}</p>
+                      <p>
+                        📉 <span className="font-medium">Natural decay:</span> {config.decayInfo}
+                      </p>
+                      <p>
+                        ⬆️ <span className="font-medium">To increase:</span> {config.boostInfo}
+                      </p>
                       {recentActions.length > 0 && (
                         <div className="mt-2 pt-2 border-t border-amber-500/20">
                           <p className="font-medium text-amber-700 mb-1">Recent effects:</p>
@@ -365,11 +307,9 @@ const NotificationsPanel: React.FC = () => {
                             <p key={log.id} className="flex items-center gap-1">
                               <span>{log.icon}</span>
                               <span>{log.action}:</span>
-                              <span className={cn(
-                                "font-mono",
-                                (log.statChanges?.[stat] || 0) >= 0 ? "text-emerald-600" : "text-red-600"
-                              )}>
-                                {(log.statChanges?.[stat] || 0) >= 0 ? '+' : ''}{log.statChanges?.[stat]}
+                              <span className={cn('font-mono', (log.statChanges?.[stat] || 0) >= 0 ? 'text-emerald-600' : 'text-red-600')}>
+                                {(log.statChanges?.[stat] || 0) >= 0 ? '+' : ''}
+                                {log.statChanges?.[stat]}
                               </span>
                             </p>
                           ))}
@@ -381,10 +321,7 @@ const NotificationsPanel: React.FC = () => {
 
                 {/* Warning message */}
                 {isLow && !isExpanded && (
-                  <div className={cn(
-                    "flex items-center gap-1.5 mt-1.5 text-xs",
-                    isCritical ? "text-destructive" : "text-chart-1"
-                  )}>
+                  <div className={cn('flex items-center gap-1.5 mt-1.5 text-xs', isCritical ? 'text-destructive' : 'text-chart-1')}>
                     <AlertCircle className="w-3 h-3" />
                     <span>{config.warning}</span>
                   </div>
@@ -402,13 +339,7 @@ const NotificationsPanel: React.FC = () => {
           </div>
           <div className="mt-2 h-2 bg-muted/30 rounded-full overflow-hidden">
             <div
-              className={cn(
-                "h-full rounded-full transition-all duration-500",
-                avgStats >= 70 ? "bg-secondary" :
-                avgStats >= 50 ? "bg-chart-3" :
-                avgStats >= 30 ? "bg-chart-1" :
-                "bg-destructive"
-              )}
+              className={cn('h-full rounded-full transition-all duration-500', avgStats >= 70 ? 'bg-secondary' : avgStats >= 50 ? 'bg-chart-3' : avgStats >= 30 ? 'bg-chart-1' : 'bg-destructive')}
               style={{ width: `${avgStats}%` }}
             />
           </div>

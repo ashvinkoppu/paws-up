@@ -24,19 +24,26 @@ const EventModal: React.FC = () => {
 
   const getEventColor = () => {
     switch (event.type) {
-      case 'emergency': return 'border-destructive bg-destructive/5';
-      case 'sickness': return 'border-chart-3 bg-chart-3/5';
-      case 'discount': return 'border-chart-2 bg-chart-2/5';
-      case 'reward': return 'border-primary bg-primary/5';
-      case 'broken': return 'border-chart-4 bg-chart-4/5';
-      case 'opportunity': return 'border-chart-1 bg-chart-1/5';
-      default: return 'border-border bg-card';
+      case 'emergency':
+        return 'border-destructive bg-destructive/5';
+      case 'sickness':
+        return 'border-chart-3 bg-chart-3/5';
+      case 'discount':
+        return 'border-chart-2 bg-chart-2/5';
+      case 'reward':
+        return 'border-primary bg-primary/5';
+      case 'broken':
+        return 'border-chart-4 bg-chart-4/5';
+      case 'opportunity':
+        return 'border-chart-1 bg-chart-1/5';
+      default:
+        return 'border-border bg-card';
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in-0">
-      <Card className={cn("max-w-md w-full mx-4 shadow-2xl border-2", getEventColor())}>
+      <Card className={cn('max-w-md w-full mx-4 shadow-2xl border-2', getEventColor())}>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">{event.title}</CardTitle>
           <CardDescription className="text-base">{event.description}</CardDescription>
@@ -46,35 +53,19 @@ const EventModal: React.FC = () => {
             <Button
               key={index}
               variant="outline"
-              className={cn(
-                "w-full h-auto py-3 px-4 justify-start text-left",
-                choice.cost && state.money < choice.cost && "opacity-50"
-              )}
+              className={cn('w-full h-auto py-3 px-4 justify-start text-left', choice.cost && state.money < choice.cost && 'opacity-50')}
               onClick={() => handleEventChoice(index)}
               // Disable choices the player cannot afford
               disabled={choice.cost !== undefined && state.money < choice.cost}
             >
               <div>
                 <span className="font-medium">{choice.text}</span>
-                {choice.cost && (
-                  <span className={cn(
-                    "ml-2 text-sm",
-                    state.money < choice.cost ? "text-destructive" : "text-muted-foreground"
-                  )}>
-                    (${choice.cost})
-                  </span>
-                )}
-                {choice.moneyEffect && choice.moneyEffect > 0 && (
-                  <span className="ml-2 text-sm text-chart-2">(+${choice.moneyEffect})</span>
-                )}
+                {choice.cost && <span className={cn('ml-2 text-sm', state.money < choice.cost ? 'text-destructive' : 'text-muted-foreground')}>(${choice.cost})</span>}
+                {choice.moneyEffect && choice.moneyEffect > 0 && <span className="ml-2 text-sm text-chart-2">(+${choice.moneyEffect})</span>}
               </div>
             </Button>
           ))}
-          {event.choices.some(c => c.cost && state.money < c.cost) && (
-            <p className="text-xs text-destructive text-center">
-              ⚠️ Some options require more money than you have
-            </p>
-          )}
+          {event.choices.some((c) => c.cost && state.money < c.cost) && <p className="text-xs text-destructive text-center">⚠️ Some options require more money than you have</p>}
         </CardContent>
       </Card>
     </div>

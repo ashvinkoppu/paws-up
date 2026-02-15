@@ -38,29 +38,29 @@ interface MealWindow {
 }
 
 const MEAL_WINDOWS: MealWindow[] = [
-  { 
-    name: 'Breakfast', 
-    startHour: 8, 
-    endHour: 10, 
+  {
+    name: 'Breakfast',
+    startHour: 8,
+    endHour: 10,
     icon: <Coffee className="w-4 h-4" />,
     color: 'text-amber-600',
-    bgColor: 'bg-amber-500/15 border-amber-500/30'
+    bgColor: 'bg-amber-500/15 border-amber-500/30',
   },
-  { 
-    name: 'Lunch', 
-    startHour: 12, 
-    endHour: 14, 
+  {
+    name: 'Lunch',
+    startHour: 12,
+    endHour: 14,
     icon: <Soup className="w-4 h-4" />,
     color: 'text-orange-600',
-    bgColor: 'bg-orange-500/15 border-orange-500/30'
+    bgColor: 'bg-orange-500/15 border-orange-500/30',
   },
-  { 
-    name: 'Dinner', 
-    startHour: 18, 
-    endHour: 20, 
+  {
+    name: 'Dinner',
+    startHour: 18,
+    endHour: 20,
     icon: <Utensils className="w-4 h-4" />,
     color: 'text-rose-600',
-    bgColor: 'bg-rose-500/15 border-rose-500/30'
+    bgColor: 'bg-rose-500/15 border-rose-500/30',
   },
 ];
 
@@ -78,16 +78,16 @@ interface PlayWindow {
 const PLAY_WINDOWS: PlayWindow[] = [
   {
     name: 'Morning Play',
-    startMinute: 610,  // 10:10 AM
-    endMinute: 630,    // 10:30 AM
+    startMinute: 610, // 10:10 AM
+    endMinute: 630, // 10:30 AM
     icon: <Gamepad2 className="w-4 h-4" />,
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-500/15 border-emerald-500/30',
   },
   {
     name: 'Afternoon Play',
-    startMinute: 780,  // 1:00 PM
-    endMinute: 800,    // 1:20 PM
+    startMinute: 780, // 1:00 PM
+    endMinute: 800, // 1:20 PM
     icon: <Gamepad2 className="w-4 h-4" />,
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-500/15 border-emerald-500/30',
@@ -95,7 +95,7 @@ const PLAY_WINDOWS: PlayWindow[] = [
   {
     name: 'Evening Play',
     startMinute: 1050, // 5:30 PM
-    endMinute: 1070,   // 5:50 PM
+    endMinute: 1070, // 5:50 PM
     icon: <Gamepad2 className="w-4 h-4" />,
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-500/15 border-emerald-500/30',
@@ -119,7 +119,7 @@ interface GameClockProps {
 const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder }) => {
   const { state, updateGameTime, penalizeMissedPlayWindow, resetPlayWindows } = useGame();
   // Start game time from saved state or default to 7:00 AM
-  const [gameMinutes, setGameMinutes] = useState(state.gameTime || 7 * 60); 
+  const [gameMinutes, setGameMinutes] = useState(state.gameTime || 7 * 60);
   const [reminders, setReminders] = useState<ReminderPopup[]>([]);
   const [shownReminders, setShownReminders] = useState<Set<string>>(new Set());
   // Refs track whether one-shot reminders (bedtime, wake) have fired this day cycle.
@@ -176,7 +176,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
     // Check meal windows
     for (const meal of MEAL_WINDOWS) {
       const mealKey = `${meal.name}-${Math.floor(gameMinutes / 60)}`;
-      
+
       // Trigger reminder when entering a meal window
       if (currentHour === meal.startHour && currentMinute === 0 && !shownReminders.has(meal.name)) {
         const reminder: ReminderPopup = {
@@ -187,7 +187,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
           icon: meal.icon,
           color: meal.color,
         };
-        
+
         setReminders((prev) => [...prev, reminder]);
         setShownReminders((prev) => new Set(prev).add(meal.name));
         onMealReminder?.(meal.name);
@@ -251,12 +251,12 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
       const reminder: ReminderPopup = {
         id: Date.now().toString(),
         type: 'bedtime',
-        title: "Bedtime! 🌙",
+        title: 'Bedtime! 🌙',
         message: "It's getting late. Your pet should go to sleep now!",
         icon: <Moon className="w-4 h-4" />,
         color: 'text-indigo-600',
       };
-      
+
       setReminders((prev) => [...prev, reminder]);
       lastBedtimeShownRef.current = true;
       onBedtimeReminder?.();
@@ -271,12 +271,12 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
       const reminder: ReminderPopup = {
         id: Date.now().toString(),
         type: 'wake',
-        title: "Good Morning! ☀️",
-        message: "A new day begins! Time to wake up and care for your pet.",
+        title: 'Good Morning! ☀️',
+        message: 'A new day begins! Time to wake up and care for your pet.',
         icon: <Sun className="w-4 h-4" />,
         color: 'text-amber-500',
       };
-      
+
       setReminders((prev) => [...prev, reminder]);
       lastWakeShownRef.current = true;
 
@@ -337,16 +337,10 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
   return (
     <>
       {/* Clock Display */}
-      <div 
+      <div
         className={cn(
-          "flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all duration-300",
-          nightTime
-            ? "bg-indigo-500/10 border-indigo-500/20"
-            : currentMeal
-              ? currentMeal.bgColor
-              : currentPlay
-                ? currentPlay.bgColor
-                : "bg-sky-500/10 border-sky-500/20"
+          'flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all duration-300',
+          nightTime ? 'bg-indigo-500/10 border-indigo-500/20' : currentMeal ? currentMeal.bgColor : currentPlay ? currentPlay.bgColor : 'bg-sky-500/10 border-sky-500/20',
         )}
       >
         {nightTime ? (
@@ -359,72 +353,37 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
           <Clock className="w-4 h-4 text-sky-600" />
         )}
         <div className="flex items-baseline gap-1">
-          <span className={cn(
-            "font-mono font-bold text-sm tracking-tight",
-            nightTime ? "text-indigo-700" : currentMeal ? currentMeal.color : currentPlay ? currentPlay.color : "text-sky-700"
-          )}>
+          <span className={cn('font-mono font-bold text-sm tracking-tight', nightTime ? 'text-indigo-700' : currentMeal ? currentMeal.color : currentPlay ? currentPlay.color : 'text-sky-700')}>
             {time}
           </span>
-          <span className={cn(
-            "text-[10px] font-medium uppercase",
-            nightTime ? "text-indigo-500/70" : currentMeal ? "opacity-70" : currentPlay ? "opacity-70" : "text-sky-500/70"
-          )}>
-            {period}
-          </span>
+          <span className={cn('text-[10px] font-medium uppercase', nightTime ? 'text-indigo-500/70' : currentMeal ? 'opacity-70' : currentPlay ? 'opacity-70' : 'text-sky-500/70')}>{period}</span>
         </div>
-        {currentMeal && (
-          <span className={cn(
-            "text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full",
-            currentMeal.bgColor,
-            currentMeal.color
-          )}>
-            {currentMeal.name}
-          </span>
-        )}
-        {currentPlay && !currentMeal && (
-          <span className={cn(
-            "text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full",
-            currentPlay.bgColor,
-            currentPlay.color
-          )}>
-            Play Time!
-          </span>
-        )}
+        {currentMeal && <span className={cn('text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full', currentMeal.bgColor, currentMeal.color)}>{currentMeal.name}</span>}
+        {currentPlay && !currentMeal && <span className={cn('text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full', currentPlay.bgColor, currentPlay.color)}>Play Time!</span>}
       </div>
 
       {/* Reminder Popups */}
       <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-3 pointer-events-none">
         {reminders.map((reminder) => (
-          <div
-            key={reminder.id}
-            className="pointer-events-auto animate-reminder-slide-in rounded-2xl"
-            onClick={() => dismissReminder(reminder.id)}
-          >
-            <div className={cn(
-              "flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border cursor-pointer",
-              "bg-card/95 backdrop-blur-xl border-border/50",
-              "hover:scale-[1.02] transition-transform duration-200"
-            )}>
-              <div className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center",
-                reminder.type === 'meal' ? "bg-amber-500/15" :
-                reminder.type === 'bedtime' ? "bg-indigo-500/15" :
-                reminder.type === 'play' ? "bg-emerald-500/15" : "bg-amber-500/15"
-              )}>
-                <span className={cn(
-                  "text-lg",
-                  reminder.color
-                )}>
-                  {reminder.icon}
-                </span>
+          <div key={reminder.id} className="pointer-events-auto animate-reminder-slide-in rounded-2xl" onClick={() => dismissReminder(reminder.id)}>
+            <div
+              className={cn(
+                'flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border cursor-pointer',
+                'bg-card/95 backdrop-blur-xl border-border/50',
+                'hover:scale-[1.02] transition-transform duration-200',
+              )}
+            >
+              <div
+                className={cn(
+                  'w-10 h-10 rounded-full flex items-center justify-center',
+                  reminder.type === 'meal' ? 'bg-amber-500/15' : reminder.type === 'bedtime' ? 'bg-indigo-500/15' : reminder.type === 'play' ? 'bg-emerald-500/15' : 'bg-amber-500/15',
+                )}
+              >
+                <span className={cn('text-lg', reminder.color)}>{reminder.icon}</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-serif font-bold text-sm text-foreground">
-                  {reminder.title}
-                </span>
-                <span className="text-xs text-muted-foreground max-w-[200px]">
-                  {reminder.message}
-                </span>
+                <span className="font-serif font-bold text-sm text-foreground">{reminder.title}</span>
+                <span className="text-xs text-muted-foreground max-w-[200px]">{reminder.message}</span>
               </div>
             </div>
           </div>

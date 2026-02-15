@@ -26,11 +26,14 @@ import { Activity, AlertCircle, HelpCircle, TrendingDown, X, History } from 'luc
 import { Button } from '@/components/ui/button';
 
 // Tooltips explaining how each stat works
-const STAT_TOOLTIPS: Record<keyof PetStatsType, {
-  description: string;
-  increases: string;
-  decreases: string;
-}> = {
+const STAT_TOOLTIPS: Record<
+  keyof PetStatsType,
+  {
+    description: string;
+    increases: string;
+    decreases: string;
+  }
+> = {
   hunger: {
     description: 'How full your pet is. Low hunger makes your pet weak and unhappy.',
     increases: 'Feed your pet with food items from the shop.',
@@ -42,7 +45,7 @@ const STAT_TOOLTIPS: Record<keyof PetStatsType, {
     decreases: 'Over time, when neglected, or during stressful events.',
   },
   energy: {
-    description: 'Your pet\'s stamina. Low energy makes them sluggish.',
+    description: "Your pet's stamina. Low energy makes them sluggish.",
     increases: 'Let your pet rest or put them to sleep at night.',
     decreases: 'Playing, activities, and time. Faster during active play.',
   },
@@ -58,15 +61,18 @@ const STAT_TOOLTIPS: Record<keyof PetStatsType, {
   },
 };
 
-const STAT_CONFIG: Record<keyof PetStatsType, {
-  label: string;
-  icon: string;
-  color: string;
-  bgColor: string;
-  lowWarning: number;
-  warning: string;
-  dropColor: string; // Color when stat is dropping fast
-}> = {
+const STAT_CONFIG: Record<
+  keyof PetStatsType,
+  {
+    label: string;
+    icon: string;
+    color: string;
+    bgColor: string;
+    lowWarning: number;
+    warning: string;
+    dropColor: string; // Color when stat is dropping fast
+  }
+> = {
   hunger: {
     label: 'Hunger',
     icon: '🍖',
@@ -128,33 +134,19 @@ const StatBar: React.FC<StatBarProps> = ({ stat, value, previousValue, index, on
   const isLow = value <= config.lowWarning;
   const isCritical = value <= 15;
   const [showTooltip, setShowTooltip] = useState(false);
-  
+
   // Calculate rate of change
   const changeRate = value - previousValue;
   const isDroppingFast = changeRate <= -3; // Dropping more than 3 points since last check
 
   return (
-    <div
-      className={cn(
-        "animate-slide-in-left opacity-0 relative group",
-        isLow && "relative"
-      )}
-      style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
-    >
+    <div className={cn('animate-slide-in-left opacity-0 relative group', isLow && 'relative')} style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}>
       <div className="flex justify-between items-center mb-1.5">
         <span className="flex items-center gap-2">
-          <span className={cn(
-            "text-lg transition-transform duration-300",
-            isLow && "animate-wiggle"
-          )}>
-            {config.icon}
-          </span>
+          <span className={cn('text-lg transition-transform duration-300', isLow && 'animate-wiggle')}>{config.icon}</span>
           <span className="font-medium text-sm text-foreground">{config.label}</span>
           {/* Info tooltip trigger */}
-          <button
-            onClick={() => setShowTooltip(!showTooltip)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-muted rounded-full"
-          >
+          <button onClick={() => setShowTooltip(!showTooltip)} className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-muted rounded-full">
             <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         </span>
@@ -166,12 +158,7 @@ const StatBar: React.FC<StatBarProps> = ({ stat, value, previousValue, index, on
               <span>-{Math.abs(Math.round(changeRate))}</span>
             </span>
           )}
-          <span className={cn(
-            "font-mono text-sm font-semibold transition-colors duration-300",
-            isCritical ? "text-destructive" :
-            isLow ? "text-chart-1" :
-            "text-muted-foreground"
-          )}>
+          <span className={cn('font-mono text-sm font-semibold transition-colors duration-300', isCritical ? 'text-destructive' : isLow ? 'text-chart-1' : 'text-muted-foreground')}>
             {Math.round(value)}%
           </span>
         </div>
@@ -188,39 +175,31 @@ const StatBar: React.FC<StatBarProps> = ({ stat, value, previousValue, index, on
           </div>
           <p className="text-xs text-muted-foreground mb-2">{tooltip.description}</p>
           <div className="space-y-1.5 text-[11px]">
-            <p><span className="text-secondary font-medium">↑ Increases:</span> {tooltip.increases}</p>
-            <p><span className="text-destructive font-medium">↓ Decreases:</span> {tooltip.decreases}</p>
+            <p>
+              <span className="text-secondary font-medium">↑ Increases:</span> {tooltip.increases}
+            </p>
+            <p>
+              <span className="text-destructive font-medium">↓ Decreases:</span> {tooltip.decreases}
+            </p>
           </div>
         </div>
       )}
 
       {/* Progress bar container */}
-      <div className={cn(
-        "h-3 rounded-full overflow-hidden transition-all duration-300",
-        config.bgColor
-      )}>
+      <div className={cn('h-3 rounded-full overflow-hidden transition-all duration-300', config.bgColor)}>
         {/* Progress bar fill */}
         <div
-          className={cn(
-            "h-full rounded-full transition-all duration-500 ease-out relative",
-            isDroppingFast ? config.dropColor : config.color,
-            isCritical && "animate-pulse"
-          )}
+          className={cn('h-full rounded-full transition-all duration-500 ease-out relative', isDroppingFast ? config.dropColor : config.color, isCritical && 'animate-pulse')}
           style={{ width: `${Math.max(value, 2)}%` }}
         >
           {/* Shine effect */}
-          {value > 30 && !isDroppingFast && (
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          )}
+          {value > 30 && !isDroppingFast && <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />}
         </div>
       </div>
 
       {/* Warning message with "Why?" button */}
       {isLow && (
-        <div className={cn(
-          "flex items-center justify-between mt-1.5 text-xs",
-          isCritical ? "text-destructive" : "text-chart-1"
-        )}>
+        <div className={cn('flex items-center justify-between mt-1.5 text-xs', isCritical ? 'text-destructive' : 'text-chart-1')}>
           <div className="flex items-center gap-1.5">
             <AlertCircle className="w-3 h-3" />
             <span>{config.warning}</span>
@@ -248,7 +227,7 @@ const PetStats: React.FC = () => {
   // Track previous stat values to detect fast drops
   useEffect(() => {
     if (!state.pet) return;
-    
+
     const now = Date.now();
     // Update previous stats every 10 seconds
     if (now - lastCheckRef.current > 10000) {
@@ -346,21 +325,11 @@ const PetStats: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           {/* Action Log Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowActionLog(!showActionLog)}
-            className="h-7 px-2 text-muted-foreground hover:text-foreground"
-          >
+          <Button variant="ghost" size="sm" onClick={() => setShowActionLog(!showActionLog)} className="h-7 px-2 text-muted-foreground hover:text-foreground">
             <History className="w-3.5 h-3.5 mr-1" />
             <span className="text-[10px]">Log</span>
           </Button>
-          <div className={cn(
-            "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300",
-            status.color
-          )}>
-            {status.label}
-          </div>
+          <div className={cn('px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-300', status.color)}>{status.label}</div>
         </div>
       </div>
 
@@ -385,9 +354,10 @@ const PetStats: React.FC = () => {
                     <span className="text-muted-foreground ml-1">— {log.description}</span>
                     {log.statChanges && (
                       <span className="ml-1 text-secondary">
-                        {Object.entries(log.statChanges).map(([key, val]) => (
-                          val ? `${key}: ${val > 0 ? '+' : ''}${val}` : null
-                        )).filter(Boolean).join(', ')}
+                        {Object.entries(log.statChanges)
+                          .map(([key, val]) => (val ? `${key}: ${val > 0 ? '+' : ''}${val}` : null))
+                          .filter(Boolean)
+                          .join(', ')}
                       </span>
                     )}
                   </div>
@@ -402,14 +372,7 @@ const PetStats: React.FC = () => {
       {/* Stats list */}
       <div className="space-y-4">
         {(Object.keys(stats) as (keyof PetStatsType)[]).map((stat, index) => (
-          <StatBar
-            key={stat}
-            stat={stat}
-            value={stats[stat]}
-            previousValue={currentStats[stat]}
-            index={index}
-            onWhyClick={setWhyModalStat}
-          />
+          <StatBar key={stat} stat={stat} value={stats[stat]} previousValue={currentStats[stat]} index={index} onWhyClick={setWhyModalStat} />
         ))}
       </div>
 
@@ -445,13 +408,7 @@ const PetStats: React.FC = () => {
         </div>
         <div className="mt-2 h-2 bg-muted/30 rounded-full overflow-hidden">
           <div
-            className={cn(
-              "h-full rounded-full transition-all duration-500",
-              avgStats >= 70 ? "bg-secondary" :
-              avgStats >= 50 ? "bg-chart-3" :
-              avgStats >= 30 ? "bg-chart-1" :
-              "bg-destructive"
-            )}
+            className={cn('h-full rounded-full transition-all duration-500', avgStats >= 70 ? 'bg-secondary' : avgStats >= 50 ? 'bg-chart-3' : avgStats >= 30 ? 'bg-chart-1' : 'bg-destructive')}
             style={{ width: `${avgStats}%` }}
           />
         </div>

@@ -133,7 +133,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   {
     id: 'happiness-bandana',
     name: 'Pet Bandana',
-    description: 'A colorful bandana to show off your pet\'s style',
+    description: "A colorful bandana to show off your pet's style",
     price: 18,
     category: 'happiness',
     tier: 'standard',
@@ -253,10 +253,8 @@ export const SHOP_ITEMS: ShopItem[] = [
 
 export const getCheaperAlternative = (item: ShopItem): ShopItem | null => {
   if (item.tier === 'basic') return null;
-  
-  const alternatives = SHOP_ITEMS.filter(
-    (i) => i.category === item.category && i.tier === 'basic'
-  );
-  
+
+  const alternatives = SHOP_ITEMS.filter((i) => i.category === item.category && i.tier === 'basic');
+
   return alternatives[0] || null;
 };

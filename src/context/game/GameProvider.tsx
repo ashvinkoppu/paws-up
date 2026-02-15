@@ -1,3 +1,16 @@
+/**
+ * GameProvider — the React context provider that owns and manages
+ * the entire game state.
+ *
+ * Responsibilities:
+ * - Initialises game state from local-storage (guest) or Supabase (cloud).
+ * - Runs a periodic stat-decay timer and random-event generator.
+ * - Auto-saves to Supabase (debounced) or localStorage in guest mode.
+ * - Exposes every game action (feed, play, shop, achievements…) via
+ *   the context value consumed by {@link useGame}.
+ *
+ * @module context/game/GameProvider
+ */
 import React, { createContext, useReducer, useEffect, useState, ReactNode, useCallback, useRef, useMemo } from 'react';
 import { GameState, Pet, PetStats, InventoryItem, DailyTracking, AccessorySlot, ActionLogEntry } from '@/types/game';
 import { getRandomEvent } from '@/data/events';
@@ -9,10 +22,14 @@ import { clampStat, ACHIEVEMENT_REWARD } from '@/context/game/helpers';
 
 export const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// Play window schedule: [startMinute, endMinute]
+/**
+ * Scheduled play-window ranges expressed as [startMinute, endMinute].
+ * Playing (or completing a mini-game) during one of these windows
+ * satisfies the window and awards a stat bonus.
+ */
 const PLAY_WINDOW_RANGES: [number, number][] = [
-  [610, 630],   // Morning Play: 10:10 AM - 10:30 AM
-  [780, 800],   // Afternoon Play: 1:00 PM - 1:20 PM
+  [610, 630], // Morning Play: 10:10 AM - 10:30 AM
+  [780, 800], // Afternoon Play: 1:00 PM - 1:20 PM
   [1050, 1070], // Evening Play: 5:30 PM - 5:50 PM
 ];
 
@@ -25,6 +42,13 @@ const getActivePlayWindowIndex = (gameMinutes: number): number => {
   return -1;
 };
 
+/**
+ * Initialise game state. Attempts to restore a previous guest save
+ * from localStorage; falls back to the supplied `initial` defaults.
+ *
+ * @param initial - The static default state object.
+ * @returns Restored state or the initial defaults.
+ */
 const initGame = (initial: GameState): GameState => {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('guestGameState');
@@ -39,6 +63,10 @@ const initGame = (initial: GameState): GameState => {
   return initial;
 };
 
+/**
+ * Top-level provider component. Wrap the app (or a subtree) with this
+ * to give descendants access to game state and actions via `useGame()`.
+ */
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState, initGame);
   const [lastActionFeedback, setLastActionFeedback] = useState<ActionFeedbackEvent | null>(null);
@@ -93,11 +121,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       // Ensure profile exists before saving (required for foreign key constraint)
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', session.user.id)
-        .maybeSingle();
+      const { data: existingProfile } = await supabase.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
 
       if (!existingProfile) {
         const { error: profileError } = await supabase.from('profiles').upsert(
@@ -106,7 +130,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             display_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0],
             avatar_url: session.user.user_metadata?.avatar_url || null,
           },
-          { onConflict: 'id' }
+          { onConflict: 'id' },
         );
 
         if (profileError) {
@@ -168,6 +192,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     return () => clearInterval(interval);
   }, [state.pet]);
+  /**
+   * Creates a new pet, initialises starter stats, unlocks the
+   * “first-pet” achievement, and kicks off the daily reward loop.
+   */
   const createPet = (petData: Omit<Pet, 'id' | 'stats' | 'experience' | 'level' | 'equippedAccessories' | 'createdAt' | 'lastCaredAt'>) => {
     const newPet: Pet = {
       ...petData,
@@ -192,16 +220,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'achievement', title: 'Achievement Unlocked!', description: 'New Best Friend', icon: '🏆' } });
     dispatch({ type: 'GENERATE_TOMORROW_REWARD' }); // Initialize daily loop
     toast({
-      title: "🎉 Welcome to the family!",
+      title: '🎉 Welcome to the family!',
       description: `${newPet.name} has been adopted!`,
     });
   };
 
+  /** Applies partial stat deltas and updates the care streak. */
   const updateStats = (stats: Partial<PetStats>) => {
     dispatch({ type: 'UPDATE_STATS', payload: stats });
     dispatch({ type: 'UPDATE_CARE_STREAK' });
   };
 
+  /** Adds money and records an income transaction. */
   const addMoney = (amount: number, description = 'Earned money') => {
     dispatch({ type: 'ADD_MONEY', payload: amount });
     dispatch({
@@ -217,12 +247,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
+  /**
+   * Attempts to spend money. Returns `false` and shows a toast if
+   * funds are insufficient; otherwise deducts the amount and tracks
+   * the spending for daily tasks & milestones.
+   */
   const spendMoney = (amount: number, category: string, description: string): boolean => {
     if (state.money < amount) {
       toast({
-        title: "❌ Not enough money!",
+        title: '❌ Not enough money!',
         description: `You need $${amount} but only have $${state.money.toFixed(2)}`,
-        variant: "destructive",
+        variant: 'destructive',
       });
       return false;
     }
@@ -234,12 +269,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return true;
   };
 
+  /** Adds an item (or increases quantity) in the player’s inventory. */
   const addToInventory = (item: InventoryItem) => {
     dispatch({ type: 'ADD_TO_INVENTORY', payload: item });
   };
 
+  /**
+   * Consumes one unit of an inventory item, applies its stat effects,
+   * tracks the action for daily tasks, and emits UI feedback.
+   */
   const consumeItem = (itemId: string) => {
-    const item = state.inventory.find(inventoryItem => inventoryItem.id === itemId);
+    const item = state.inventory.find((inventoryItem) => inventoryItem.id === itemId);
     dispatch({ type: 'USE_ITEM', payload: itemId });
     dispatch({ type: 'UPDATE_CARE_STREAK' });
     // Track item usage for daily tasks
@@ -296,8 +336,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'CHECK_MILESTONES' });
   };
 
+  /** Unlocks an achievement by ID, awards money, and shows a toast. */
   const unlockAchievement = (achievementId: string) => {
-    const achievement = state.achievements.find(entry => entry.id === achievementId);
+    const achievement = state.achievements.find((entry) => entry.id === achievementId);
     if (achievement && !achievement.unlocked) {
       dispatch({ type: 'UNLOCK_ACHIEVEMENT', payload: achievementId });
       dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'achievement', title: 'Achievement Unlocked!', description: `${achievement.name} — +$${ACHIEVEMENT_REWARD} reward!`, icon: '🏆' } });
@@ -312,6 +353,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'TRIGGER_EVENT', payload: getRandomEvent() });
   };
 
+  /**
+   * Handles the player’s response to a random event. Applies costs,
+   * stat effects, money rewards, optional discounts, and clears the event.
+   */
   const handleEventChoice = (choiceIndex: number) => {
     const event = state.currentEvent;
     if (!event) return;
@@ -348,6 +393,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'UPDATE_CARE_STREAK' });
   };
 
+  /**
+   * Persists the current game state to Supabase.
+   * Creates a profile row first if one doesn’t exist (foreign-key requirement).
+   */
   const saveGame = async () => {
     const {
       data: { session },
@@ -355,11 +404,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!session?.user) return;
 
     // Ensure profile exists before saving (required for foreign key constraint)
-    const { data: existingProfile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', session.user.id)
-      .maybeSingle();
+    const { data: existingProfile } = await supabase.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
 
     if (!existingProfile) {
       const { error: profileError } = await supabase.from('profiles').upsert(
@@ -368,7 +413,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           display_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0],
           avatar_url: session.user.user_metadata?.avatar_url || null,
         },
-        { onConflict: 'id' }
+        { onConflict: 'id' },
       );
 
       if (profileError) {
@@ -393,11 +438,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  /** Replaces local state with a cloud save, marking cloud load as complete. */
   const loadGameFromCloud = useCallback((saveData: GameState) => {
     dispatch({ type: 'LOAD_GAME', payload: saveData });
     cloudSaveLoadedRef.current = true;
   }, []);
 
+  /**
+   * Resets the game to a clean slate. Clears local storage, resets context
+   * state, and deletes the cloud save in the background.
+   */
   const resetGame = async () => {
     // Force-clean any stuck Radix dialog/overlay styles on body.
     // When dialogs unmount mid-transition, pointer-events:none can get orphaned.
@@ -412,7 +462,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // Clean up cloud save in the background
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session?.user) {
         await supabase.from('game_saves').delete().eq('user_id', session.user.id);
       }
@@ -421,15 +473,20 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  /**
+   * Core action handler for feeding, playing, resting, cleaning, or vet
+   * visits. Enforces daily-action limits, pet-behavior modifiers, and
+   * play-window bonuses.
+   */
   const performAction = (action: 'feed' | 'play' | 'rest' | 'clean' | 'vet') => {
     if (!state.pet) return;
 
     // Check if we have daily actions remaining
     if (state.dailyActionsRemaining <= 0) {
       toast({
-        title: "❌ No actions left!",
-        description: "Your pet needs rest. Come back tomorrow!",
-        variant: "destructive",
+        title: '❌ No actions left!',
+        description: 'Your pet needs rest. Come back tomorrow!',
+        variant: 'destructive',
       });
       return;
     }
@@ -438,17 +495,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (state.petBehavior === 'disobedient' && action === 'play' && Math.random() < 0.3) {
       dispatch({ type: 'USE_DAILY_ACTION' }); // Consumes action as penalty
       toast({
-        title: "😤 Pet Refused!",
+        title: '😤 Pet Refused!',
         description: `${state.pet.name} is feeling disobedient and refuses to play!`,
-        variant: "destructive",
+        variant: 'destructive',
       });
       return;
     }
-    
+
     // Soft Warning: Sad/Grumpy pets give less rewards
     if ((state.petBehavior === 'sad' || state.petBehavior === 'grumpy') && action === 'play') {
-       toast({
-        title: "😔 Not interested...",
+      toast({
+        title: '😔 Not interested...',
         description: `${state.pet.name} is ${state.petBehavior} and won't play as much.`,
       });
       // Logic for reduced stats is handled in reducer
@@ -465,15 +522,39 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Actions that require inventory items
     const inventoryActions: Record<string, { category: string; emptyTitle: string; emptyDescription: string; successIcon: string; successTitle: string }> = {
       feed: { category: 'hunger', emptyTitle: '❌ No food in inventory!', emptyDescription: 'Buy food from the Shop to feed your pet.', successIcon: '🍖', successTitle: `Fed ${state.pet.name}!` },
-      play: { category: 'happiness', emptyTitle: '❌ No toys in inventory!', emptyDescription: 'Buy toys from the Shop to play with your pet.', successIcon: '🎾', successTitle: `Played with ${state.pet.name}!` },
-      rest: { category: 'energy', emptyTitle: '❌ No energy items in inventory!', emptyDescription: 'Buy energy items from the Shop to rest your pet.', successIcon: '😴', successTitle: `${state.pet.name} had a rest!` },
-      clean: { category: 'cleanliness', emptyTitle: '❌ No cleaning supplies in inventory!', emptyDescription: 'Buy cleaning supplies from the Shop to clean your pet.', successIcon: '🧼', successTitle: `${state.pet.name} is clean now!` },
-      vet: { category: 'health', emptyTitle: '❌ No health items in inventory!', emptyDescription: 'Buy health items from the Shop to heal your pet.', successIcon: '💊', successTitle: `${state.pet.name} got a health checkup!` },
+      play: {
+        category: 'happiness',
+        emptyTitle: '❌ No toys in inventory!',
+        emptyDescription: 'Buy toys from the Shop to play with your pet.',
+        successIcon: '🎾',
+        successTitle: `Played with ${state.pet.name}!`,
+      },
+      rest: {
+        category: 'energy',
+        emptyTitle: '❌ No energy items in inventory!',
+        emptyDescription: 'Buy energy items from the Shop to rest your pet.',
+        successIcon: '😴',
+        successTitle: `${state.pet.name} had a rest!`,
+      },
+      clean: {
+        category: 'cleanliness',
+        emptyTitle: '❌ No cleaning supplies in inventory!',
+        emptyDescription: 'Buy cleaning supplies from the Shop to clean your pet.',
+        successIcon: '🧼',
+        successTitle: `${state.pet.name} is clean now!`,
+      },
+      vet: {
+        category: 'health',
+        emptyTitle: '❌ No health items in inventory!',
+        emptyDescription: 'Buy health items from the Shop to heal your pet.',
+        successIcon: '💊',
+        successTitle: `${state.pet.name} got a health checkup!`,
+      },
     };
 
     const inventoryAction = inventoryActions[action];
     if (inventoryAction) {
-      const item = state.inventory.find(item => item.category === inventoryAction.category && item.quantity > 0);
+      const item = state.inventory.find((item) => item.category === inventoryAction.category && item.quantity > 0);
       if (item) {
         consumeItem(item.id);
         toast({
@@ -484,7 +565,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         toast({
           title: inventoryAction.emptyTitle,
           description: inventoryAction.emptyDescription,
-          variant: "destructive",
+          variant: 'destructive',
         });
         return;
       }
@@ -521,11 +602,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'CHECK_MILESTONES' });
     dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Action Complete!', description: actionData.message, icon: '✨' } });
     toast({
-      title: "✨ Action Complete!",
+      title: '✨ Action Complete!',
       description: actionData.message,
     });
   };
 
+  /** Updates the high-score for a specific mini-game if the new score is higher. */
   const updateHighScore = (gameId: string, score: number) => {
     dispatch({ type: 'UPDATE_HIGH_SCORE', payload: { gameId, score } });
   };
@@ -538,15 +620,20 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'CLEAR_NOTIFICATIONS' });
   };
 
+  /**
+   * Tracks a mini-game session. Increments daily `gamesPlayed`,
+   * game-specific flags, lifetime win counter, and checks for
+   * play-window bonuses.
+   */
   const trackGamePlayed = (gameId?: string, won = true) => {
     dispatch({ type: 'TRACK_ACTION', payload: { key: 'gamesPlayed' } });
 
     if (gameId) {
       const keyMap: Record<string, keyof DailyTracking> = {
-        'catch': 'catchGamePlayed',
-        'memory': 'memoryGamePlayed',
-        'quiz': 'quizGamePlayed',
-        'whack': 'whackGamePlayed'
+        catch: 'catchGamePlayed',
+        memory: 'memoryGamePlayed',
+        quiz: 'quizGamePlayed',
+        whack: 'whackGamePlayed',
       };
 
       const trackingKey = keyMap[gameId];
@@ -587,11 +674,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'UNEQUIP_ACCESSORY', payload: slot });
   };
 
+  /**
+   * Puts the pet to sleep (once per day). Boosts energy, happiness,
+   * cleanliness, and health while slightly reducing hunger.
+   */
   const putPetToSleep = () => {
     const today = new Date().toDateString();
     if (state.lastSleepDate === today) {
       toast({
-        title: "😴 Already rested today",
+        title: '😴 Already rested today',
         description: `${state.pet?.name || 'Your pet'} already had their nightly sleep!`,
       });
       return;
@@ -600,15 +691,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     dispatch({ type: 'TRACK_ACTION', payload: { key: 'restCount' } });
     dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Good Night!', description: `${state.pet?.name || 'Your pet'} is sleeping soundly. 💤`, icon: '🌙' } });
     toast({
-      title: "🌙 Good Night!",
+      title: '🌙 Good Night!',
       description: `${state.pet?.name || 'Your pet'} is now sleeping. Stats restored!`,
     });
   };
 
+  /** Wakes the pet up from sleep. */
   const wakePetUp = () => {
     dispatch({ type: 'WAKE_PET_UP' });
     toast({
-      title: "☀️ Good Morning!",
+      title: '☀️ Good Morning!',
       description: `${state.pet?.name || 'Your pet'} is awake and ready for the day!`,
     });
   };
@@ -620,20 +712,24 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const restartTutorial = () => {
     dispatch({ type: 'RESTART_TUTORIAL' });
     toast({
-      title: "Tutorial Restarted",
-      description: "The tutorial will now guide you through the game features again.",
+      title: 'Tutorial Restarted',
+      description: 'The tutorial will now guide you through the game features again.',
     });
   };
 
   const expireTimedTask = (taskId: string) => {
     dispatch({ type: 'EXPIRE_TIMED_TASK', payload: taskId });
     toast({
-      title: "⏰ Task Expired!",
+      title: '⏰ Task Expired!',
       description: `Time ran out! The timed task has been removed.`,
-      variant: "destructive",
+      variant: 'destructive',
     });
   };
 
+  /**
+   * Claims a mini-game money reward. Each game can only award once
+   * per calendar day. Returns `true` if the reward was claimed.
+   */
   const claimGameReward = (gameId: string, amount: number): boolean => {
     const today = new Date().toDateString();
     if (state.dailyGameRewards[gameId] === today) {
@@ -643,23 +739,25 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return true;
   };
 
+  /** Toggles guest mode. In guest mode saves go to localStorage only. */
   const setGuestMode = useCallback((isGuest: boolean) => {
     dispatch({ type: 'SET_GUEST_MODE', payload: isGuest });
     if (isGuest) {
       cloudSaveLoadedRef.current = true; // Allow local saves in guest mode
       toast({
-        title: "🎮 Guest Mode",
-        description: "Your progress will be saved locally only.",
+        title: '🎮 Guest Mode',
+        description: 'Your progress will be saved locally only.',
       });
     }
   }, []);
 
+  /** Consumes one daily action point. Returns `false` if none remain. */
   const useDailyAction = useCallback((): boolean => {
     if (state.dailyActionsRemaining <= 0) {
       toast({
-        title: "❌ No actions left!",
-        description: "Come back tomorrow for more actions.",
-        variant: "destructive",
+        title: '❌ No actions left!',
+        description: 'Come back tomorrow for more actions.',
+        variant: 'destructive',
       });
       return false;
     }
@@ -674,8 +772,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const claimWeeklyGoal = useCallback((goalId: string) => {
     dispatch({ type: 'CLAIM_WEEKLY_GOAL', payload: goalId });
     toast({
-      title: "🎯 Weekly Goal Complete!",
-      description: "Reward claimed successfully!",
+      title: '🎯 Weekly Goal Complete!',
+      description: 'Reward claimed successfully!',
     });
   }, []);
 
@@ -683,12 +781,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (state.tomorrowReward) {
       dispatch({ type: 'CLAIM_TOMORROW_REWARD' });
       toast({
-        title: "🎁 Welcome Back!",
+        title: '🎁 Welcome Back!',
         description: `You received your comeback reward!`,
       });
     }
   }, [state.tomorrowReward]);
 
+  /**
+   * Creates an action-log entry with optional stat-change metadata.
+   * The log is capped at 50 entries (most recent first).
+   */
   const addActionLog = useCallback((action: string, description: string, icon: string, statChanges?: Partial<PetStats>) => {
     const logEntry: ActionLogEntry = {
       id: crypto.randomUUID(),

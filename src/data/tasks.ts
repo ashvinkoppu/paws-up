@@ -18,8 +18,30 @@ export const DAILY_TASK_POOL: DailyTaskDef[] = [
   { id: 'game-3', name: 'Arcade Star', description: 'Play 3 mini-games', icon: '⭐', trackingKey: 'gamesPlayed', target: 3, xpReward: 15, difficulty: 'hard', timeLimitMinutes: 10 },
   { id: 'vet-1', name: 'Health Check', description: 'Take your pet to the vet', icon: '🏥', trackingKey: 'vetCount', target: 1, xpReward: 15, difficulty: 'easy' },
   // Discount Rewards
-  { id: 'discount-game-4', name: 'Mega Gamer', description: 'Play 4 mini-games for 10% off', icon: '🕹️', trackingKey: 'gamesPlayed', target: 4, xpReward: 30, difficulty: 'hard', rewardType: 'discount', discountValue: 10 },
-  { id: 'discount-spend-80', name: 'Shopaholic', description: 'Spend $80 for 15% off', icon: '🛍️', trackingKey: 'moneySpent', target: 80, xpReward: 30, difficulty: 'hard', rewardType: 'discount', discountValue: 15 },
+  {
+    id: 'discount-game-4',
+    name: 'Mega Gamer',
+    description: 'Play 4 mini-games for 10% off',
+    icon: '🕹️',
+    trackingKey: 'gamesPlayed',
+    target: 4,
+    xpReward: 30,
+    difficulty: 'hard',
+    rewardType: 'discount',
+    discountValue: 10,
+  },
+  {
+    id: 'discount-spend-80',
+    name: 'Shopaholic',
+    description: 'Spend $80 for 15% off',
+    icon: '🛍️',
+    trackingKey: 'moneySpent',
+    target: 80,
+    xpReward: 30,
+    difficulty: 'hard',
+    rewardType: 'discount',
+    discountValue: 15,
+  },
 ];
 
 // ── Milestones (12, in 3 tiers) ─────────────────────────────────────────
@@ -40,24 +62,18 @@ export const MILESTONES: MilestoneDef[] = [
   { id: 'ms-play-100', name: 'Play Legend', description: 'Play 100 times total', icon: '👑', tier: 3, xpReward: 200, moneyReward: 50, checkFn: 'playCount100' },
   { id: 'ms-level-10', name: 'Master Owner', description: 'Reach level 10', icon: '💎', tier: 3, xpReward: 200, moneyReward: 75, checkFn: 'level10' },
   { id: 'ms-streak-14', name: 'Unwavering Carer', description: 'Achieve a 14-day care streak', icon: '🔥', tier: 3, xpReward: 200, moneyReward: 50, checkFn: 'streak14' },
-  
+
   // Special Weekly Task
-  { 
-    id: 'ms-weekly-challenge-1', 
-    name: 'Weekly Challenge: Care Week', 
-    description: 'Complete a full week of care to earn a massive reward pack!', 
-    icon: '📅', 
-    tier: 3, 
-    xpReward: 300, 
-    moneyReward: 100, 
-    itemRewards: [
-      'hunger-gourmet-feast',
-      'happiness-interactive-playset',
-      'cleanliness-spa-day',
-      'health-full-treatment',
-      'energy-cozy-bed'
-    ],
-    checkFn: 'streak7' 
+  {
+    id: 'ms-weekly-challenge-1',
+    name: 'Weekly Challenge: Care Week',
+    description: 'Complete a full week of care to earn a massive reward pack!',
+    icon: '📅',
+    tier: 3,
+    xpReward: 300,
+    moneyReward: 100,
+    itemRewards: ['hunger-gourmet-feast', 'happiness-interactive-playset', 'cleanliness-spa-day', 'health-full-treatment', 'energy-cozy-bed'],
+    checkFn: 'streak7',
   },
 ];
 
@@ -67,22 +83,22 @@ function seededRandom(seed: string): () => number {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
     const char = seed.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash |= 0;
   }
   return () => {
     hash = (hash * 1664525 + 1013904223) | 0;
-    return ((hash >>> 0) / 4294967296);
+    return (hash >>> 0) / 4294967296;
   };
 }
 
 export function selectDailyTasks(date: string): string[] {
   const random = seededRandom(date);
   const pool = [...DAILY_TASK_POOL];
-  
-  const discountTasks = pool.filter(t => t.rewardType === 'discount');
-  const standardTasks = pool.filter(t => t.rewardType !== 'discount');
-  
+
+  const discountTasks = pool.filter((t) => t.rewardType === 'discount');
+  const standardTasks = pool.filter((t) => t.rewardType !== 'discount');
+
   const selected: string[] = [];
 
   // 1. Chance to add a discount task (e.g. 50% chance, or always if available)
@@ -136,19 +152,32 @@ export function checkMilestone(checkFn: string, state: GameState, lifetimeCounte
   const streak = state.careStreak;
 
   switch (checkFn) {
-    case 'feedCount10': return lifetimeCounters.totalFeeds >= 10;
-    case 'feedCount50': return lifetimeCounters.totalFeeds >= 50;
-    case 'feedCount100': return lifetimeCounters.totalFeeds >= 100;
-    case 'playCount10': return lifetimeCounters.totalPlays >= 10;
-    case 'playCount50': return lifetimeCounters.totalPlays >= 50;
-    case 'playCount100': return lifetimeCounters.totalPlays >= 100;
-    case 'level3': return level >= 3;
-    case 'level5': return level >= 5;
-    case 'level10': return level >= 10;
-    case 'streak3': return streak >= 3;
-    case 'streak7': return streak >= 7;
-    case 'streak14': return streak >= 14;
-    default: return false;
+    case 'feedCount10':
+      return lifetimeCounters.totalFeeds >= 10;
+    case 'feedCount50':
+      return lifetimeCounters.totalFeeds >= 50;
+    case 'feedCount100':
+      return lifetimeCounters.totalFeeds >= 100;
+    case 'playCount10':
+      return lifetimeCounters.totalPlays >= 10;
+    case 'playCount50':
+      return lifetimeCounters.totalPlays >= 50;
+    case 'playCount100':
+      return lifetimeCounters.totalPlays >= 100;
+    case 'level3':
+      return level >= 3;
+    case 'level5':
+      return level >= 5;
+    case 'level10':
+      return level >= 10;
+    case 'streak3':
+      return streak >= 3;
+    case 'streak7':
+      return streak >= 7;
+    case 'streak14':
+      return streak >= 14;
+    default:
+      return false;
   }
 }
 

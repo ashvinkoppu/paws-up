@@ -97,29 +97,36 @@ const ActionButtons: React.FC = () => {
     return () => clearTimeout(timer);
   }, [feedback]);
 
-  const handleAction = useCallback((actionId: 'feed' | 'play' | 'rest' | 'clean' | 'vet' | 'wake') => {
-    if (actionId === 'wake') {
-      wakePetUp();
-      setFeedback({ actionId: 'wake', key: Date.now() });
-      return;
-    }
-    performAction(actionId);
-    setFeedback({ actionId, key: Date.now() });
-  }, [performAction, wakePetUp]);
+  const handleAction = useCallback(
+    (actionId: 'feed' | 'play' | 'rest' | 'clean' | 'vet' | 'wake') => {
+      if (actionId === 'wake') {
+        wakePetUp();
+        setFeedback({ actionId: 'wake', key: Date.now() });
+        return;
+      }
+      performAction(actionId);
+      setFeedback({ actionId, key: Date.now() });
+    },
+    [performAction, wakePetUp],
+  );
 
   if (!state.pet) return null;
 
   // Build a synthetic action config for "wake" since it's not in ACTIONS array
-  const activeFeedback = feedback ? (feedback.actionId === 'wake' ? {
-    id: 'wake',
-    label: 'Wake Up',
-    icon: Sun,
-    description: 'Start the day',
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-500/10',
-    hoverColor: '',
-    activeColor: ''
-  } : ACTIONS.find(action => action.id === feedback.actionId)) : null;
+  const activeFeedback = feedback
+    ? feedback.actionId === 'wake'
+      ? {
+          id: 'wake',
+          label: 'Wake Up',
+          icon: Sun,
+          description: 'Start the day',
+          color: 'text-orange-500',
+          bgColor: 'bg-orange-500/10',
+          hoverColor: '',
+          activeColor: '',
+        }
+      : ACTIONS.find((action) => action.id === feedback.actionId)
+    : null;
   const activeFeedbackMeta = feedback ? ACTION_FEEDBACK[feedback.actionId] : null;
 
   return (
@@ -135,34 +142,23 @@ const ActionButtons: React.FC = () => {
           }}
         >
           <div
-            className={cn(
-              "flex items-center gap-4 px-8 py-5 rounded-2xl shadow-2xl glass-card",
-            )}
+            className={cn('flex items-center gap-4 px-8 py-5 rounded-2xl shadow-2xl glass-card')}
             style={{
               minWidth: '320px',
               boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.1) inset',
             }}
           >
-            <div className={cn(
-              "text-4xl",
-            )}
-              style={{ animation: 'actionEmojiPop 0.5s ease-out' }}
-            >
+            <div className={cn('text-4xl')} style={{ animation: 'actionEmojiPop 0.5s ease-out' }}>
               {activeFeedbackMeta.emoji}
             </div>
             <div className="flex flex-col">
               <span className="font-serif font-bold text-lg text-foreground">
                 {activeFeedbackMeta.verb} {state.pet?.name}!
               </span>
-              <span className={cn("text-sm font-semibold", activeFeedback.color)}>
-                {activeFeedback.description}
-              </span>
+              <span className={cn('text-sm font-semibold', activeFeedback.color)}>{activeFeedback.description}</span>
             </div>
             {feedback.actionId !== 'wake' && (
-              <div
-                className={cn("text-3xl font-bold ml-2", activeFeedback.color)}
-                style={{ animation: 'actionStatBounce 0.6s ease-out' }}
-              >
+              <div className={cn('text-3xl font-bold ml-2', activeFeedback.color)} style={{ animation: 'actionStatBounce 0.6s ease-out' }}>
                 +
               </div>
             )}
@@ -210,32 +206,27 @@ const ActionButtons: React.FC = () => {
               variant="outline"
               disabled={isDisabled}
               className={cn(
-                "flex flex-col items-center justify-center h-auto py-4 px-2",
-                "border border-border/40 rounded-xl",
-                "transition-all duration-200 transform btn-press",
-                !isDisabled && "hover:scale-105 hover:-translate-y-1 hover:shadow-md",
+                'flex flex-col items-center justify-center h-auto py-4 px-2',
+                'border border-border/40 rounded-xl',
+                'transition-all duration-200 transform btn-press',
+                !isDisabled && 'hover:scale-105 hover:-translate-y-1 hover:shadow-md',
                 bgColor,
                 action.hoverColor,
                 action.activeColor,
-                "animate-fade-in-up opacity-0",
-                isDisabled && "opacity-50 cursor-not-allowed grayscale"
+                'animate-fade-in-up opacity-0',
+                isDisabled && 'opacity-50 cursor-not-allowed grayscale',
               )}
               style={{
                 animationDelay: `${index * 0.05}s`,
-                animationFillMode: 'forwards'
+                animationFillMode: 'forwards',
               }}
               onClick={() => handleAction(clickAction as any)}
             >
-              <div className={cn(
-                "p-2 rounded-xl mb-2 transition-colors duration-200",
-                bgColor
-              )}>
-                <Icon className={cn("w-5 h-5", color)} />
+              <div className={cn('p-2 rounded-xl mb-2 transition-colors duration-200', bgColor)}>
+                <Icon className={cn('w-5 h-5', color)} />
               </div>
               <span className="font-semibold text-xs text-foreground">{label}</span>
-              <span className="text-[10px] text-muted-foreground mt-0.5 hidden md:block">
-                {description}
-              </span>
+              <span className="text-[10px] text-muted-foreground mt-0.5 hidden md:block">{description}</span>
             </Button>
           );
         })}
@@ -245,7 +236,7 @@ const ActionButtons: React.FC = () => {
       <div className="mt-4 pt-3 border-t border-border/30">
         <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
           <span className="text-primary">Tip:</span>
-          <span>{state.petAsleep ? "Wake up your pet to play!" : "Shop items give bigger stat boosts"}</span>
+          <span>{state.petAsleep ? 'Wake up your pet to play!' : 'Shop items give bigger stat boosts'}</span>
         </p>
       </div>
     </div>
