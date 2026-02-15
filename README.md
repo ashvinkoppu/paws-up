@@ -37,7 +37,22 @@ Players adopt a virtual pet and must balance its needs (food, play, health, rest
 
 ## Tech Stack
 
-React + TypeScript, Vite, Tailwind CSS, shadcn/ui, Supabase, Recharts
+| Category | Technology |
+|---|---|
+| **Language** | TypeScript |
+| **Frontend Framework** | React 19 |
+| **Build Tool** | Vite 5 |
+| **Styling** | Tailwind CSS 3 + tailwindcss-animate |
+| **UI Components** | shadcn/ui (built on Radix UI primitives) |
+| **Routing** | React Router DOM 6 |
+| **State Management** | React Context + useReducer, TanStack React Query |
+| **Backend / Auth** | Supabase (authentication + PostgreSQL database) |
+| **AI Chatbot** | OpenAI API (gpt-5-nano) via Vercel Serverless Functions |
+| **Charts** | Recharts (via shadcn/ui chart component) |
+| **Icons** | Lucide React |
+| **Fonts** | Google Fonts (Fredoka, Fraunces, Inconsolata) |
+| **Notifications** | Sonner toast library |
+| **Deployment** | Vercel |
 
 ## Quick Start
 
@@ -88,3 +103,58 @@ To also run the chatbot API proxy (requires [Vercel CLI](https://vercel.com/docs
 ```bash
 npm run dev:full
 ```
+
+## Libraries & Templates
+
+### Core Framework
+
+- **[React](https://react.dev/)** (v19) — UI component library
+- **[TypeScript](https://www.typescriptlang.org/)** (v5) — Type-safe JavaScript
+- **[Vite](https://vitejs.dev/)** (v5) — Frontend build tool and dev server
+- **[React Router DOM](https://reactrouter.com/)** (v6) — Client-side routing
+
+### UI & Styling
+
+- **[Tailwind CSS](https://tailwindcss.com/)** (v3) — Utility-first CSS framework
+- **[tailwindcss-animate](https://github.com/jamiebuilds/tailwindcss-animate)** — Animation utilities for Tailwind
+- **[shadcn/ui](https://ui.shadcn.com/)** — Re-usable component library built on Radix UI
+- **[Radix UI](https://www.radix-ui.com/)** — Unstyled, accessible UI primitives (dialog, tabs, accordion, tooltip, popover, select, and more)
+- **[Lucide React](https://lucide.dev/)** — Icon library
+- **[class-variance-authority](https://cva.style/)** — Component variant utility
+- **[clsx](https://github.com/lukeed/clsx)** + **[tailwind-merge](https://github.com/dcastil/tailwind-merge)** — Conditional class name merging
+- **[Recharts](https://recharts.org/)** — Charting library (used via shadcn/ui chart component)
+- **[Sonner](https://sonner.emilkowal.dev/)** — Toast notification library
+- **[next-themes](https://github.com/pacocoursey/next-themes)** — Theme management (dark/light mode)
+
+### Backend & Data
+
+- **[Supabase](https://supabase.com/)** (`@supabase/supabase-js`) — Authentication, PostgreSQL database, and real-time sync
+- **[@supabase/auth-ui-react](https://supabase.com/docs/guides/auth/auth-helpers/auth-ui)** — Pre-built authentication UI components
+- **[TanStack React Query](https://tanstack.com/query)** — Server state management and data fetching
+- **[OpenAI API](https://platform.openai.com/)** — Powers the FAQ chatbot (called via serverless proxy)
+- **[Vercel Serverless Functions](https://vercel.com/docs/functions)** (`@vercel/node`) — API proxy for secure OpenAI calls
+
+### Dev Tools
+
+- **[ESLint](https://eslint.org/)** (v9) — Code linting
+- **[typescript-eslint](https://typescript-eslint.io/)** — TypeScript-specific lint rules
+- **[PostCSS](https://postcss.org/)** + **[Autoprefixer](https://github.com/postcss/autoprefixer)** — CSS processing
+- **[@vitejs/plugin-react-swc](https://github.com/nicolo-ribaudo/vite-plugin-react-swc)** — Fast React refresh with SWC compiler
+- **[concurrently](https://github.com/open-cli-tools/concurrently)** — Run multiple dev scripts in parallel
+
+### Fonts (via Google Fonts)
+
+- **[Fredoka](https://fonts.google.com/specimen/Fredoka)** — Primary display font
+- **[Fraunces](https://fonts.google.com/specimen/Fraunces)** — Serif accent font
+- **[Inconsolata](https://fonts.google.com/specimen/Inconsolata)** — Monospace font for numerical data
+
+## Credits & Attributions
+
+- **[Lovable](https://lovable.dev/)** — Initial project scaffolding and boilerplate generation
+- **[shadcn/ui](https://ui.shadcn.com/)** by [shadcn](https://github.com/shadcn) — Component templates adapted for the game UI
+- **[Radix UI](https://www.radix-ui.com/)** by Workos — Accessible UI primitives powering shadcn/ui components
+- **[OpenAI](https://openai.com/)** — GPT-5 Nano model powering the in-game FAQ chatbot
+- **[Supabase](https://supabase.com/)** — Open-source Firebase alternative providing authentication and database
+- **[Google Fonts](https://fonts.google.com/)** — Fredoka, Fraunces, and Inconsolata typefaces
+- **[Lucide](https://lucide.dev/)** — Open-source icon set
+- **[Vercel](https://vercel.com/)** — Hosting platform and serverless function runtime
