@@ -1,6 +1,6 @@
 # Paws Up
 
-A virtual pet game that teaches financial literacy. Care for your pet while learning to budget, save, and spend wisely.
+A virtual pet game that teaches financial literacy. Care for your pet while learning to budget, save, and spend wisely. By Ashvin Koppu.
 
 ## The Concept
 
