@@ -40,6 +40,7 @@ import TermsOfService from "./pages/TermsOfService";
 import FAQ from "./pages/FAQ";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import NotFound from "./pages/NotFound";
+import Park from "./pages/Park";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/park"
+                  element={
+                    <ProtectedRoute>
+                      <Park />
                     </ProtectedRoute>
                   }
                 />

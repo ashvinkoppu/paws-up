@@ -177,9 +177,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [state.gameStarted, state.pet?.id]);
 
-  // Stat decay timer
+  // Stat decay timer — depend only on pet existence, not the pet object itself,
+  // to avoid tearing down and recreating the interval on every decay tick.
+  const hasPet = !!state.pet;
   useEffect(() => {
-    if (!state.pet) return;
+    if (!hasPet) return;
     const interval = setInterval(() => {
       dispatch({ type: 'DECAY_STATS' });
       dispatch({ type: 'CHECK_GROWTH' });
@@ -188,10 +190,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (Math.random() < 0.05 && !isPlayingMiniGameRef.current) {
         dispatch({ type: 'TRIGGER_EVENT', payload: getRandomEvent() });
       }
-    }, 180000);
+    }, 30000);
 
     return () => clearInterval(interval);
-  }, [state.pet]);
+  }, [hasPet]);
   /**
    * Creates a new pet, initialises starter stats, unlocks the
    * “first-pet” achievement, and kicks off the daily reward loop.

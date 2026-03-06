@@ -52,7 +52,7 @@ import FAQChatbot from '@/components/chat/FAQChatbot';
 import NewDayPopup from '@/components/overlays/NewDayPopup';
 import PetDeathOverlay from '@/components/pet/PetDeathOverlay';
 import Collections from '@/components/dashboard/Collections';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, HelpCircle, GraduationCap, Package } from 'lucide-react';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, HelpCircle, GraduationCap, Package, Trees } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -236,12 +236,38 @@ const GameDashboard: React.FC = () => {
   // State for reset dialog (needed for menu)
   const [showResetDialog, setShowResetDialog] = useState(false);
 
+  // Time-of-day background gradient
+  const getTimeOfDayGradient = () => {
+    const gameTime = state.gameTime;
+    if (gameTime < 360) {
+      // Night (midnight - 6am): deep indigo/navy
+      return 'from-indigo-950/30 via-purple-900/20 to-blue-950/30';
+    } else if (gameTime < 480) {
+      // Sunrise (6am - 8am): warm oranges and pinks
+      return 'from-orange-400/20 via-rose-300/15 to-amber-300/20';
+    } else if (gameTime < 720) {
+      // Morning (8am - noon): bright sky blue and yellow
+      return 'from-sky-400/15 via-cyan-300/10 to-yellow-200/15';
+    } else if (gameTime < 1020) {
+      // Afternoon (noon - 5pm): vibrant blue and green
+      return 'from-blue-400/15 via-emerald-300/10 to-cyan-300/15';
+    } else if (gameTime < 1200) {
+      // Sunset (5pm - 8pm): golden orange and magenta
+      return 'from-amber-500/20 via-orange-400/15 to-rose-500/20';
+    } else {
+      // Evening/Night (8pm - midnight): purple and deep blue
+      return 'from-violet-900/25 via-indigo-800/20 to-purple-900/25';
+    }
+  };
+
   return (
     <div className="min-h-screen paper-texture relative overflow-x-hidden w-full">
-      {/* Atmospheric background - simplified */}
+      {/* Animated time-of-day background */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-15%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-br from-primary/5 to-transparent blur-3xl" />
-        <div className="absolute bottom-[-15%] right-[-5%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-tl from-secondary/5 to-transparent blur-3xl" />
+        <div className={cn('absolute inset-0 bg-gradient-to-br transition-all', getTimeOfDayGradient())} style={{ transitionDuration: '3000ms' }} />
+        <div className="absolute top-[-15%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-br from-primary/8 to-transparent blur-3xl animate-gentle-drift" />
+        <div className="absolute bottom-[-15%] right-[-5%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-tl from-secondary/8 to-transparent blur-3xl" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-[20%] right-[10%] w-[30vw] h-[30vw] rounded-full bg-gradient-to-bl from-chart-2/5 to-transparent blur-3xl animate-gentle-drift" style={{ animationDelay: '2s' }} />
       </div>
 
       {/* Clean, minimal header */}
@@ -434,8 +460,26 @@ const GameDashboard: React.FC = () => {
             <div className="animate-fade-in-up" data-tutorial="pet-display">
               <PetDisplay onXpClick={() => setActiveTab('tasks')} onFinanceClick={() => setActiveTab('finance')} />
             </div>
+            <Link
+              to="/park"
+              className="block animate-fade-in-up"
+              style={{ animationDelay: '0.08s' }}
+            >
+              <div className="glass-card rounded-2xl shadow-md p-4 bg-gradient-to-r from-emerald-400/20 via-green-300/15 to-lime-300/20 border border-emerald-400/30 hover:from-emerald-400/30 hover:via-green-300/25 hover:to-lime-300/30 hover:shadow-lg hover:shadow-emerald-400/10 transition-all duration-300 cursor-pointer group">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-400 rounded-xl shadow-md group-hover:scale-110 transition-transform">
+                    <Trees className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-serif font-bold text-base text-foreground">Go to Park</h3>
+                    <p className="text-xs text-muted-foreground">Walk, play fetch, and explore!</p>
+                  </div>
+                  <span className="text-lg group-hover:translate-x-1 transition-transform">🌳</span>
+                </div>
+              </div>
+            </Link>
             <div className="animate-fade-in-up" data-tutorial="side-panel" style={{ animationDelay: '0.1s' }}>
-              <SidePanel onFinanceClick={() => setActiveTab('finance')} />
+              <SidePanel />
             </div>
           </div>
 

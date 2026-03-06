@@ -60,12 +60,12 @@
     --sidebar-border: 33 28% 78%;
     --sidebar-ring: 12 70% 52%;
 
-    /* Chart colors - rich storybook palette */
-    --chart-1: 24 82% 50%;  /* Burnt amber for hunger */
-    --chart-2: 335 62% 54%; /* Rose madder for happiness */
-    --chart-3: 40 88% 52%;  /* Saffron gold for energy */
-    --chart-4: 152 45% 40%; /* Forest sage for cleanliness */
-    --chart-5: 2 70% 50%;   /* Vermillion for health */
+    /* Chart colors - vibrant saturated palette */
+    --chart-1: 24 92% 55%;  /* Vivid amber for hunger */
+    --chart-2: 335 78% 58%; /* Hot pink for happiness */
+    --chart-3: 40 95% 55%;  /* Bright gold for energy */
+    --chart-4: 152 65% 42%; /* Vivid green for cleanliness */
+    --chart-5: 2 82% 55%;   /* Bright red for health */
 
     --sidebar: 40 45% 97%;
 
@@ -1164,4 +1164,150 @@
 
 .animate-level-up-banner {
   animation: levelUpBanner 3s ease-out forwards;
+}
+
+/* Park playground animations */
+@keyframes floatTextUp {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(0) scale(1);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-30px) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-60px) scale(0.8);
+  }
+}
+
+@keyframes particleBurst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--particle-vx, 30px), var(--particle-vy, -30px)) scale(0.3);
+  }
+}
+
+/* ─── Park Playground Enhanced Animations ─── */
+
+@keyframes treeSway {
+  0%, 100% { transform: rotate(-1.5deg) scaleX(var(--tree-flip, 1)); }
+  50% { transform: rotate(1.5deg) scaleX(var(--tree-flip, 1)); }
+}
+
+@keyframes butterflyFloat {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  20% { transform: translate(12px, -18px) rotate(8deg) scale(1.05); }
+  40% { transform: translate(28px, -6px) rotate(-4deg) scale(0.95); }
+  60% { transform: translate(16px, 14px) rotate(6deg) scale(1.02); }
+  80% { transform: translate(-8px, 8px) rotate(-6deg) scale(0.98); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+
+@keyframes stationBreath {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.04); opacity: 1; }
+}
+
+@keyframes stationGlowRing {
+  0% { transform: scale(0.95); opacity: 0; }
+  50% { opacity: 0.6; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes dappledShift {
+  0%, 100% { opacity: 0.12; transform: translateX(0) translateY(0); }
+  33% { opacity: 0.2; transform: translateX(4px) translateY(-3px); }
+  66% { opacity: 0.15; transform: translateX(-3px) translateY(4px); }
+}
+
+@keyframes grassWave {
+  0%, 100% { transform: scaleY(1) skewX(0deg); }
+  50% { transform: scaleY(1.05) skewX(1deg); }
+}
+
+@keyframes parkCloudDrift {
+  0% { transform: translateX(0) scale(var(--cloud-scale, 1)); }
+  100% { transform: translateX(var(--cloud-travel, 100vw)) scale(var(--cloud-scale, 1)); }
+}
+
+@keyframes dandelionFloat {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  50% { transform: translate(var(--seed-dx, 40px), var(--seed-dy, -60px)) rotate(180deg); opacity: 0.4; }
+  100% { transform: translate(var(--seed-ex, 80px), var(--seed-ey, -120px)) rotate(360deg); opacity: 0; }
+}
+
+@keyframes pondRipple {
+  0% { transform: scale(0.6); opacity: 0.4; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes sunRays {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-tree-sway {
+  animation: treeSway 5s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.animate-butterfly-float {
+  animation: butterflyFloat 6s ease-in-out infinite;
+}
+
+.animate-station-breath {
+  animation: stationBreath 3.5s ease-in-out infinite;
+}
+
+.animate-dappled-shift {
+  animation: dappledShift 8s ease-in-out infinite;
+}
+
+.animate-grass-wave {
+  animation: grassWave 4s ease-in-out infinite;
+}
+
+.animate-park-cloud {
+  animation: parkCloudDrift var(--cloud-duration, 40s) linear infinite;
+}
+
+.animate-dandelion {
+  animation: dandelionFloat var(--seed-duration, 8s) ease-in-out infinite;
+}
+
+.animate-pond-ripple {
+  animation: pondRipple 3s ease-out infinite;
+}
+
+/* Park pet action animations */
+@keyframes parkRun {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  25% { transform: translateY(-6px) scaleY(0.95); }
+  50% { transform: translateY(0) scaleY(1.02); }
+  75% { transform: translateY(-4px) scaleY(0.97); }
+}
+
+@keyframes parkSocial {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  15% { transform: translateX(-3px) rotate(-4deg); }
+  30% { transform: translateX(3px) rotate(4deg); }
+  45% { transform: translateX(-2px) rotate(-3deg); }
+  60% { transform: translateX(2px) rotate(3deg); }
+  75% { transform: translateX(-1px) rotate(-1deg); }
+  90% { transform: translateX(1px) rotate(1deg); }
+}
+
+.animate-park-run {
+  animation: parkRun 0.4s ease-in-out infinite;
+}
+
+.animate-park-social {
+  animation: parkSocial 0.35s ease-in-out infinite;
 }

@@ -27,7 +27,7 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     lowWarning: 30,
     warning: 'Your pet is hungry!',
     tooltip: 'How full your pet is. Decreases over time.',
-    decayInfo: 'Decays -3 per tick. Missing a meal (breakfast, lunch, dinner) causes an extra -15 drop.',
+    decayInfo: 'Decays -0.5 per tick. Missing a meal (breakfast, lunch, dinner) causes an extra -25 drop.',
     boostInfo: 'Increased by: Food items. Feeding during meal windows prevents the penalty.',
   },
   happiness: {
@@ -41,7 +41,7 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     lowWarning: 25,
     warning: 'Your pet needs attention!',
     tooltip: 'How happy your pet feels. Affects behavior.',
-    decayInfo: 'Decays -2 per tick. Faster with curious personality.',
+    decayInfo: 'Decays -0.5 per tick. Faster with curious personality.',
     boostInfo: 'Increased by: Toys, play sessions, accessories.',
   },
   energy: {
@@ -55,7 +55,7 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     lowWarning: 20,
     warning: 'Your pet is tired!',
     tooltip: 'Energy level. Low energy makes pet sluggish.',
-    decayInfo: 'Decays -1 per tick. Faster with playful personality.',
+    decayInfo: 'Decays -0.33 per tick. Faster with playful personality.',
     boostInfo: 'Increased by: Sleep, cozy beds, rest items.',
   },
   cleanliness: {
@@ -69,7 +69,7 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     lowWarning: 25,
     warning: 'Your pet needs grooming!',
     tooltip: 'How clean your pet is. Low cleanliness hurts health.',
-    decayInfo: 'Decays -2 per tick. Faster with curious personality.',
+    decayInfo: 'Decays -0.5 per tick. Faster with curious personality.',
     boostInfo: 'Increased by: Grooming, spa days, baths.',
   },
   health: {
@@ -83,7 +83,7 @@ export const STAT_CONFIG: Record<keyof PetStats, StatConfigEntry> = {
     lowWarning: 40,
     warning: 'Visit the vet!',
     tooltip: 'Overall health. Critical low = danger!',
-    decayInfo: 'Decays -1 normally, -3 when hunger/cleanliness <30%.',
+    decayInfo: 'Decays -0.33 normally, -0.67 when hunger/cleanliness <30%.',
     boostInfo: 'Increased by: Vitamins, vet visits, good food.',
   },
 };

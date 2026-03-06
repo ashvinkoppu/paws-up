@@ -353,10 +353,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     /**
-     * DECAY_STATS — runs on a 3-minute real-time interval.
+     * DECAY_STATS — runs on a 30-second real-time interval.
      * Reduces each stat based on personality modifiers and current behavior.
-     * Advances game time by 30 minutes per tick, checks for skipped meals,
-     * evaluates pet behavior, and handles extreme neglect (pet death).
+     * Advances game time by 24 minutes per tick (~5 real min per game day),
+     * checks for skipped meals, evaluates pet behavior, and handles extreme neglect (pet death).
      */
     case 'DECAY_STATS': {
       if (!state.pet) return state;
@@ -372,12 +372,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       const decay: Partial<PetStats> = {
-        hunger: (-3 + (modifiers.hunger || 0)) * decayMultiplier,
-        happiness: (-3 + (modifiers.happiness || 0)) * decayMultiplier,
-        energy: (-2 + (modifiers.energy || 0)) * decayMultiplier,
-        cleanliness: (-3 + (modifiers.cleanliness || 0)) * decayMultiplier,
+        hunger: (-0.5 + (modifiers.hunger || 0) * 0.17) * decayMultiplier,
+        happiness: (-0.5 + (modifiers.happiness || 0) * 0.17) * decayMultiplier,
+        energy: (-0.33 + (modifiers.energy || 0) * 0.17) * decayMultiplier,
+        cleanliness: (-0.5 + (modifiers.cleanliness || 0) * 0.17) * decayMultiplier,
         // Health drops faster when hunger or cleanliness is critically low
-        health: state.pet.stats.hunger < 30 || state.pet.stats.cleanliness < 30 ? -4 : -2,
+        health: state.pet.stats.hunger < 30 || state.pet.stats.cleanliness < 30 ? -0.67 : -0.33,
       };
 
       const newStats = { ...state.pet.stats };
@@ -387,9 +387,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
       });
 
-      // Advance game time by 30 minutes per decay tick
+      // Advance game time by 24 minutes per decay tick (~5 real min per game day)
       const oldGameTime = state.gameTime;
-      const newGameTime = (oldGameTime + 30) % 1440;
+      const newGameTime = (oldGameTime + 24) % 1440;
       const crossedMidnight = newGameTime < oldGameTime;
 
       // Reset meals when crossing midnight
@@ -401,7 +401,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       let notifications = state.notifications;
 
       for (const mealName of skippedMeals) {
-        mealPenalty += 15;
+        mealPenalty += 25;
         const notification: GameNotification = {
           id: crypto.randomUUID(),
           type: 'alert',
@@ -1215,7 +1215,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'PENALIZE_MISSED_PLAY_WINDOW': {
       if (!state.pet) return state;
       const newStats = { ...state.pet.stats };
-      newStats.happiness = clampStat(newStats.happiness - 8);
+      newStats.happiness = clampStat(newStats.happiness - 20);
       return {
         ...state,
         pet: { ...state.pet, stats: newStats },

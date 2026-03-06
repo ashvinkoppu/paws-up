@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
@@ -7,6 +7,10 @@ import { PawPrint, Sparkles, Heart, Coins, Gamepad2, Award, LogIn, UserPlus } fr
 
 const Index: React.FC = () => {
   const { session, loading } = useAuth();
+
+  if (!loading && session) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const features = [
     { icon: Heart, label: 'Nurture', description: 'Care for your companion', color: 'chart-2', bg: 'bg-chart-2/10', border: 'border-chart-2/20', text: 'text-chart-2' },
@@ -54,28 +58,20 @@ const Index: React.FC = () => {
           <span className="text-xl font-serif font-bold bg-gradient-to-br from-primary to-chart-5 bg-clip-text text-transparent">Paws Up</span>
         </div>
         <div className="flex items-center gap-3">
-          {!loading && session ? (
-            <Link to="/dashboard">
-              <Button variant="default" size="sm" className="rounded-xl">
-                Go to Dashboard
+          <>
+            <Link to="/login">
+              <Button variant="ghost" size="sm" className="rounded-xl gap-1.5">
+                <LogIn className="w-4 h-4" />
+                Log In
               </Button>
             </Link>
-          ) : (
-            <>
-              <Link to="/login">
-                <Button variant="ghost" size="sm" className="rounded-xl gap-1.5">
-                  <LogIn className="w-4 h-4" />
-                  Log In
-                </Button>
-              </Link>
-              <Link to="/signup">
-                <Button variant="default" size="sm" className="rounded-xl gap-1.5">
-                  <UserPlus className="w-4 h-4" />
-                  Sign Up
-                </Button>
-              </Link>
-            </>
-          )}
+            <Link to="/signup">
+              <Button variant="default" size="sm" className="rounded-xl gap-1.5">
+                <UserPlus className="w-4 h-4" />
+                Sign Up
+              </Button>
+            </Link>
+          </>
         </div>
       </nav>
 

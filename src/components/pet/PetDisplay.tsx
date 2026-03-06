@@ -558,34 +558,6 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                   </div>
                 )}
 
-                {/* Equipped accessory overlays */}
-                {pet.equippedAccessories &&
-                  (Object.entries(pet.equippedAccessories) as [AccessorySlot, string][]).map(([slot, accessoryId]) => {
-                    if (!accessoryId) return null;
-                    const accessory = getAccessoryById(accessoryId);
-                    if (!accessory) return null;
-                    if (accessory.condition) {
-                      const statValue = pet.stats[accessory.condition.stat];
-                      if (statValue < accessory.condition.min) return null;
-                    }
-                    const position = ACCESSORY_POSITIONS[pet.species]?.[slot];
-                    if (!position) return null;
-                    return (
-                      <div
-                        key={slot}
-                        className="absolute pointer-events-none z-10 transition-all duration-300"
-                        style={{
-                          top: position.top,
-                          left: position.left,
-                          fontSize: position.fontSize,
-                          transform: 'translate(-50%, -50%)',
-                        }}
-                      >
-                        <span className="drop-shadow-md">{accessory.emoji}</span>
-                      </div>
-                    );
-                  })}
-
                 {/* Eating animation overlay */}
                 {eatingState === 'eating' && (
                   <>
@@ -642,6 +614,34 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                   </>
                 )}
               </div>
+
+              {/* Equipped accessory overlays — outside overflow-hidden circle so they aren't clipped */}
+              {pet.equippedAccessories &&
+                (Object.entries(pet.equippedAccessories) as [AccessorySlot, string][]).map(([slot, accessoryId]) => {
+                  if (!accessoryId) return null;
+                  const accessory = getAccessoryById(accessoryId);
+                  if (!accessory) return null;
+                  if (accessory.condition) {
+                    const statValue = pet.stats[accessory.condition.stat];
+                    if (statValue < accessory.condition.min) return null;
+                  }
+                  const position = ACCESSORY_POSITIONS[pet.species]?.[slot];
+                  if (!position) return null;
+                  return (
+                    <div
+                      key={slot}
+                      className="absolute pointer-events-none z-20 transition-all duration-300"
+                      style={{
+                        top: position.top,
+                        left: position.left,
+                        fontSize: position.fontSize,
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      <span style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>{accessory.emoji}</span>
+                    </div>
+                  );
+                })}
 
               {/* Evolution announcement — positioned above the circle */}
               {isEvolving && evolutionTarget && (
