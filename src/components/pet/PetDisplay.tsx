@@ -76,37 +76,7 @@ const MOOD_VISUALS: Record<string, MoodVisual> = {
   },
 };
 
-import petDog from '@/assets/pet-dog.png';
-import petCat from '@/assets/pet-cat.png';
-import petRabbit from '@/assets/pet-rabbit.png';
-import petHamster from '@/assets/pet-hamster.png';
-
-const PET_IMAGES: Record<Species, string> = {
-  dog: petDog,
-  cat: petCat,
-  rabbit: petRabbit,
-  hamster: petHamster,
-};
-
-// CSS filter strings to tint the pet image based on chosen color.
-// Base images are light/warm-toned, so filters shift from that baseline.
-const PET_COLOR_FILTERS: Record<PetColor, string> = {
-  // Male palette
-  blue: 'sepia(0.4) saturate(1.8) brightness(0.85) hue-rotate(170deg)',
-  green: 'sepia(0.4) saturate(1.5) brightness(0.82) hue-rotate(80deg)',
-  brown: 'sepia(0.7) saturate(1.5) brightness(0.6)',
-  gray: 'saturate(0.05) brightness(0.78)',
-  // Female palette
-  pink: 'sepia(0.3) saturate(2) brightness(0.95) hue-rotate(310deg)',
-  purple: 'sepia(0.4) saturate(1.8) brightness(0.8) hue-rotate(250deg)',
-  peach: 'sepia(0.3) saturate(1.2) brightness(1.0) hue-rotate(340deg)',
-  white: '',
-  // Neutral palette
-  yellow: 'sepia(0.5) saturate(2.5) brightness(1.0) hue-rotate(15deg)',
-  teal: 'sepia(0.3) saturate(1.8) brightness(0.85) hue-rotate(130deg)',
-  golden: 'sepia(0.5) saturate(1.4) brightness(0.92)',
-  cream: 'sepia(0.15) saturate(0.9) brightness(1.02)',
-};
+import { PET_IMAGES, PET_COLOR_FILTERS } from '@/data/petVisuals';
 
 const STAGE_CONFIG: Record<GrowthStage, { scale: string; label: string; imageSize: string }> = {
   baby: { scale: 'scale-75', label: 'Baby', imageSize: 'w-28 h-28' },
@@ -341,6 +311,8 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
   };
 
   const growthProgress = getGrowthProgress();
+  const levelInfo = calculateLevel(pet.experience);
+  const unlockedAchievements = state.achievements.filter((achievement) => achievement.unlocked);
 
   return (
     <div className="relative p-6 glass-card rounded-3xl shadow-lg">
@@ -379,11 +351,11 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
               <div className="w-12 h-1.5 bg-secondary/20 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-secondary rounded-full transition-all duration-500"
-                  style={{ width: `${(calculateLevel(pet.experience).currentXp / calculateLevel(pet.experience).xpForNext) * 100}%` }}
+                  style={{ width: `${(levelInfo.currentXp / levelInfo.xpForNext) * 100}%` }}
                 />
               </div>
               <span className="text-[10px] font-mono text-secondary/70 whitespace-nowrap flex-shrink-0">
-                {calculateLevel(pet.experience).currentXp}/{calculateLevel(pet.experience).xpForNext}
+                {levelInfo.currentXp}/{levelInfo.xpForNext}
               </span>
             </div>
           </div>
@@ -717,17 +689,16 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
         </div>
 
         {/* Achievement Badges */}
-        {state.achievements && state.achievements.filter((a) => a.unlocked).length > 0 && (
+        {unlockedAchievements.length > 0 && (
           <div className="w-full mt-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Achievements</span>
               <span className="text-[10px] text-muted-foreground">
-                {state.achievements.filter((a) => a.unlocked).length}/{state.achievements.length}
+                {unlockedAchievements.length}/{state.achievements.length}
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {state.achievements
-                .filter((a) => a.unlocked)
+              {unlockedAchievements
                 .slice(0, 8)
                 .map((achievement) => (
                   <div key={achievement.id} className="group relative" title={`${achievement.name}: ${achievement.description}`}>
@@ -741,12 +712,12 @@ const PetDisplay: React.FC<PetDisplayProps> = ({ onXpClick, onFinanceClick }) =>
                     </div>
                   </div>
                 ))}
-              {state.achievements.filter((a) => a.unlocked).length > 8 && (
+              {unlockedAchievements.length > 8 && (
                 <div
                   className="w-8 h-8 flex items-center justify-center bg-muted/50 rounded-lg border border-border/50 text-[10px] font-bold text-muted-foreground"
-                  title={`+${state.achievements.filter((a) => a.unlocked).length - 8} more achievements`}
+                  title={`+${unlockedAchievements.length - 8} more achievements`}
                 >
-                  +{state.achievements.filter((a) => a.unlocked).length - 8}
+                  +{unlockedAchievements.length - 8}
                 </div>
               )}
             </div>

@@ -183,7 +183,7 @@ const ActionButtons: React.FC = () => {
           let color = action.color;
           let bgColor = action.bgColor;
           let isDisabled = false;
-          let clickAction = action.id;
+          let clickAction: 'feed' | 'play' | 'rest' | 'clean' | 'vet' | 'wake' = action.id as 'feed' | 'play' | 'rest' | 'clean' | 'vet' | 'wake';
 
           // When pet is asleep, swap the Rest button into a Wake Up button;
           // disable all other actions until the pet is awake.
@@ -220,7 +220,7 @@ const ActionButtons: React.FC = () => {
                 animationDelay: `${index * 0.05}s`,
                 animationFillMode: 'forwards',
               }}
-              onClick={() => handleAction(clickAction as any)}
+              onClick={() => handleAction(clickAction)}
             >
               <div className={cn('p-2 rounded-xl mb-2 transition-colors duration-200', bgColor)}>
                 <Icon className={cn('w-5 h-5', color)} />

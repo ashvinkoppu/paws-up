@@ -23,6 +23,28 @@ import { clampStat, ACHIEVEMENT_REWARD } from '@/context/game/helpers';
 export const GameContext = createContext<GameContextType | undefined>(undefined);
 
 /**
+ * Ensures a user profile row exists in Supabase before saving game data.
+ * Required because game_saves has a foreign key to profiles.
+ * Returns true on success, false on failure.
+ */
+async function ensureProfileExists(session: { user: { id: string; email?: string; user_metadata?: Record<string, any> } }): Promise<boolean> {
+  const { error } = await supabase.from('profiles').upsert(
+    {
+      id: session.user.id,
+      display_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0],
+      avatar_url: session.user.user_metadata?.avatar_url || null,
+    },
+    { onConflict: 'id', ignoreDuplicates: true },
+  );
+
+  if (error) {
+    console.error('Failed to ensure profile exists:', error.message);
+    return false;
+  }
+  return true;
+}
+
+/**
  * Scheduled play-window ranges expressed as [startMinute, endMinute].
  * Playing (or completing a mini-game) during one of these windows
  * satisfies the window and awards a stat bonus.
@@ -120,24 +142,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return;
       }
 
-      // Ensure profile exists before saving (required for foreign key constraint)
-      const { data: existingProfile } = await supabase.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
-
-      if (!existingProfile) {
-        const { error: profileError } = await supabase.from('profiles').upsert(
-          {
-            id: session.user.id,
-            display_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0],
-            avatar_url: session.user.user_metadata?.avatar_url || null,
-          },
-          { onConflict: 'id' },
-        );
-
-        if (profileError) {
-          console.error('Auto-save: Failed to create profile', profileError.message);
-          hasPendingSaveRef.current = false;
-          return;
-        }
+      if (!(await ensureProfileExists(session))) {
+        hasPendingSaveRef.current = false;
+        return;
       }
 
       const { error } = await supabase.from('game_saves').upsert(
@@ -225,6 +232,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       title: '🎉 Welcome to the family!',
       description: `${newPet.name} has been adopted!`,
     });
+  };
+
+  /** Awards a stat bonus if the current game time falls inside a play window that hasn't been satisfied yet. */
+  const applyPlayWindowBonus = (description: string) => {
+    const windowIndex = getActivePlayWindowIndex(stateRef.current.gameTime);
+    if (windowIndex !== -1 && !stateRef.current.playWindowsSatisfied[windowIndex]) {
+      dispatch({ type: 'SATISFY_PLAY_WINDOW', payload: windowIndex });
+      const bonusStats: Partial<PetStats> = { happiness: 5, energy: -5, cleanliness: -5 };
+      dispatch({ type: 'UPDATE_STATS', payload: bonusStats });
+      addActionLog('Play Window Bonus', description, '🎮', bonusStats);
+    }
   };
 
   /** Applies partial stat deltas and updates the care streak. */
@@ -405,23 +423,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } = await supabase.auth.getSession();
     if (!session?.user) return;
 
-    // Ensure profile exists before saving (required for foreign key constraint)
-    const { data: existingProfile } = await supabase.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
-
-    if (!existingProfile) {
-      const { error: profileError } = await supabase.from('profiles').upsert(
-        {
-          id: session.user.id,
-          display_name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0],
-          avatar_url: session.user.user_metadata?.avatar_url || null,
-        },
-        { onConflict: 'id' },
-      );
-
-      if (profileError) {
-        toast({ title: 'Save failed', description: 'Could not create user profile', variant: 'destructive' });
-        return;
-      }
+    if (!(await ensureProfileExists(session))) {
+      toast({ title: 'Save failed', description: 'Could not create user profile', variant: 'destructive' });
+      return;
     }
 
     const { error } = await supabase.from('game_saves').upsert(
@@ -589,15 +593,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Track lifetime plays for milestones
     if (action === 'play') {
       dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: 'totalPlays' } });
-
-      // Play window bonus
-      const windowIndex = getActivePlayWindowIndex(stateRef.current.gameTime);
-      if (windowIndex !== -1 && !stateRef.current.playWindowsSatisfied[windowIndex]) {
-        dispatch({ type: 'SATISFY_PLAY_WINDOW', payload: windowIndex });
-        const bonusStats: Partial<PetStats> = { happiness: 5, energy: -5, cleanliness: -5 };
-        dispatch({ type: 'UPDATE_STATS', payload: bonusStats });
-        addActionLog('Play Window Bonus', 'Played during scheduled play time!', '🎮', bonusStats);
-      }
+      applyPlayWindowBonus('Played during scheduled play time!');
     }
 
     dispatch({ type: 'USE_DAILY_ACTION' }); // Consume an action point
@@ -648,15 +644,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: 'totalGamesWon' } });
     }
 
-    // Play window bonus for mini-game completion
-    const windowIndex = getActivePlayWindowIndex(stateRef.current.gameTime);
-    if (windowIndex !== -1 && !stateRef.current.playWindowsSatisfied[windowIndex]) {
-      dispatch({ type: 'SATISFY_PLAY_WINDOW', payload: windowIndex });
-      const bonusStats: Partial<PetStats> = { happiness: 5, energy: -5, cleanliness: -5 };
-      dispatch({ type: 'UPDATE_STATS', payload: bonusStats });
-      addActionLog('Play Window Bonus', 'Mini-game during scheduled play time!', '🎮', bonusStats);
-    }
-
+    applyPlayWindowBonus('Mini-game during scheduled play time!');
     dispatch({ type: 'CHECK_MILESTONES' });
   };
 
