@@ -87,7 +87,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 'p-6 rounded-2xl border-2 border-dashed border-border/50',
                 'bg-gradient-to-br from-card to-primary/5',
                 'hover:border-primary/50 hover:shadow-lg',
-                'transition-all duration-300 text-center group card-hover relative',
+                'transition-all duration-300 text-center group card-hover relative active:scale-95',
                 state.dailyTracking?.catchGamePlayed && state.dailyTracking.catchGamePlayed >= 1 && 'opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none',
               )}
             >
@@ -118,7 +118,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 'p-6 rounded-2xl border-2 border-dashed border-border/50',
                 'bg-gradient-to-br from-card to-secondary/5',
                 'hover:border-secondary/50 hover:shadow-lg',
-                'transition-all duration-300 text-center group card-hover flex flex-col items-center relative',
+                'transition-all duration-300 text-center group card-hover flex flex-col items-center relative active:scale-95',
                 state.dailyTracking?.memoryGamePlayed && state.dailyTracking.memoryGamePlayed >= 1 && 'opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none',
               )}
             >
@@ -149,7 +149,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 'p-6 rounded-2xl border-2 border-dashed border-border/50',
                 'bg-gradient-to-br from-card to-[#8B5E3C]/5',
                 'hover:border-[#8B5E3C]/50 hover:shadow-lg',
-                'transition-all duration-300 text-center group card-hover relative',
+                'transition-all duration-300 text-center group card-hover relative active:scale-95',
                 state.dailyTracking?.quizGamePlayed && state.dailyTracking.quizGamePlayed >= 1 && 'opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none',
               )}
             >
@@ -180,7 +180,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 'p-6 rounded-2xl border-2 border-dashed border-border/50',
                 'bg-gradient-to-br from-card to-primary/5',
                 'hover:border-primary/50 hover:shadow-lg',
-                'transition-all duration-300 text-center group card-hover relative',
+                'transition-all duration-300 text-center group card-hover relative active:scale-95',
                 state.dailyTracking?.whackGamePlayed && state.dailyTracking.whackGamePlayed >= 1 && 'opacity-60 cursor-not-allowed hover:border-border/50 hover:shadow-none',
               )}
             >

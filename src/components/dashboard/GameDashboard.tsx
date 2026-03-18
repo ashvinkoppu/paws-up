@@ -52,7 +52,7 @@ import FAQChatbot from '@/components/chat/FAQChatbot';
 import NewDayPopup from '@/components/overlays/NewDayPopup';
 import PetDeathOverlay from '@/components/pet/PetDeathOverlay';
 import Collections from '@/components/dashboard/Collections';
-import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, HelpCircle, GraduationCap, Package, Trees } from 'lucide-react';
+import { Save, RotateCcw, Zap, Store, Gamepad2, Trophy, Wallet, PawPrint, Bell, X, Sun, DollarSign, ClipboardCheck, LogOut, Menu, HelpCircle, GraduationCap, Trees } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -236,35 +236,10 @@ const GameDashboard: React.FC = () => {
   // State for reset dialog (needed for menu)
   const [showResetDialog, setShowResetDialog] = useState(false);
 
-  // Time-of-day background gradient
-  const getTimeOfDayGradient = () => {
-    const gameTime = state.gameTime;
-    if (gameTime < 360) {
-      // Night (midnight - 6am): deep indigo/navy
-      return 'from-indigo-950/30 via-purple-900/20 to-blue-950/30';
-    } else if (gameTime < 480) {
-      // Sunrise (6am - 8am): warm oranges and pinks
-      return 'from-orange-400/20 via-rose-300/15 to-amber-300/20';
-    } else if (gameTime < 720) {
-      // Morning (8am - noon): bright sky blue and yellow
-      return 'from-sky-400/15 via-cyan-300/10 to-yellow-200/15';
-    } else if (gameTime < 1020) {
-      // Afternoon (noon - 5pm): vibrant blue and green
-      return 'from-blue-400/15 via-emerald-300/10 to-cyan-300/15';
-    } else if (gameTime < 1200) {
-      // Sunset (5pm - 8pm): golden orange and magenta
-      return 'from-amber-500/20 via-orange-400/15 to-rose-500/20';
-    } else {
-      // Evening/Night (8pm - midnight): purple and deep blue
-      return 'from-violet-900/25 via-indigo-800/20 to-purple-900/25';
-    }
-  };
-
   return (
     <div className="min-h-screen paper-texture relative overflow-x-hidden w-full">
-      {/* Animated time-of-day background */}
+      {/* Ambient background */}
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className={cn('absolute inset-0 bg-gradient-to-br transition-all', getTimeOfDayGradient())} style={{ transitionDuration: '3000ms' }} />
         <div className="absolute top-[-15%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-br from-primary/8 to-transparent blur-3xl animate-gentle-drift" />
         <div className="absolute bottom-[-15%] right-[-5%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-tl from-secondary/8 to-transparent blur-3xl" style={{ animationDelay: '4s' }} />
         <div className="absolute top-[20%] right-[10%] w-[30vw] h-[30vw] rounded-full bg-gradient-to-bl from-chart-2/5 to-transparent blur-3xl animate-gentle-drift" style={{ animationDelay: '2s' }} />
@@ -320,7 +295,7 @@ const GameDashboard: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   onClick={handleOpenNotifications}
-                  className={cn('relative h-9 w-9 rounded-full transition-all duration-200', showNotificationPanel ? 'bg-primary/10' : 'hover:bg-muted/50')}
+                  className={cn('relative h-11 w-11 rounded-full transition-all duration-200', showNotificationPanel ? 'bg-primary/10' : 'hover:bg-muted/50')}
                 >
                   <Bell className={cn('w-4 h-4', unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground')} />
                   {unreadNotificationCount > 0 && (
@@ -332,7 +307,7 @@ const GameDashboard: React.FC = () => {
 
                 {/* Notification Dropdown */}
                 {showNotificationPanel && (
-                  <div className="absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in-up bg-card/95 backdrop-blur-xl border border-border/30">
+                  <div className="absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 bg-card/95 backdrop-blur-xl border border-border/30">
                     <div className="sticky top-0 bg-card/90 backdrop-blur-md border-b border-border/30 px-4 py-3 flex items-center justify-between">
                       <h3 className="font-serif font-semibold text-sm">Notifications</h3>
                       <div className="flex items-center gap-1">
@@ -540,14 +515,6 @@ const GameDashboard: React.FC = () => {
                     <span>Shop</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    value="collections"
-                    data-tutorial="tab-collections"
-                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-pink-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
-                  >
-                    <Package className="w-4 h-4" />
-                    <span>Collect</span>
-                  </TabsTrigger>
-                  <TabsTrigger
                     value="games"
                     data-tutorial="tab-games"
                     className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
@@ -556,12 +523,12 @@ const GameDashboard: React.FC = () => {
                     <span>Play</span>
                   </TabsTrigger>
                   <TabsTrigger
-                    value="achievements"
-                    data-tutorial="tab-achievements"
+                    value="progress"
+                    data-tutorial="tab-progress"
                     className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-sky-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
                   >
                     <Trophy className="w-4 h-4" />
-                    <span>Awards</span>
+                    <span>Progress</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -584,16 +551,15 @@ const GameDashboard: React.FC = () => {
                   <Shop />
                 </TabsContent>
 
-                <TabsContent value="collections" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-                  <Collections />
-                </TabsContent>
-
                 <TabsContent value="games" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
                   <MiniGames />
                 </TabsContent>
 
-                <TabsContent value="achievements" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
-                  <Achievements />
+                <TabsContent value="progress" className="mt-0 focus-visible:outline-none focus-visible:ring-0">
+                  <div className="space-y-4">
+                    <Achievements />
+                    <Collections />
+                  </div>
                 </TabsContent>
               </div>
             </Tabs>

@@ -93,7 +93,7 @@ const ActionButtons: React.FC = () => {
   // Auto-clear feedback overlay after 2.2s (matches the CSS animation duration)
   useEffect(() => {
     if (!feedback) return;
-    const timer = setTimeout(() => setFeedback(null), 2200);
+    const timer = setTimeout(() => setFeedback(null), 1100);
     return () => clearTimeout(timer);
   }, [feedback]);
 
@@ -138,7 +138,7 @@ const ActionButtons: React.FC = () => {
           className="fixed top-6 left-1/2 z-[100] pointer-events-none"
           style={{
             transform: 'translateX(-50%)',
-            animation: 'actionFeedbackIn 0.4s ease-out, actionFeedbackOut 0.4s ease-in 1.8s forwards',
+            animation: 'actionFeedbackIn 0.2s ease-out, actionFeedbackOut 0.15s ease-in 0.8s forwards',
           }}
         >
           <div

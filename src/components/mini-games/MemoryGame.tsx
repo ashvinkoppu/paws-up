@@ -131,7 +131,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onWin, onLose, highScore, onNew
               onClick={() => handleCardClick(index)}
               className={cn(
                 'h-18 rounded-xl transition-all duration-300 text-2xl flex items-center justify-center border-2',
-                'transform hover:scale-105',
+                'transform hover:scale-105 active:scale-95',
                 card.flipped || card.matched ? 'bg-primary/15 border-primary shadow-md' : 'bg-accent/40 border-border/50 hover:border-primary/50 hover:bg-accent/60',
               )}
               disabled={card.matched}

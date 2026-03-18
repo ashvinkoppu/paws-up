@@ -292,18 +292,25 @@ const StatPill: React.FC<{ icon: React.ElementType; value: number; color: string
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-2xl backdrop-blur-md" style={{
       background: accentBg,
-      border: `1px solid ${color}25`,
-      boxShadow: `0 2px 12px -2px ${color}15`,
+      border: `1px solid ${color}30`,
+      boxShadow: `0 2px 12px -2px ${color}20, 0 1px 3px -1px ${color}10, inset 0 1px 0 rgba(255,255,255,0.55)`,
     }}>
       <Icon className="w-4 h-4 flex-shrink-0" style={{ color }} />
       <div className="flex items-center gap-1.5">
-        <div className="w-14 h-2 rounded-full overflow-hidden" style={{ background: `${color}20` }}>
+        <div className="w-14 h-1.5 rounded-full overflow-hidden" style={{
+          background: `${color}18`,
+          boxShadow: `inset 0 1px 2px ${color}15`,
+        }}>
           <div
             className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${barWidth}%`, background: color }}
+            style={{
+              width: `${barWidth}%`,
+              background: `linear-gradient(90deg, ${color}bb, ${color})`,
+              boxShadow: `0 0 4px ${color}50`,
+            }}
           />
         </div>
-        <span className="font-mono font-bold text-xs min-w-[20px] text-right" style={{ color }}>
+        <span className="font-serif font-bold text-xs min-w-[20px] text-right" style={{ color }}>
           {value}
         </span>
       </div>
@@ -940,14 +947,18 @@ const ParkPlayground: React.FC = () => {
 
       {/* ── Layered Sky Background ── */}
       <div className="fixed inset-0 pointer-events-none" style={{
-        background: 'linear-gradient(180deg, #7DBBE6 0%, #A2D2E6 20%, #B8DDD4 40%, #9FD4A8 60%, #7EC88E 80%, #5CB878 100%)',
+        background: 'linear-gradient(180deg, #4A8FBF 0%, #72B0D4 14%, #9ECDE0 28%, #BAD9CC 42%, #A8D49C 57%, #7CC484 72%, #5AB870 86%, #46A860 100%)',
+      }} />
+      {/* Warm atmospheric horizon glow */}
+      <div className="fixed inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(ellipse 110% 30% at 50% 100%, rgba(255,210,120,0.1) 0%, transparent 100%)',
       }} />
 
       {/* Golden Sun with Rays */}
       <div className="fixed pointer-events-none" style={{
         top: '5%', right: '16%', width: 72, height: 72, borderRadius: '50%',
-        background: 'radial-gradient(circle, #FFFDE7 0%, #FFE082 35%, #FFB300 65%, transparent 100%)',
-        boxShadow: '0 0 50px 25px rgba(255,183,0,0.12), 0 0 100px 50px rgba(255,183,0,0.06)',
+        background: 'radial-gradient(circle, #FFFFF0 0%, #FFF5C0 28%, #FFE066 52%, #FFB300 72%, transparent 100%)',
+        boxShadow: '0 0 60px 30px rgba(255,190,50,0.16), 0 0 120px 60px rgba(255,183,0,0.08), 0 0 200px 100px rgba(255,160,0,0.04)',
       }}>
         <div className="absolute inset-[-80%] opacity-30" style={{ animation: 'sunRays 80s linear infinite' }}>
           {Array.from({ length: 12 }).map((_, index) => (
@@ -1029,10 +1040,10 @@ const ParkPlayground: React.FC = () => {
             to="/dashboard"
             className="flex items-center gap-2 px-4 py-2.5 rounded-2xl shadow-lg transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,248,235,0.95), rgba(255,240,220,0.95))',
-              border: '1px solid rgba(200,160,100,0.25)',
+              background: 'linear-gradient(145deg, rgba(255,250,238,0.97), rgba(255,238,210,0.97))',
+              border: '1px solid rgba(190,150,90,0.28)',
               backdropFilter: 'blur(12px)',
-              boxShadow: '0 4px 20px -4px rgba(140,100,50,0.15), inset 0 1px 0 rgba(255,255,255,0.6)',
+              boxShadow: '0 6px 24px -6px rgba(130,90,40,0.18), 0 2px 8px -2px rgba(130,90,40,0.1), inset 0 1px 0 rgba(255,255,255,0.7)',
             }}
           >
             <ArrowLeft className="w-4 h-4 text-amber-800/70" />
@@ -1041,10 +1052,10 @@ const ParkPlayground: React.FC = () => {
 
           {/* Pet name badge */}
           <div className="flex items-center gap-2 px-4 py-2 rounded-2xl" style={{
-            background: 'linear-gradient(135deg, rgba(255,248,235,0.95), rgba(255,240,220,0.95))',
-            border: '1px solid rgba(200,160,100,0.2)',
+            background: 'linear-gradient(145deg, rgba(255,250,238,0.97), rgba(255,238,210,0.97))',
+            border: '1px solid rgba(190,150,90,0.25)',
             backdropFilter: 'blur(12px)',
-            boxShadow: '0 4px 16px -4px rgba(140,100,50,0.12)',
+            boxShadow: '0 4px 20px -4px rgba(130,90,40,0.16), 0 2px 6px -2px rgba(130,90,40,0.08), inset 0 1px 0 rgba(255,255,255,0.65)',
           }}>
             <div className="w-7 h-7 rounded-full overflow-hidden border-2 border-amber-300/50 flex-shrink-0"
               style={{ boxShadow: '0 2px 8px -2px rgba(140,100,50,0.2)' }}>
@@ -1077,10 +1088,10 @@ const ParkPlayground: React.FC = () => {
             transform: 'translateX(-50%)',
           }}>
             <div className="flex items-center gap-4 px-6 py-4 rounded-[1.25rem] shadow-2xl" style={{
-              background: 'linear-gradient(135deg, rgba(255,250,240,0.97), rgba(255,245,230,0.97))',
-              border: `2px solid ${nearStation.accentColor}30`,
+              background: 'linear-gradient(145deg, rgba(255,251,240,0.98), rgba(255,242,220,0.98))',
+              border: `1.5px solid ${nearStation.accentColor}35`,
               backdropFilter: 'blur(16px)',
-              boxShadow: `0 12px 40px -8px ${nearStation.accentColor}25, 0 4px 16px -4px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.7)`,
+              boxShadow: `0 16px 48px -8px ${nearStation.accentColor}28, 0 6px 20px -4px rgba(120,80,40,0.1), 0 2px 6px -2px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.75)`,
             }}>
               <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{
                 background: `${nearStation.accentColor}15`,
@@ -1123,18 +1134,18 @@ const ParkPlayground: React.FC = () => {
 
       {/* ── WASD Hint (desktop only) ── */}
       {!isTouchDevice && (
-        <div className="fixed bottom-6 right-5 z-40 opacity-40 hover:opacity-70 transition-opacity duration-300">
+        <div className="fixed bottom-6 right-5 z-40 opacity-35 hover:opacity-65 transition-opacity duration-300">
           <div className="grid grid-cols-3 gap-1 text-center">
             <div />
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-mono font-bold text-amber-800/80"
-              style={{ background: 'rgba(255,248,235,0.85)', border: '1px solid rgba(200,160,100,0.25)', boxShadow: '0 2px 4px rgba(140,100,50,0.08)' }}>W</div>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-serif font-bold"
+              style={{ background: 'rgba(255,248,228,0.9)', border: '1px solid rgba(185,145,75,0.3)', boxShadow: '0 2px 6px rgba(120,80,40,0.12), inset 0 1px 0 rgba(255,255,255,0.6)', color: 'hsl(25 35% 26%)' }}>W</div>
             <div />
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-mono font-bold text-amber-800/80"
-              style={{ background: 'rgba(255,248,235,0.85)', border: '1px solid rgba(200,160,100,0.25)', boxShadow: '0 2px 4px rgba(140,100,50,0.08)' }}>A</div>
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-mono font-bold text-amber-800/80"
-              style={{ background: 'rgba(255,248,235,0.85)', border: '1px solid rgba(200,160,100,0.25)', boxShadow: '0 2px 4px rgba(140,100,50,0.08)' }}>S</div>
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-mono font-bold text-amber-800/80"
-              style={{ background: 'rgba(255,248,235,0.85)', border: '1px solid rgba(200,160,100,0.25)', boxShadow: '0 2px 4px rgba(140,100,50,0.08)' }}>D</div>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-serif font-bold"
+              style={{ background: 'rgba(255,248,228,0.9)', border: '1px solid rgba(185,145,75,0.3)', boxShadow: '0 2px 6px rgba(120,80,40,0.12), inset 0 1px 0 rgba(255,255,255,0.6)', color: 'hsl(25 35% 26%)' }}>A</div>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-serif font-bold"
+              style={{ background: 'rgba(255,248,228,0.9)', border: '1px solid rgba(185,145,75,0.3)', boxShadow: '0 2px 6px rgba(120,80,40,0.12), inset 0 1px 0 rgba(255,255,255,0.6)', color: 'hsl(25 35% 26%)' }}>S</div>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-serif font-bold"
+              style={{ background: 'rgba(255,248,228,0.9)', border: '1px solid rgba(185,145,75,0.3)', boxShadow: '0 2px 6px rgba(120,80,40,0.12), inset 0 1px 0 rgba(255,255,255,0.6)', color: 'hsl(25 35% 26%)' }}>D</div>
           </div>
         </div>
       )}
@@ -1143,9 +1154,9 @@ const ParkPlayground: React.FC = () => {
       {agilityState?.active && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50">
           <div className="flex items-center gap-4 px-6 py-3 rounded-2xl shadow-2xl" style={{
-            background: 'linear-gradient(135deg, rgba(14,165,233,0.94), rgba(56,189,248,0.94))',
-            backdropFilter: 'blur(12px)',
-            boxShadow: '0 8px 32px -4px rgba(14,165,233,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+            background: 'linear-gradient(145deg, rgba(10,148,220,0.96), rgba(48,178,240,0.96))',
+            backdropFilter: 'blur(14px)',
+            boxShadow: '0 10px 36px -4px rgba(14,165,233,0.35), 0 4px 14px -4px rgba(14,165,233,0.2), inset 0 1px 0 rgba(255,255,255,0.25)',
           }}>
             <Timer className="w-5 h-5 text-white" />
             <div>
@@ -1181,10 +1192,12 @@ const ParkPlayground: React.FC = () => {
             height: PARK_HEIGHT,
             borderRadius: '2rem',
             boxShadow: `
-              0 0 0 3px rgba(34,120,60,0.2),
-              0 0 0 6px rgba(34,120,60,0.08),
-              0 24px 60px -12px rgba(20,60,30,0.25),
-              inset 0 2px 4px rgba(255,255,255,0.15)
+              0 0 0 2px rgba(155,115,55,0.38),
+              0 0 0 5px rgba(34,120,60,0.14),
+              0 0 0 9px rgba(20,80,40,0.06),
+              0 30px 75px -15px rgba(20,60,30,0.32),
+              0 12px 30px -8px rgba(20,60,30,0.15),
+              inset 0 2px 0 rgba(255,255,255,0.18)
             `,
           }}
         >
@@ -1404,8 +1417,8 @@ const ParkPlayground: React.FC = () => {
                     )}
                     style={{ color: station.accentColor, animationDuration: '2s' }}
                   />
-                  <span className="text-[9px] font-serif font-bold mt-0.5 drop-shadow-sm"
-                    style={{ color: station.accentColor }}>
+                  <span className="text-[10px] font-serif font-bold mt-0.5 drop-shadow-sm"
+                    style={{ color: station.accentColor, letterSpacing: '0.01em' }}>
                     {station.name}
                   </span>
                 </div>
@@ -1665,16 +1678,18 @@ const ParkPlayground: React.FC = () => {
 
       {/* ── Park Name Badge ── */}
       <div className="z-10" style={{ marginTop: `${Math.max(8, 16 * parkScale)}px` }}>
-        <div className="flex items-center gap-2 px-5 py-2 rounded-2xl" style={{
-          background: 'linear-gradient(135deg, rgba(255,248,235,0.9), rgba(255,240,220,0.9))',
-          border: '1px solid rgba(200,160,100,0.2)',
-          backdropFilter: 'blur(8px)',
-          boxShadow: '0 4px 16px -4px rgba(140,100,50,0.1)',
+        <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl" style={{
+          background: 'linear-gradient(145deg, rgba(255,251,238,0.97), rgba(255,240,212,0.97))',
+          border: '1px solid rgba(185,145,75,0.32)',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 6px 24px -6px rgba(120,80,40,0.18), 0 2px 8px -2px rgba(120,80,40,0.1), inset 0 1px 0 rgba(255,255,255,0.72), inset 0 -1px 0 rgba(160,110,50,0.07)',
         }}>
-          <Trees className="w-5 h-5 text-green-700/80" />
-          <span className="font-serif font-bold text-sm text-amber-900/80">Paws Park</span>
-          <span className="text-[10px] font-mono text-amber-700/50 ml-1">
-            {isTouchDevice ? 'D-pad to move' : 'WASD to move'}
+          <Trees className="w-4 h-4 text-green-700/75" />
+          <div className="w-px h-4 rounded-full" style={{ background: 'rgba(180,140,80,0.28)' }} />
+          <span className="font-serif font-bold text-sm" style={{ color: 'hsl(25 35% 22%)' }}>Paws Park</span>
+          <div className="w-px h-4 rounded-full" style={{ background: 'rgba(180,140,80,0.28)' }} />
+          <span className="text-[10px] font-serif" style={{ color: 'hsl(25 30% 45%)' }}>
+            {isTouchDevice ? 'D-pad to move' : 'WASD · SPACE to interact'}
           </span>
         </div>
       </div>
@@ -1691,16 +1706,16 @@ const ParkPlayground: React.FC = () => {
                 style={{
                   top: 0, left: '50%', transform: 'translateX(-50%)',
                   width: 48, height: 48,
-                  background: activeTouches.has('up') ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
-                  border: '1.5px solid rgba(255,255,255,0.25)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  backdropFilter: 'blur(8px)',
+                  background: activeTouches.has('up') ? 'rgba(255,224,152,0.95)' : 'rgba(255,246,220,0.88)',
+                  border: '1.5px solid rgba(188,148,72,0.38)',
+                  boxShadow: '0 3px 10px rgba(120,80,40,0.14), inset 0 1px 0 rgba(255,255,255,0.65)',
+                  backdropFilter: 'blur(10px)',
                 }}
                 onTouchStart={(event) => { event.preventDefault(); handleTouchDirection('up', true); }}
                 onTouchEnd={() => handleTouchDirection('up', false)}
                 onTouchCancel={() => handleTouchDirection('up', false)}
               >
-                <ChevronUp className="w-6 h-6 text-white/80" />
+                <ChevronUp className="w-6 h-6" style={{ color: 'hsl(25 40% 30%)' }} />
               </button>
               {/* Down */}
               <button
@@ -1708,16 +1723,16 @@ const ParkPlayground: React.FC = () => {
                 style={{
                   bottom: 0, left: '50%', transform: 'translateX(-50%)',
                   width: 48, height: 48,
-                  background: activeTouches.has('down') ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
-                  border: '1.5px solid rgba(255,255,255,0.25)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  backdropFilter: 'blur(8px)',
+                  background: activeTouches.has('down') ? 'rgba(255,224,152,0.95)' : 'rgba(255,246,220,0.88)',
+                  border: '1.5px solid rgba(188,148,72,0.38)',
+                  boxShadow: '0 3px 10px rgba(120,80,40,0.14), inset 0 1px 0 rgba(255,255,255,0.65)',
+                  backdropFilter: 'blur(10px)',
                 }}
                 onTouchStart={(event) => { event.preventDefault(); handleTouchDirection('down', true); }}
                 onTouchEnd={() => handleTouchDirection('down', false)}
                 onTouchCancel={() => handleTouchDirection('down', false)}
               >
-                <ChevronDown className="w-6 h-6 text-white/80" />
+                <ChevronDown className="w-6 h-6" style={{ color: 'hsl(25 40% 30%)' }} />
               </button>
               {/* Left */}
               <button
@@ -1725,16 +1740,16 @@ const ParkPlayground: React.FC = () => {
                 style={{
                   top: '50%', left: 0, transform: 'translateY(-50%)',
                   width: 48, height: 48,
-                  background: activeTouches.has('left') ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
-                  border: '1.5px solid rgba(255,255,255,0.25)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  backdropFilter: 'blur(8px)',
+                  background: activeTouches.has('left') ? 'rgba(255,224,152,0.95)' : 'rgba(255,246,220,0.88)',
+                  border: '1.5px solid rgba(188,148,72,0.38)',
+                  boxShadow: '0 3px 10px rgba(120,80,40,0.14), inset 0 1px 0 rgba(255,255,255,0.65)',
+                  backdropFilter: 'blur(10px)',
                 }}
                 onTouchStart={(event) => { event.preventDefault(); handleTouchDirection('left', true); }}
                 onTouchEnd={() => handleTouchDirection('left', false)}
                 onTouchCancel={() => handleTouchDirection('left', false)}
               >
-                <ChevronLeft className="w-6 h-6 text-white/80" />
+                <ChevronLeft className="w-6 h-6" style={{ color: 'hsl(25 40% 30%)' }} />
               </button>
               {/* Right */}
               <button
@@ -1742,22 +1757,22 @@ const ParkPlayground: React.FC = () => {
                 style={{
                   top: '50%', right: 0, transform: 'translateY(-50%)',
                   width: 48, height: 48,
-                  background: activeTouches.has('right') ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
-                  border: '1.5px solid rgba(255,255,255,0.25)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  backdropFilter: 'blur(8px)',
+                  background: activeTouches.has('right') ? 'rgba(255,224,152,0.95)' : 'rgba(255,246,220,0.88)',
+                  border: '1.5px solid rgba(188,148,72,0.38)',
+                  boxShadow: '0 3px 10px rgba(120,80,40,0.14), inset 0 1px 0 rgba(255,255,255,0.65)',
+                  backdropFilter: 'blur(10px)',
                 }}
                 onTouchStart={(event) => { event.preventDefault(); handleTouchDirection('right', true); }}
                 onTouchEnd={() => handleTouchDirection('right', false)}
                 onTouchCancel={() => handleTouchDirection('right', false)}
               >
-                <ChevronRight className="w-6 h-6 text-white/80" />
+                <ChevronRight className="w-6 h-6" style={{ color: 'hsl(25 40% 30%)' }} />
               </button>
               {/* Center indicator */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full"
                 style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(255,240,190,0.25)',
+                  border: '1px solid rgba(188,148,72,0.2)',
                 }}
               />
             </div>
@@ -1769,19 +1784,21 @@ const ParkPlayground: React.FC = () => {
             style={{
               width: 72, height: 72,
               background: nearStation
-                ? `linear-gradient(135deg, ${nearStation.accentColor}90, ${nearStation.accentColor}70)`
+                ? `linear-gradient(145deg, ${nearStation.accentColor}95, ${nearStation.accentColor}75)`
                 : agilityState?.active
-                  ? 'linear-gradient(135deg, rgba(56,189,248,0.7), rgba(14,165,233,0.7))'
-                  : 'rgba(255,255,255,0.15)',
+                  ? 'linear-gradient(145deg, rgba(56,189,248,0.88), rgba(14,165,233,0.78))'
+                  : 'rgba(255,246,220,0.72)',
               border: nearStation
-                ? `2px solid ${nearStation.accentColor}60`
+                ? `1.5px solid ${nearStation.accentColor}55`
                 : agilityState?.active
-                  ? '2px solid rgba(56,189,248,0.5)'
-                  : '2px solid rgba(255,255,255,0.2)',
+                  ? '1.5px solid rgba(56,189,248,0.55)'
+                  : '1.5px solid rgba(188,148,72,0.35)',
               boxShadow: nearStation
-                ? `0 4px 20px -4px ${nearStation.accentColor}40`
-                : '0 4px 16px -4px rgba(0,0,0,0.15)',
-              backdropFilter: 'blur(8px)',
+                ? `0 8px 28px -4px ${nearStation.accentColor}45, 0 4px 12px -4px ${nearStation.accentColor}25, inset 0 1px 0 rgba(255,255,255,0.35)`
+                : agilityState?.active
+                  ? '0 8px 28px -4px rgba(14,165,233,0.4), 0 4px 12px -4px rgba(14,165,233,0.2), inset 0 1px 0 rgba(255,255,255,0.3)'
+                  : '0 4px 16px rgba(120,80,40,0.12), 0 2px 6px rgba(120,80,40,0.06), inset 0 1px 0 rgba(255,255,255,0.55)',
+              backdropFilter: 'blur(10px)',
               touchAction: 'none',
             }}
             onTouchStart={(event) => { event.preventDefault(); handleTouchAction(); }}

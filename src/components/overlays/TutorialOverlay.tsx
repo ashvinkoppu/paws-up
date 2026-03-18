@@ -84,12 +84,12 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     tabToActivate: 'finance',
   },
   {
-    targetSelector: '[data-tutorial="tab-achievements"]',
-    title: 'Awards & Achievements',
-    description: 'Unlock achievements by reaching milestones. Each achievement earns you bonus money - collect them all!',
+    targetSelector: '[data-tutorial="tab-progress"]',
+    title: 'Awards & Collections',
+    description: 'Unlock achievements by reaching milestones and browse your collectibles here. Each achievement earns you bonus money - collect them all!',
     icon: <Trophy className="w-5 h-5" />,
     position: 'bottom',
-    tabToActivate: 'achievements',
+    tabToActivate: 'progress',
   },
 ];
 

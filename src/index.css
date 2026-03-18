@@ -136,14 +136,14 @@
 
     --sidebar: 22 28% 15%;
 
-    --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.15);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.2);
-    --shadow-sm: 0 2px 4px 0px hsl(0 0% 0% / 0.25), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
-    --shadow: 0 4px 6px -1px hsl(0 0% 0% / 0.25), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
-    --shadow-md: 0 6px 10px -2px hsl(0 0% 0% / 0.3), 0 3px 6px -3px hsl(0 0% 0% / 0.25);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.25);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3), 0 8px 10px -6px hsl(0 0% 0% / 0.25);
-    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.5);
+    --shadow-2xs: 0 1px 2px 0px hsl(22 25% 5% / 0.2);
+    --shadow-xs: 0 1px 3px 0px hsl(22 25% 5% / 0.28);
+    --shadow-sm: 0 2px 4px 0px hsl(22 25% 5% / 0.32), 0 1px 2px -1px hsl(22 25% 5% / 0.25);
+    --shadow: 0 4px 6px -1px hsl(22 25% 5% / 0.32), 0 2px 4px -2px hsl(22 25% 5% / 0.25);
+    --shadow-md: 0 6px 10px -2px hsl(22 25% 5% / 0.38), 0 3px 6px -3px hsl(22 25% 5% / 0.3);
+    --shadow-lg: 0 10px 15px -3px hsl(22 25% 5% / 0.38), 0 4px 6px -4px hsl(22 25% 5% / 0.3);
+    --shadow-xl: 0 20px 25px -5px hsl(22 25% 5% / 0.38), 0 8px 10px -6px hsl(22 25% 5% / 0.3);
+    --shadow-2xl: 0 25px 50px -12px hsl(22 25% 5% / 0.6);
   }
 }
 
@@ -164,12 +164,16 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     letter-spacing: var(--tracking-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-optical-sizing: auto;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
     font-weight: 600;
     letter-spacing: -0.01em;
+    text-wrap: balance;
   }
 }
 
