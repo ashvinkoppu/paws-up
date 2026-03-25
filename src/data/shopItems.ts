@@ -1,3 +1,19 @@
+/**
+ * Shop item catalog — all purchasable items available in the in-game Pet Shop.
+ *
+ * Items are grouped by category, each mapping to a pet stat it primarily affects:
+ *  - hunger     → Food items (buy food in the shop)
+ *  - happiness  → Toys & accessories (play with me)
+ *  - cleanliness → Grooming (book grooming)
+ *  - health     → Medicine (vitamins & vet checkup)
+ *  - energy     → Rest items (rest & reduce activities)
+ *
+ * Each item has a `tier` (basic / standard / deluxe) that determines its price
+ * range and stat effectiveness. `getCheaperAlternative` returns a budget-friendly
+ * basic-tier option in the same category, used to guide spending decisions.
+ *
+ * @module data/shopItems
+ */
 import { ShopItem } from '@/types/game';
 
 // Shop categories organized by pet attributes for consistent naming

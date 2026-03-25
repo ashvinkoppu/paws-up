@@ -1,3 +1,15 @@
+/**
+ * Random event catalog.
+ *
+ * `RANDOM_EVENTS` is the pool of events that can fire during gameplay (5% chance
+ * per decay tick when no mini-game is active). Each event presents the player
+ * with 2-3 choices that apply stat effects, cost money, earn money, or trigger
+ * a shop discount.
+ *
+ * `getRandomEvent` picks a uniformly random entry from the pool.
+ *
+ * @module data/events
+ */
 import { RandomEvent } from '@/types/game';
 
 export const RANDOM_EVENTS: RandomEvent[] = [

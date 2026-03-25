@@ -1,3 +1,13 @@
+/**
+ * Pet visual assets — sprite images and CSS filter strings for coloring.
+ *
+ * `PET_IMAGES` maps each {@link Species} to its static PNG asset.
+ * `PET_COLOR_FILTERS` maps each {@link PetColor} to a CSS `filter` string that
+ * tints the base white sprite to match the selected color. Empty string means
+ * no filter (white remains white).
+ *
+ * @module data/petVisuals
+ */
 import petDog from '@/assets/pet-dog.png';
 import petCat from '@/assets/pet-cat.png';
 import petRabbit from '@/assets/pet-rabbit.png';

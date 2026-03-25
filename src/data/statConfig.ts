@@ -1,3 +1,16 @@
+/**
+ * Static configuration for the five pet stats (hunger, happiness, energy,
+ * cleanliness, health).
+ *
+ * `STAT_CONFIG` maps each stat key to a `StatConfigEntry` describing its
+ * display label, icon, associated action, color classes, warning thresholds,
+ * tooltip text, and decay/boost descriptions shown in the UI.
+ *
+ * `getStatColor` returns Tailwind color classes based on the current value:
+ * red (<=15), amber (<=30), or emerald (>30).
+ *
+ * @module data/statConfig
+ */
 import { PetStats } from '@/types/game';
 
 export interface StatConfigEntry {

@@ -101,8 +101,7 @@ export function selectDailyTasks(date: string): string[] {
 
   const selected: string[] = [];
 
-  // 1. Chance to add a discount task (e.g. 50% chance, or always if available)
-  // Let's make it always 1 if available to ensure the feature is visible
+  // Always include exactly one discount task per day so the discount feature is discoverable.
   if (discountTasks.length > 0) {
     const discountIndex = Math.floor(random() * discountTasks.length);
     selected.push(discountTasks[discountIndex].id);

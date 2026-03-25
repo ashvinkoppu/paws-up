@@ -1,3 +1,15 @@
+/**
+ * Accessory catalog — all equippable cosmetic items available in the Wardrobe tab.
+ *
+ * Each {@link AccessoryDef} belongs to a {@link AccessorySlot} (head/neck/body/tag)
+ * and may be restricted to a specific pet gender via `genderFilter`. Items with a
+ * `condition` are only rendered on the pet when the specified stat meets its minimum.
+ *
+ * `ACCESSORY_POSITIONS` stores per-species, per-slot overlay coordinates so the
+ * emoji is rendered at the anatomically correct position on the pet image.
+ *
+ * @module data/accessories
+ */
 import { AccessoryDef, Species, AccessorySlot } from '@/types/game';
 
 export const ACCESSORY_CATALOG: AccessoryDef[] = [

@@ -28,6 +28,12 @@ import { supabase } from '@/lib/supabase';
 
 const MAX_MESSAGE_LENGTH = 500;
 
+// Strip newlines and control characters from user-controlled values before
+// interpolating them into the AI system prompt to prevent prompt injection.
+function sanitizeForPrompt(value: string): string {
+  return value.replace(/[\r\n\t\x00-\x1F\x7F]/g, ' ').trim();
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -124,9 +130,9 @@ Key information about Paws Up:
       basePrompt += `
 
 CURRENT USER CONTEXT (use this to personalize your responses):
-- Pet Name: ${pet.name}
-- Pet Type: ${pet.species} (${pet.gender})
-- Pet Color: ${pet.color}
+- Pet Name: ${sanitizeForPrompt(pet.name)}
+- Pet Type: ${sanitizeForPrompt(pet.species)} (${sanitizeForPrompt(pet.gender)})
+- Pet Color: ${sanitizeForPrompt(pet.color)}
 - Pet Level: ${pet.level}
 - Current Stats:
   • Hunger: ${Math.round(stats.hunger)}% ${stats.hunger <= 40 ? '⚠️ LOW!' : stats.hunger >= 80 ? '✓ Great' : ''}
@@ -155,7 +161,7 @@ Guidelines:
 - If asked about something unrelated to Paws Up, gently redirect to game topics
 - Be encouraging and positive
 - If unsure about specific game details, give general helpful guidance
-${context?.pet ? `- Always refer to the pet as "${context.pet.name}" when relevant` : ''}`;
+${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.name)}" when relevant` : ''}`;
 
     return basePrompt;
   };

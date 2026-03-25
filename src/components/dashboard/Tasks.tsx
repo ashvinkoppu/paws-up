@@ -193,39 +193,6 @@ const Tasks: React.FC = () => {
         </CardContent>
       </Card>
 
-      <style>{`
-        @keyframes xpFloat {
-          0% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0) scale(1);
-          }
-          50% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-30px) scale(1.2);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-60px) scale(0.8);
-          }
-        }
-        @keyframes taskSlideOut {
-          0% {
-            opacity: 1;
-            transform: translateX(0) scaleY(1);
-          }
-          50% {
-            opacity: 0;
-            transform: translateX(40px) scaleY(1);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(40px) scaleY(0);
-            margin-top: 0;
-            margin-bottom: 0;
-          }
-        }
-      `}</style>
-
       {/* Tomorrow Reward Card */}
       {state.tomorrowReward && (
         <Card

@@ -12,7 +12,7 @@
  *
  * @module context/game/helpers
  */
-import { GameState, Achievement, Transaction, DailyTask, DailyTracking, MilestoneState, GameNotification } from '@/types/game';
+import { GameState, Achievement, Transaction, DailyTask, DailyTracking, MilestoneState, GameNotification, PetBehavior, PetStats } from '@/types/game';
 import { SHOP_ITEMS } from '@/data/shopItems';
 import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, MILESTONES, checkMilestone, DEFAULT_DAILY_TRACKING, LifetimeCounters } from '@/data/tasks';
 
@@ -120,7 +120,7 @@ export function ensureDailyTasks(state: GameState): DailyTask[] {
   return taskIds.map((id) => {
     const taskDef = DAILY_TASK_POOL.find((definition) => definition.id === id);
     const timed = !!taskDef?.timeLimitMinutes;
-    const timerExpiresAt = timed && taskDef ? now + taskDef.timeLimitMinutes * 60 * 1000 : null;
+    const timerExpiresAt = timed && taskDef ? now + (taskDef.timeLimitMinutes ?? 0) * 60 * 1000 : null;
     return { id, progress: 0, completed: false, claimed: false, timed, timerExpiresAt };
   });
 }
@@ -185,7 +185,7 @@ export function addXpToPet(state: GameState, xpAmount: number): GameState {
     };
     newState = {
       ...newState,
-      notifications: [notification, ...newState.notifications].slice(0, 50),
+      notifications: prependNotification(newState.notifications, notification),
     };
   }
 
@@ -263,7 +263,7 @@ export function checkAllMilestones(state: GameState): GameState {
       };
       resultState = {
         ...resultState,
-        notifications: [notification, ...resultState.notifications].slice(0, 50),
+        notifications: prependNotification(resultState.notifications, notification),
       };
       return { ...milestone, completed: true, completedAt: Date.now() };
     }
@@ -271,4 +271,66 @@ export function checkAllMilestones(state: GameState): GameState {
   });
 
   return { ...resultState, milestones: updatedMilestones };
+}
+
+// ── Notification Utilities ────────────────────────────────────────────────────
+
+/**
+ * Maximum number of notifications retained in state.
+ * Oldest entries are pruned when this limit is exceeded.
+ * Mirrors {@link MAX_TRANSACTIONS} which caps transaction history.
+ */
+export const MAX_NOTIFICATIONS = 50;
+
+/**
+ * Prepends a notification to the list and prunes any entries beyond
+ * {@link MAX_NOTIFICATIONS}. Use this instead of the inline
+ * `[n, ...list].slice(0, 50)` pattern to keep the cap value in one place.
+ */
+export function prependNotification(notifications: GameNotification[], notification: GameNotification): GameNotification[] {
+  return [notification, ...notifications].slice(0, MAX_NOTIFICATIONS);
+}
+
+/**
+ * Constructs a {@link GameNotification} with an auto-generated `id`,
+ * `read: false`, and the current epoch timestamp.
+ * Pass only the fields that vary per notification; the rest are filled in.
+ */
+export function createNotification(partial: Omit<GameNotification, 'id' | 'read' | 'timestamp'>): GameNotification {
+  return { ...partial, id: crypto.randomUUID(), read: false, timestamp: Date.now() };
+}
+
+// ── Pet Behavior Derivation ───────────────────────────────────────────────────
+
+/**
+ * Derives the pet's current behavior label from its stats using a single pass.
+ *
+ * Priority order (highest to lowest): sad > grumpy > sluggish > disobedient >
+ * excited > playful > normal.
+ *
+ * This is the **single source of truth** for behavior logic. Both the
+ * `DECAY_STATS` and `UPDATE_PET_BEHAVIOR` reducer cases delegate here so
+ * threshold changes only need to be made once.
+ *
+ * @param stats - The pet's current stat values.
+ * @returns The behavior label that best describes the pet's current mood.
+ */
+export function derivePetBehavior(stats: PetStats): PetBehavior {
+  // Compute average and minimum in one pass over the 5-stat object
+  const values = Object.values(stats) as number[];
+  let sum = 0;
+  let min = 100;
+  for (const value of values) {
+    sum += value;
+    if (value < min) min = value;
+  }
+  const average = sum / values.length;
+
+  if (min < 10) return 'sad';
+  if (min < 20) return 'grumpy';
+  if (stats.energy < 25) return 'sluggish';
+  if (stats.happiness < 30) return 'disobedient';
+  if (average >= 80 && stats.happiness >= 80) return 'excited';
+  if (average >= 60) return 'playful';
+  return 'normal';
 }

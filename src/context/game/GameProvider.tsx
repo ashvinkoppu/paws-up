@@ -11,7 +11,8 @@
  *
  * @module context/game/GameProvider
  */
-import React, { createContext, useReducer, useEffect, useState, ReactNode, useCallback, useRef, useMemo } from 'react';
+import React, { createContext, useReducer, useEffect, useState, ReactNode, useCallback, useRef } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { GameState, Pet, PetStats, InventoryItem, DailyTracking, AccessorySlot, ActionLogEntry } from '@/types/game';
 import { getRandomEvent } from '@/data/events';
 import { toast } from '@/hooks/use-toast';
@@ -27,7 +28,7 @@ export const GameContext = createContext<GameContextType | undefined>(undefined)
  * Required because game_saves has a foreign key to profiles.
  * Returns true on success, false on failure.
  */
-async function ensureProfileExists(session: { user: { id: string; email?: string; user_metadata?: Record<string, any> } }): Promise<boolean> {
+async function ensureProfileExists(session: Session): Promise<boolean> {
   const { error } = await supabase.from('profiles').upsert(
     {
       id: session.user.id,
@@ -71,12 +72,27 @@ const getActivePlayWindowIndex = (gameMinutes: number): number => {
  * @param initial - The static default state object.
  * @returns Restored state or the initial defaults.
  */
+function isValidSaveData(data: unknown): data is GameState {
+  if (typeof data !== 'object' || data === null) return false;
+  const save = data as Record<string, unknown>;
+  return (
+    typeof save.gameStarted === 'boolean' &&
+    typeof save.money === 'number' &&
+    Array.isArray(save.transactions) &&
+    Array.isArray(save.achievements)
+  );
+}
+
 const initGame = (initial: GameState): GameState => {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('guestGameState');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (isValidSaveData(parsed)) {
+          return parsed;
+        }
+        console.error('Failed to load guest save: invalid shape');
       } catch (e) {
         console.error('Failed to load guest save', e);
       }
@@ -98,14 +114,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const stateRef = useRef(state);
   const cloudSaveLoadedRef = useRef(false);
 
-  // Keep refs in sync
-  useEffect(() => {
-    isPlayingMiniGameRef.current = isPlayingMiniGame;
-  }, [isPlayingMiniGame]);
-
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
+  // Assign refs inline so interval/async callbacks always read the latest values
+  // without needing effects or subscriptions.
+  isPlayingMiniGameRef.current = isPlayingMiniGame;
+  stateRef.current = state;
 
   // Warn user about unsaved changes before leaving
   useEffect(() => {
@@ -579,30 +591,23 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const actionData = actions[action];
 
-    // Track the action for daily tasks
-    const trackingMap: Record<string, keyof DailyTracking> = {
-      play: 'playCount',
-      rest: 'restCount',
-      clean: 'cleanCount',
-      vet: 'vetCount',
-    };
-    if (trackingMap[action]) {
-      dispatch({ type: 'TRACK_ACTION', payload: { key: trackingMap[action] } });
-    }
-
-    // Track lifetime plays for milestones
+    // consumeItem (called above) already dispatches TRACK_ACTION and INCREMENT_LIFETIME_COUNTER
+    // for category-specific counters (playCount, restCount, cleanCount, vetCount, totalPlays, totalFeeds).
+    // Only apply the play-window bonus here since consumeItem doesn't know about play windows.
     if (action === 'play') {
-      dispatch({ type: 'INCREMENT_LIFETIME_COUNTER', payload: { counter: 'totalPlays' } });
       applyPlayWindowBonus('Played during scheduled play time!');
     }
 
-    dispatch({ type: 'USE_DAILY_ACTION' }); // Consume an action point
+    dispatch({ type: 'USE_DAILY_ACTION' });
     dispatch({ type: 'CHECK_MILESTONES' });
-    dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Action Complete!', description: actionData.message, icon: '✨' } });
-    toast({
-      title: '✨ Action Complete!',
-      description: actionData.message,
-    });
+    // feed's message is empty — skip the notification for that action
+    if (actionData.message) {
+      dispatch({ type: 'ADD_NOTIFICATION', payload: { type: 'milestone', title: 'Action Complete!', description: actionData.message, icon: '✨' } });
+      toast({
+        title: '✨ Action Complete!',
+        description: actionData.message,
+      });
+    }
   };
 
   /** Updates the high-score for a specific mini-game if the new score is higher. */

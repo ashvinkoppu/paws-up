@@ -1,3 +1,12 @@
+/**
+ * Initial achievement definitions loaded into every new game save.
+ *
+ * Each entry starts with `unlocked: false`. The reducer sets `unlocked: true`
+ * and records `unlockedAt` when the corresponding condition is met.
+ * A fixed {@link ACHIEVEMENT_REWARD} money bonus is also awarded at that time.
+ *
+ * @module data/achievements
+ */
 import { Achievement } from '@/types/game';
 
 export const INITIAL_ACHIEVEMENTS: Achievement[] = [

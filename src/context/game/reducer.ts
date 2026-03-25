@@ -8,8 +8,8 @@
  *
  * @module context/game/reducer
  */
-import { GameState, PetStats, Transaction, GameNotification, DailyTracking, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, PetBehavior, ActionLogEntry, WeeklyGoal } from '@/types/game';
-import { selectDailyTasks, calculateLevel, DAILY_TASK_POOL, DEFAULT_DAILY_TRACKING } from '@/data/tasks';
+import { GameState, PetStats, Transaction, GameNotification, DailyTracking, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, WeeklyGoal } from '@/types/game';
+import { DAILY_TASK_POOL, DEFAULT_DAILY_TRACKING } from '@/data/tasks';
 import { GameAction } from '@/context/game/types';
 import { initialState } from '@/context/game/types';
 import {
@@ -23,6 +23,10 @@ import {
   appendTransaction,
   getSkippedMeals,
   getMealForTime,
+  derivePetBehavior,
+  createNotification,
+  prependNotification,
+  MAX_NOTIFICATIONS,
 } from '@/context/game/helpers';
 
 /**
@@ -127,7 +131,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         let collectionCategory: 'toy' | 'outfit' | 'room_theme' | 'decoration' = 'decoration';
         if (newItem.category === 'accessory') collectionCategory = 'outfit';
         else if (newItem.category === 'happiness') collectionCategory = 'toy';
-        else if (newItem.category === ('room_theme' as string)) collectionCategory = 'room_theme';
+        else if (newItem.category === 'room_theme') collectionCategory = 'room_theme';
 
         // Map tier/price to rarity
         let rarity: 'common' | 'rare' | 'epic' | 'legendary' = 'common';
@@ -196,10 +200,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
       });
 
-      // Grant 5 XP for using items
-      const newExperience = pet.experience + 5;
-      const { level: newLevel } = calculateLevel(newExperience);
-
       // Mark current meal as eaten if feeding during a meal window
       let mealsEatenToday = state.mealsEatenToday;
       if (item.category === 'hunger') {
@@ -209,14 +209,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
       }
 
-      return {
+      // Build updated state before awarding XP so addXpToPet handles level-ups (bonus $25, notification).
+      const updatedState: GameState = {
         ...state,
-        pet: { ...pet, stats: newStats, experience: newExperience, level: newLevel },
+        pet: { ...pet, stats: newStats },
         inventory: state.inventory
           .map((inventoryItem) => (inventoryItem.id === action.payload ? { ...inventoryItem, quantity: inventoryItem.quantity - 1 } : inventoryItem))
           .filter((inventoryItem) => inventoryItem.quantity > 0),
         mealsEatenToday,
       };
+      return addXpToPet(updatedState, 5);
     }
 
     // ── Achievements ─────────────────────────────────────────────
@@ -302,38 +304,30 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       let newStage = state.pet.stage;
       let achievements = state.achievements;
       let achievementMoney = 0;
-      let notifications = [...state.notifications];
+      let notifications = state.notifications;
 
       if (state.pet.level >= GROWTH_THRESHOLDS.adult && state.pet.stage !== 'adult') {
         newStage = 'adult';
         const [updated, reward] = unlockAchievementInList(achievements, 'adult-stage');
         achievements = updated;
         achievementMoney += reward;
-        const notification: GameNotification = {
-          id: crypto.randomUUID(),
+        notifications = prependNotification(notifications, createNotification({
           type: 'milestone',
           title: 'Evolution: Adult Stage!',
           description: `${state.pet.name} has reached their final form! They are now fully grown.`,
           icon: '🌟',
-          read: false,
-          timestamp: Date.now(),
-        };
-        notifications = [notification, ...notifications].slice(0, 50);
+        }));
       } else if (state.pet.level >= GROWTH_THRESHOLDS.teen && state.pet.stage === 'baby') {
         newStage = 'teen';
         const [updated, reward] = unlockAchievementInList(achievements, 'teen-stage');
         achievements = updated;
         achievementMoney += reward;
-        const notification: GameNotification = {
-          id: crypto.randomUUID(),
+        notifications = prependNotification(notifications, createNotification({
           type: 'milestone',
           title: 'Evolution: Teen Stage!',
           description: `${state.pet.name} is growing up! They've entered the teen stage.`,
           icon: '⭐',
-          read: false,
-          timestamp: Date.now(),
-        };
-        notifications = [notification, ...notifications].slice(0, 50);
+        }));
       }
 
       const stats = state.pet.stats;
@@ -402,40 +396,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       for (const mealName of skippedMeals) {
         mealPenalty += 25;
-        const notification: GameNotification = {
-          id: crypto.randomUUID(),
+        notifications = prependNotification(notifications, createNotification({
           type: 'alert',
           title: 'Missed Meal!',
           description: `${state.pet.name} missed ${mealName}! Hunger dropped sharply.`,
           icon: '🍽️',
-          read: false,
-          timestamp: Date.now(),
-        };
-        notifications = [notification, ...notifications].slice(0, 50);
+        }));
       }
 
       if (mealPenalty > 0) {
         newStats.hunger = clampStat(newStats.hunger - mealPenalty);
       }
 
-      // Calculate new behavior based on stats
-      const avgStats = Object.values(newStats).reduce((sum, v) => sum + v, 0) / 5;
+      const newBehavior = derivePetBehavior(newStats);
+      // lowestStat is still needed for the warning-notification threshold check below.
       const lowestStat = Math.min(...Object.values(newStats));
-
-      let newBehavior: PetBehavior = 'normal';
-      if (lowestStat < 10) {
-        newBehavior = 'sad';
-      } else if (lowestStat < 20) {
-        newBehavior = 'grumpy';
-      } else if (newStats.energy < 25) {
-        newBehavior = 'sluggish';
-      } else if (newStats.happiness < 30) {
-        newBehavior = 'disobedient';
-      } else if (avgStats >= 80 && newStats.happiness >= 80) {
-        newBehavior = 'excited';
-      } else if (avgStats >= 60) {
-        newBehavior = 'playful';
-      }
 
       // SOFT FAILURE: Pet only dies after EXTREME, prolonged neglect
       // All stats must be critically low (< 5) for death to occur
@@ -461,16 +436,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         );
 
         if (!existingWarning && lowStatName) {
-          const warning: GameNotification = {
-            id: crypto.randomUUID(),
+          notifications = prependNotification(notifications, createNotification({
             type: 'alert',
             title: 'Pet Needs Attention!',
             description: `${state.pet.name}'s ${lowStatName} is critically low. They're feeling ${newBehavior}.`,
             icon: '⚠️',
-            read: false,
-            timestamp: Date.now(),
-          };
-          notifications = [warning, ...notifications].slice(0, 50);
+          }));
         }
       }
 
@@ -591,15 +562,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     // ── Notifications ────────────────────────────────────────────
     case 'ADD_NOTIFICATION': {
-      const notification: GameNotification = {
-        ...action.payload,
-        id: crypto.randomUUID(),
-        read: false,
-        timestamp: Date.now(),
-      };
       return {
         ...state,
-        notifications: [notification, ...state.notifications].slice(0, 50),
+        notifications: prependNotification(state.notifications, createNotification(action.payload)),
       };
     }
 
@@ -626,11 +591,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         [key]: (tracking[key] as number) + amount,
       };
 
-      // Check daily tasks for completion
-      let dailyTasks = ensureDailyTasks({ ...state, dailyTracking: newTracking });
-      let resultState: GameState = { ...state, dailyTracking: newTracking, dailyTasks };
-
-      dailyTasks = dailyTasks.map((task) => {
+      // Daily tasks are already ensured at day-start; map over the existing list directly.
+      const dailyTasks = state.dailyTasks.map((task) => {
         if (task.completed) return task;
         const taskDef = DAILY_TASK_POOL.find((definition) => definition.id === task.id);
         if (!taskDef) return task;
@@ -643,7 +605,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         };
       });
 
-      return { ...resultState, dailyTasks };
+      return { ...state, dailyTracking: newTracking, dailyTasks };
     }
 
     /** Awards the daily bonus (XP + money) if all daily tasks are completed. */
@@ -657,38 +619,28 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...resultState,
         money: resultState.money + 20,
         dailyBonusClaimed: true,
+        notifications: prependNotification(resultState.notifications, createNotification({
+          type: 'milestone',
+          title: 'Daily Bonus Claimed!',
+          description: 'All daily tasks complete! +30 XP, +$20',
+          icon: '🎁',
+        })),
       };
-      const notification: GameNotification = {
-        id: crypto.randomUUID(),
-        type: 'milestone',
-        title: 'Daily Bonus Claimed!',
-        description: 'All daily tasks complete! +30 XP, +$20',
-        icon: '🎁',
-        read: false,
-        timestamp: Date.now(),
-      };
-      return {
-        ...resultState,
-        notifications: [notification, ...resultState.notifications].slice(0, 50),
-      };
+      return resultState;
     }
 
     /** Generates a fresh set of daily tasks and resets tracking for the new day. */
     case 'RESET_DAILY_TASKS': {
       const today = new Date().toDateString();
-      const taskIds = selectDailyTasks(today);
-      const now = Date.now();
+      const freshTracking = { ...DEFAULT_DAILY_TRACKING, date: today };
+      // Pass a scratch state with empty tasks so ensureDailyTasks always regenerates them.
+      const freshTaskState = { ...state, dailyTasks: [], dailyTracking: freshTracking };
       return {
         ...state,
-        dailyTasks: taskIds.map((id) => {
-          const taskDef = DAILY_TASK_POOL.find((definition) => definition.id === id);
-          const timed = !!taskDef?.timeLimitMinutes;
-          const timerExpiresAt = timed && taskDef ? now + (taskDef.timeLimitMinutes ?? 0) * 60 * 1000 : null;
-          return { id, progress: 0, completed: false, claimed: false, timed, timerExpiresAt };
-        }),
-        dailyTracking: { ...DEFAULT_DAILY_TRACKING, date: today },
+        dailyTasks: ensureDailyTasks(freshTaskState),
+        dailyTracking: freshTracking,
         dailyBonusClaimed: false,
-        activeShopDiscount: 0, // Reset discount for new day
+        activeShopDiscount: 0,
         milestones: ensureMilestones(state),
       };
     }
@@ -697,19 +649,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'EXPIRE_TIMED_TASK': {
       const expiredTaskId = action.payload;
       const taskDef = DAILY_TASK_POOL.find((definition) => definition.id === expiredTaskId);
-      const notification: GameNotification = {
-        id: crypto.randomUUID(),
-        type: 'alert',
-        title: 'Task Expired!',
-        description: `Time's up! "${taskDef?.name || 'Timed task'}" has been removed.`,
-        icon: '⏰',
-        read: false,
-        timestamp: Date.now(),
-      };
       return {
         ...state,
         dailyTasks: state.dailyTasks.filter((task) => task.id !== expiredTaskId),
-        notifications: [notification, ...state.notifications].slice(0, 50),
+        notifications: prependNotification(state.notifications, createNotification({
+          type: 'alert',
+          title: 'Task Expired!',
+          description: `Time's up! "${taskDef?.name || 'Timed task'}" has been removed.`,
+          icon: '⏰',
+        })),
       };
     }
 
@@ -737,19 +685,14 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...claimState,
           activeShopDiscount: taskDef.discountValue,
         };
-        // Add notification for discount
-        const notification: GameNotification = {
-          id: crypto.randomUUID(),
-          type: 'milestone', // or 'reward'
-          title: 'Discount Activated!',
-          description: `You've earned a ${taskDef.discountValue}% discount in the shop for today!`,
-          icon: '🏷️',
-          read: false,
-          timestamp: Date.now(),
-        };
         claimState = {
           ...claimState,
-          notifications: [notification, ...claimState.notifications].slice(0, 50),
+          notifications: prependNotification(claimState.notifications, createNotification({
+            type: 'milestone',
+            title: 'Discount Activated!',
+            description: `You've earned a ${taskDef.discountValue}% discount in the shop for today!`,
+            icon: '🏷️',
+          })),
         };
       }
 
@@ -937,35 +880,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     /**
      * Recalculates the pet’s behavior label based on current stats.
-     * Priority order: sad > grumpy > sluggish > disobedient > excited > playful > normal.
+     * Delegates to derivePetBehavior - see helpers.ts for priority order.
      */
     case 'UPDATE_PET_BEHAVIOR': {
       if (!state.pet) return state;
-      const stats = state.pet.stats;
-      const avgStats = Object.values(stats).reduce((sum, v) => sum + v, 0) / 5;
-      const lowestStat = Math.min(...Object.values(stats));
-
-      let behavior: PetBehavior = 'normal';
-
-      // Priority-based behavior assignment
-      if (lowestStat < 10) {
-        behavior = 'sad';
-      } else if (lowestStat < 20) {
-        behavior = 'grumpy';
-      } else if (stats.energy < 25) {
-        behavior = 'sluggish';
-      } else if (stats.happiness < 30) {
-        behavior = 'disobedient';
-      } else if (avgStats >= 80 && stats.happiness >= 80) {
-        behavior = 'excited';
-      } else if (avgStats >= 60) {
-        behavior = 'playful';
-      }
-
-      return {
-        ...state,
-        petBehavior: behavior,
-      };
+      return { ...state, petBehavior: derivePetBehavior(state.pet.stats) };
     }
 
     /** Appends an entry to the action log (max 50, most recent first). */
@@ -1053,9 +972,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         switch (goal.type) {
           case 'health':
             currentValue = state.pet?.stats.health ?? 0;
-            // Check if today's health met the target
+            // Check if today's health met the target (todayProgress is string[])
             const todayProgress = state.weeklyGoalProgress[goal.id] || [];
-            if (!todayProgress.includes(today as unknown as number) && currentValue >= goal.target) {
+            if (!todayProgress.includes(today) && currentValue >= goal.target) {
               daysCompleted++;
             }
             break;
@@ -1088,21 +1007,16 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const updatedGoals = state.weeklyGoals.filter((g) => g.id !== goalId);
       const resultState = addXpToPet(state, goal.reward.xp);
 
-      const notification: GameNotification = {
-        id: crypto.randomUUID(),
-        type: 'milestone',
-        title: 'Weekly Goal Complete!',
-        description: `${goal.name} — +${goal.reward.xp} XP, +$${goal.reward.money}`,
-        icon: '🎯',
-        read: false,
-        timestamp: Date.now(),
-      };
-
       return {
         ...resultState,
         weeklyGoals: updatedGoals,
         money: resultState.money + goal.reward.money,
-        notifications: [notification, ...resultState.notifications].slice(0, 50),
+        notifications: prependNotification(resultState.notifications, createNotification({
+          type: 'milestone',
+          title: 'Weekly Goal Complete!',
+          description: `${goal.name} — +${goal.reward.xp} XP, +$${goal.reward.money}`,
+          icon: '🎯',
+        })),
       };
     }
 
@@ -1183,20 +1097,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           break;
       }
 
-      const notification: GameNotification = {
-        id: crypto.randomUUID(),
-        type: 'milestone',
-        title: 'Welcome Back!',
-        description: `You claimed: ${reward.description}`,
-        icon: '🎁',
-        read: false,
-        timestamp: Date.now(),
-      };
-
       return {
         ...resultState,
         tomorrowReward: { ...reward, available: false, claimedDate: today },
-        notifications: [notification, ...resultState.notifications].slice(0, 50),
+        notifications: prependNotification(resultState.notifications, createNotification({
+          type: 'milestone',
+          title: 'Welcome Back!',
+          description: `You claimed: ${reward.description}`,
+          icon: '🎁',
+        })),
       };
     }
 

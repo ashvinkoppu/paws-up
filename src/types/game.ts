@@ -58,7 +58,7 @@ export interface ShopItem {
   name: string;
   description: string;
   price: number;
-  category: 'hunger' | 'happiness' | 'cleanliness' | 'health' | 'energy' | 'accessory';
+  category: 'hunger' | 'happiness' | 'cleanliness' | 'health' | 'energy' | 'accessory' | 'room_theme';
   tier: 'basic' | 'standard' | 'deluxe';
   effects: Partial<PetStats>;
   icon: string;
@@ -272,7 +272,7 @@ export interface GameState {
   petBehavior: PetBehavior; // Current pet mood/behavior
   actionLog: ActionLogEntry[]; // Recent action history
   weeklyGoals: WeeklyGoal[]; // Weekly challenge goals
-  weeklyGoalProgress: Record<string, number[]>; // Track daily goal progress
+  weeklyGoalProgress: Record<string, string[]>; // Maps goal.id → array of toDateString() values for days the goal was met
   collection: CollectionItem[]; // Owned collectibles
   activeRoomTheme: string | null; // Currently active room theme
   tomorrowReward: TomorrowReward | null; // Comeback incentive

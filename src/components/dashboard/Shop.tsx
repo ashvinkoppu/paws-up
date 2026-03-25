@@ -137,6 +137,8 @@ const Shop: React.FC = () => {
 
   // Filter non-accessory inventory items for the inventory tab
   const consumableInventory = state.inventory.filter((item) => !item.id.startsWith('acc-'));
+  // Computed once and reused in both the badge condition and its display value
+  const totalInventoryCount = consumableInventory.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <Card className="h-full glass-card shadow-lg rounded-2xl">
@@ -166,9 +168,9 @@ const Shop: React.FC = () => {
             <TabsTrigger value="inventory" className="group flex items-center gap-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm relative overflow-visible">
               <div className="relative">
                 <Package className="w-4 h-4 group-data-[state=active]:text-primary transition-colors" />
-                {consumableInventory.reduce((total, item) => total + item.quantity, 0) > 0 && (
+                {totalInventoryCount > 0 && (
                   <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white shadow-md ring-2 ring-card animate-in zoom-in duration-300">
-                    {consumableInventory.reduce((total, item) => total + item.quantity, 0)}
+                    {totalInventoryCount}
                   </span>
                 )}
               </div>

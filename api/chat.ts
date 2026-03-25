@@ -122,7 +122,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       const errorData = await openAiResponse.json().catch(() => ({}));
       const providerErrorMessage =
         typeof errorData?.error?.message === 'string' ? errorData.error.message : 'OpenAI API Error';
-      return response.status(openAiResponse.status).json({ error: providerErrorMessage, details: errorData });
+      return response.status(openAiResponse.status).json({ error: providerErrorMessage });
     }
 
     const data = await openAiResponse.json();

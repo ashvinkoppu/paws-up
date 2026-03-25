@@ -1,3 +1,12 @@
+/**
+ * Index - Landing page shown to unauthenticated visitors.
+ *
+ * Displays marketing copy, feature highlights, and call-to-action buttons for
+ * Login and Sign Up. Authenticated users are immediately redirected to
+ * /dashboard so they never see this page after logging in.
+ *
+ * @module pages/Index
+ */
 import React from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
