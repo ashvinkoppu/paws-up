@@ -156,7 +156,7 @@ const Shop: React.FC = () => {
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-5 bg-accent/20 backdrop-blur-sm p-1 rounded-xl border border-border/20">
+          <TabsList className="grid w-full grid-cols-3 mb-5 bg-card p-1 rounded-xl border border-border">
             <TabsTrigger value="shop" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <ShoppingCart className="w-4 h-4" />
               <span>Shop</span>

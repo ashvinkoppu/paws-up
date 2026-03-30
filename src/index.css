@@ -634,15 +634,11 @@
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
-/* Glass-morphism card style */
+/* Card style – solid, clean, consistent with landing/auth pages */
 .glass-card {
-  background: hsl(var(--card) / 0.7);
-  backdrop-filter: blur(12px) saturate(1.4);
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
-  border: 1px solid hsl(var(--border) / 0.5);
-  box-shadow:
-    0 4px 24px -4px hsl(25 30% 30% / 0.08),
-    0 0 0 1px hsl(var(--card) / 0.5) inset;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 2px 4px hsl(25 30% 30% / 0.06), 0 1px 2px hsl(25 30% 30% / 0.04);
 }
 
 /* Ambient glow for important elements */

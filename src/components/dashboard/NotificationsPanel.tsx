@@ -188,7 +188,7 @@ const NotificationsPanel: React.FC = () => {
 
         {/* Action Log Panel */}
         {showActionLog && (
-          <div className="mb-4 p-3 rounded-xl bg-muted/30 border border-border/30 max-h-48 overflow-y-auto">
+          <div className="mb-4 p-3 rounded-xl bg-muted/30 border border-border max-h-48 overflow-y-auto">
             <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Recent Actions</h4>
             {!actionLog || actionLog.length === 0 ? (
               <p className="text-xs text-muted-foreground text-center py-2">No actions yet. Feed or play with your pet!</p>

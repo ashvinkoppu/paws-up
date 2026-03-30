@@ -1,11 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { PawPrint, ArrowLeft, Shield, ChevronRight } from 'lucide-react';
+import { PawPrint, ChevronRight, Shield } from 'lucide-react';
 
 const PrivacyPolicy: React.FC = () => {
+  const [scrolled, setScrolled] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const sections = [
@@ -73,26 +81,55 @@ To exercise these rights, please contact us through the app or email us directly
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-accent/10">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/20">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="p-1.5 bg-primary/10 rounded-lg transition-colors group-hover:bg-primary/20">
-              <PawPrint className="w-4 h-4 text-primary" />
+    <div className="min-h-screen bg-background">
+      {/* Accent top line */}
+      <div className="h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 w-full" />
+
+      {/* Navbar */}
+      <nav
+        className={`border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50 transition-all duration-300 ${
+          scrolled ? 'shadow-md' : ''
+        }`}
+      >
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
+              <PawPrint className="w-5 h-5 text-primary" />
             </div>
-            <span className="font-serif font-bold bg-gradient-to-r from-primary to-chart-5 bg-clip-text text-transparent">Paws Up</span>
+            <span className="font-serif text-xl font-bold text-foreground tracking-tight">Paws Up</span>
           </Link>
+          <div className="hidden md:flex items-center gap-8">
+            <a
+              href="/#features"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group"
+            >
+              Features
+              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full rounded-full" />
+            </a>
+            <a
+              href="/#how-it-works"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group"
+            >
+              How it works
+              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-primary transition-all duration-200 group-hover:w-full rounded-full" />
+            </a>
+          </div>
           <div className="flex items-center gap-2">
-            <Link to="/">
-              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Home</span>
+            <Link to="/login">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground h-9 px-4 font-medium"
+              >
+                Log in
               </Button>
             </Link>
-            <Link to="/dashboard">
-              <Button size="sm" className="bg-primary/10 hover:bg-primary/20 text-primary border-0">
-                Dashboard
+            <Link to="/signup">
+              <Button
+                size="sm"
+                className="h-9 px-5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-sm"
+              >
+                Get started
               </Button>
             </Link>
           </div>
@@ -100,32 +137,40 @@ To exercise these rights, please contact us through the app or email us directly
       </nav>
 
       {/* Content */}
-      <main className="max-w-3xl mx-auto px-4 py-12">
+      <main className="max-w-3xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full text-sm mb-4">
-            <Shield className="w-4 h-4 text-primary" />
-            <span className="text-primary font-medium">Legal</span>
+          <div className="inline-flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-4 py-1.5 rounded-full mb-6 border border-primary/20">
+            <Shield className="w-4 h-4" />
+            Legal
           </div>
-          <h1 className="text-4xl font-serif font-bold mb-3">Privacy Policy</h1>
-          <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+          <h1 className="font-serif text-5xl font-bold text-foreground leading-[1.1] tracking-tight mb-4">
+            Privacy Policy
+          </h1>
+          <p className="text-muted-foreground">
+            Last updated:{' '}
+            {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
         </div>
 
         {/* Introduction */}
-        <div className="prose prose-neutral dark:prose-invert max-w-none mb-12">
+        <div className="mb-12">
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Welcome to Paws Up! We are committed to protecting your privacy and ensuring you have a positive experience using our app. This Privacy Policy explains how we collect, use, disclose, and
-            safeguard your information when you use our pet care and budgeting game.
+            Welcome to Paws Up! We are committed to protecting your privacy and ensuring you have a positive experience using our app. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our pet care and budgeting game.
           </p>
         </div>
 
         {/* Table of Contents */}
-        <div className="mb-12 p-6 bg-card/50 rounded-2xl border border-border/20">
-          <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-4">Contents</h2>
-          <div className="grid sm:grid-cols-2 gap-2">
+        <div className="mb-12 rounded-xl border border-zinc-200 bg-white p-6">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">Contents</p>
+          <div className="grid sm:grid-cols-2 gap-1">
             {sections.map((section, index) => (
-              <a key={index} href={`#section-${index}`} className="flex items-center gap-2 text-sm text-foreground/80 hover:text-primary transition-colors py-1">
-                <ChevronRight className="w-3 h-3 text-muted-foreground" />
+              <a
+                key={index}
+                href={`#section-${index}`}
+                className="flex items-center gap-2 text-sm text-foreground/80 hover:text-primary transition-colors py-1.5"
+              >
+                <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
                 {section.title}
               </a>
             ))}
@@ -133,29 +178,54 @@ To exercise these rights, please contact us through the app or email us directly
         </div>
 
         {/* Sections */}
-        <div className="space-y-10">
+        <div className="space-y-12">
           {sections.map((section, index) => (
-            <section key={index} id={`section-${index}`} className="scroll-mt-20">
-              <h2 className="text-xl font-serif font-semibold mb-4 text-foreground">{section.title}</h2>
+            <section key={index} id={`section-${index}`} className="scroll-mt-24">
+              <h2 className="font-serif text-2xl font-bold text-foreground mb-4">{section.title}</h2>
               <div className="text-muted-foreground leading-relaxed whitespace-pre-line">{section.content}</div>
             </section>
           ))}
         </div>
 
-        {/* Footer navigation */}
-        <div className="mt-16 pt-8 border-t border-border/30">
-          <div className="flex items-center justify-between">
-            <Link to="/terms" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
-              <span>Terms of Service</span>
-              <ChevronRight className="w-4 h-4" />
+        {/* Bottom navigation */}
+        <div className="mt-16 pt-8 border-t border-border flex items-center justify-between">
+          <Link
+            to="/terms"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Terms of Service
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+          <Link
+            to="/faq"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            FAQ
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <div className="border-t border-border py-7">
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <PawPrint className="w-4 h-4" />
+            <span className="font-medium">Paws Up</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Privacy
             </Link>
-            <Link to="/faq" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
-              <span>FAQ</span>
-              <ChevronRight className="w-4 h-4" />
+            <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              FAQ
+            </Link>
+            <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Terms
             </Link>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

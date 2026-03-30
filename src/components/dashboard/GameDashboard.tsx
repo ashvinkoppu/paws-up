@@ -237,26 +237,25 @@ const GameDashboard: React.FC = () => {
   const [showResetDialog, setShowResetDialog] = useState(false);
 
   return (
-    <div className="min-h-screen paper-texture relative overflow-x-hidden w-full">
-      {/* Ambient background */}
-      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-15%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-br from-primary/8 to-transparent blur-3xl animate-gentle-drift" />
-        <div className="absolute bottom-[-15%] right-[-5%] w-[45vw] h-[45vw] rounded-full bg-gradient-to-tl from-secondary/8 to-transparent blur-3xl" style={{ animationDelay: '4s' }} />
-        <div className="absolute top-[20%] right-[10%] w-[30vw] h-[30vw] rounded-full bg-gradient-to-bl from-chart-2/5 to-transparent blur-3xl animate-gentle-drift" style={{ animationDelay: '2s' }} />
+    <div className="min-h-screen bg-background relative overflow-x-hidden w-full">
+      {/* Subtle static background decoration – matches login/signup pages */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-0">
+        <div className="absolute top-0 right-0 w-[700px] h-[600px] bg-primary/6 rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-secondary/5 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
       </div>
 
-      {/* Clean, minimal header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/20">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex justify-between items-center">
-            {/* Left: Logo only */}
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="p-2 bg-gradient-to-br from-primary/15 to-primary/5 rounded-xl transition-all duration-300 group-hover:from-primary/25 group-hover:to-primary/10">
+      {/* Accent top line – matches landing/login/signup */}
+      <div className="h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 w-full" />
+
+      {/* Header – matches landing page nav exactly */}
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border transition-all duration-300">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            {/* Left: Logo – matches landing page */}
+            <Link to="/" className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
                 <PawPrint className="w-5 h-5 text-primary" />
               </div>
-              <h1 className="text-xl font-serif font-bold">
-                <span className="bg-gradient-to-r from-primary to-chart-5 bg-clip-text text-transparent">Paws Up</span>
-              </h1>
+              <span className="font-serif text-xl font-bold text-foreground tracking-tight">Paws Up</span>
             </Link>
 
             {/* Center: Key info - wallet and day */}
@@ -264,26 +263,26 @@ const GameDashboard: React.FC = () => {
               <div
                 ref={walletRef}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 bg-emerald-500/8 rounded-full border border-emerald-500/15 transition-all duration-300',
-                  walletPulsing && 'animate-wallet-pulse bg-emerald-500/15',
+                  'flex items-center gap-1.5 px-3 py-1.5 bg-accent border border-border rounded-full text-sm transition-all duration-300',
+                  walletPulsing && 'animate-wallet-pulse',
                 )}
               >
-                <DollarSign className="w-4 h-4 text-emerald-600" />
-                <span className="font-mono font-semibold text-emerald-700">{state.money.toFixed(0)}</span>
+                <DollarSign className="w-3.5 h-3.5 text-foreground/60" />
+                <span className="font-mono font-semibold text-foreground tabular-nums">{state.money.toFixed(0)}</span>
               </div>
 
-              <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/8 rounded-full border border-blue-500/15" title="Daily Actions Remaining">
-                <Zap className="w-4 h-4 text-blue-600" />
-                <span className="font-mono font-semibold text-blue-700">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-accent border border-border rounded-full text-sm" title="Daily Actions Remaining">
+                <Zap className="w-3.5 h-3.5 text-foreground/60" />
+                <span className="font-mono font-semibold text-foreground tabular-nums">
                   {state.dailyActionsRemaining}/{state.dailyActionsMax}
                 </span>
               </div>
 
               <GameClock />
 
-              <div className="flex items-center gap-1.5 px-3 py-2 bg-accent/30 rounded-full text-sm">
-                <Sun className="w-3.5 h-3.5 text-amber-500" />
-                <span className="font-mono text-muted-foreground">Day {state.totalDaysPlayed}</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-accent border border-border rounded-full text-sm">
+                <Sun className="w-3.5 h-3.5 text-foreground/60" />
+                <span className="font-mono font-medium text-foreground tabular-nums">Day {state.totalDaysPlayed}</span>
               </div>
             </div>
 
@@ -295,7 +294,7 @@ const GameDashboard: React.FC = () => {
                   variant="ghost"
                   size="icon"
                   onClick={handleOpenNotifications}
-                  className={cn('relative h-11 w-11 rounded-full transition-all duration-200', showNotificationPanel ? 'bg-primary/10' : 'hover:bg-muted/50')}
+                  className={cn('relative h-9 w-9 rounded-full transition-all duration-200', showNotificationPanel ? 'bg-primary/10' : 'hover:bg-accent')}
                 >
                   <Bell className={cn('w-4 h-4', unreadNotificationCount > 0 ? 'text-primary' : 'text-muted-foreground')} />
                   {unreadNotificationCount > 0 && (
@@ -307,8 +306,8 @@ const GameDashboard: React.FC = () => {
 
                 {/* Notification Dropdown */}
                 {showNotificationPanel && (
-                  <div className="absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 bg-card/95 backdrop-blur-xl border border-border/30">
-                    <div className="sticky top-0 bg-card/90 backdrop-blur-md border-b border-border/30 px-4 py-3 flex items-center justify-between">
+                  <div className="absolute right-0 top-full mt-2 w-80 max-h-96 rounded-2xl shadow-lg overflow-hidden z-50 bg-card border border-border">
+                    <div className="sticky top-0 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
                       <h3 className="font-serif font-semibold text-sm">Notifications</h3>
                       <div className="flex items-center gap-1">
                         {state.notifications.length > 0 && (
@@ -352,18 +351,18 @@ const GameDashboard: React.FC = () => {
               {/* Consolidated Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-muted/50">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-accent">
                     <Menu className="w-4 h-4 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 bg-card/95 backdrop-blur-xl border border-border/30 shadow-2xl">
+                <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 bg-card border border-border shadow-lg">
                   {state.pet && (
                     <>
                       <div className="px-3 py-2.5 mb-1">
                         <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70">Caring for</p>
                         <p className="font-serif font-semibold text-foreground">{state.pet.name}</p>
                       </div>
-                      <DropdownMenuSeparator className="bg-border/30" />
+                      <DropdownMenuSeparator className="bg-border" />
                     </>
                   )}
 
@@ -377,7 +376,7 @@ const GameDashboard: React.FC = () => {
                     <span className="text-sm">Trigger Event</span>
                   </DropdownMenuItem>
 
-                  <DropdownMenuSeparator className="bg-border/30" />
+                  <DropdownMenuSeparator className="bg-border" />
 
                   <DropdownMenuItem asChild className="rounded-xl cursor-pointer py-2.5 px-3 focus:bg-accent/50">
                     <Link to="/faq" className="flex items-center">
@@ -391,7 +390,7 @@ const GameDashboard: React.FC = () => {
                     <span className="text-sm">Restart Tutorial</span>
                   </DropdownMenuItem>
 
-                  <DropdownMenuSeparator className="bg-border/30" />
+                  <DropdownMenuSeparator className="bg-border" />
 
                   <DropdownMenuItem onClick={() => setShowResetDialog(true)} className="rounded-xl cursor-pointer py-2.5 px-3 text-amber-600 focus:text-amber-600 focus:bg-amber-500/10">
                     <RotateCcw className="w-4 h-4 mr-3" />
@@ -406,12 +405,11 @@ const GameDashboard: React.FC = () => {
               </DropdownMenu>
             </div>
           </div>
-        </div>
       </header>
 
       {/* Reset Dialog (moved outside header for menu trigger) */}
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
-        <AlertDialogContent className="rounded-2xl border-border/50 shadow-2xl">
+        <AlertDialogContent className="rounded-2xl border-border shadow-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-serif text-lg">Reset Game?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
@@ -427,8 +425,8 @@ const GameDashboard: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Main Content - Cleaner layout */}
-      <main className="container mx-auto px-4 py-6 relative z-10">
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-6 py-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: Pet + Status (narrower) */}
           <div className="lg:col-span-4 xl:col-span-3 space-y-4" ref={leftColumnRef}>
@@ -440,16 +438,16 @@ const GameDashboard: React.FC = () => {
               className="block animate-fade-in-up"
               style={{ animationDelay: '0.08s' }}
             >
-              <div className="glass-card rounded-2xl shadow-md p-4 bg-gradient-to-r from-emerald-400/20 via-green-300/15 to-lime-300/20 border border-emerald-400/30 hover:from-emerald-400/30 hover:via-green-300/25 hover:to-lime-300/30 hover:shadow-lg hover:shadow-emerald-400/10 transition-all duration-300 cursor-pointer group">
+              <div className="rounded-2xl border border-border bg-card shadow-sm p-4 hover:shadow-md transition-all duration-200 cursor-pointer group">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-green-400 rounded-xl shadow-md group-hover:scale-110 transition-transform">
-                    <Trees className="w-5 h-5 text-white" />
+                  <div className="w-9 h-9 rounded-xl bg-secondary/15 flex items-center justify-center shrink-0">
+                    <Trees className="w-5 h-5 text-secondary" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-serif font-bold text-base text-foreground">Go to Park</h3>
-                    <p className="text-xs text-muted-foreground">Walk, play fetch, and explore!</p>
+                    <h3 className="font-serif font-semibold text-base text-foreground">Go to Park</h3>
+                    <p className="text-sm text-muted-foreground">Walk, play fetch, explore</p>
                   </div>
-                  <span className="text-lg group-hover:translate-x-1 transition-transform">🌳</span>
+                  <span className="text-base group-hover:translate-x-0.5 transition-transform">🌳</span>
                 </div>
               </div>
             </Link>
@@ -469,9 +467,9 @@ const GameDashboard: React.FC = () => {
             }
           >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
-              {/* Simplified tab navigation - horizontal scroll on mobile, cleaner look */}
-              <div className="mb-4 -mx-4 px-4 overflow-x-auto scrollbar-hide">
-                <TabsList className="inline-flex w-auto min-w-full lg:w-full h-auto bg-card/50 backdrop-blur-sm p-1 rounded-xl border border-border/20 gap-1">
+              {/* Tab navigation */}
+              <div className="mb-4 overflow-x-auto">
+                <TabsList className="flex w-full h-auto bg-card p-1 rounded-xl border border-border gap-0.5">
                   {/* Needs tab - only shows badge when there are issues */}
                   <TabsTrigger
                     value="alerts"
@@ -492,16 +490,16 @@ const GameDashboard: React.FC = () => {
                   <TabsTrigger
                     value="tasks"
                     data-tutorial="tab-tasks"
-                    className="group flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                    className="group flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                   >
                     <ClipboardCheck className="w-4 h-4" />
                     <span>Tasks</span>
-                    {state.dailyTasks.some((task) => task.completed) && !state.dailyBonusClaimed && <span className="w-2 h-2 rounded-full bg-orange-500 group-data-[state=active]:bg-white" />}
+                    {state.dailyTasks.some((task) => task.completed) && !state.dailyBonusClaimed && <span className="w-2 h-2 rounded-full bg-primary group-data-[state=active]:bg-primary-foreground" />}
                   </TabsTrigger>
                   <TabsTrigger
                     value="finance"
                     data-tutorial="tab-finance"
-                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                   >
                     <Wallet className="w-4 h-4" />
                     <span>Budget</span>
@@ -509,7 +507,7 @@ const GameDashboard: React.FC = () => {
                   <TabsTrigger
                     value="shop"
                     data-tutorial="tab-shop"
-                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                   >
                     <Store className="w-4 h-4" />
                     <span>Shop</span>
@@ -517,7 +515,7 @@ const GameDashboard: React.FC = () => {
                   <TabsTrigger
                     value="games"
                     data-tutorial="tab-games"
-                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                   >
                     <Gamepad2 className="w-4 h-4" />
                     <span>Play</span>
@@ -525,7 +523,7 @@ const GameDashboard: React.FC = () => {
                   <TabsTrigger
                     value="progress"
                     data-tutorial="tab-progress"
-                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-sky-500 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                    className="flex-1 min-w-[80px] flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                   >
                     <Trophy className="w-4 h-4" />
                     <span>Progress</span>
@@ -597,24 +595,26 @@ const GameDashboard: React.FC = () => {
       {/* Event Modal */}
       <EventModal />
 
-      {/* Minimal Footer */}
-      <footer className="mt-12 pb-6">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground/50">
-            <Link to="/faq" className="hover:text-primary transition-colors">
+      {/* Footer – matches landing page */}
+      <div className="border-t border-border py-7">
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <PawPrint className="w-4 h-4" />
+            <span className="font-medium">Paws Up</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               FAQ
             </Link>
-            <span>•</span>
-            <Link to="/privacy" className="hover:text-primary transition-colors">
+            <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Privacy
             </Link>
-            <span>•</span>
-            <Link to="/terms" className="hover:text-primary transition-colors">
+            <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Terms
             </Link>
           </div>
         </div>
-      </footer>
+      </div>
 
       {/* AI Chatbot with pet context */}
       <FAQChatbot

@@ -266,7 +266,7 @@ const Tasks: React.FC = () => {
               return (
                 <div
                   key={goal.id}
-                  className={cn('flex items-center gap-3 p-3 rounded-xl border transition-all', goal.completed ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-card border-border/30')}
+                  className={cn('flex items-center gap-3 p-3 rounded-xl border transition-all', goal.completed ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-card border-border')}
                 >
                   <span className="text-2xl flex-shrink-0">{goal.icon}</span>
                   <div className="flex-1 min-w-0">
@@ -338,7 +338,7 @@ const Tasks: React.FC = () => {
                       ? 'bg-red-500/5 border-red-500/20'
                       : progress > 0
                         ? 'bg-amber-500/5 border-amber-500/20'
-                        : 'bg-card border-border/30',
+                        : 'bg-card border-border',
                 )}
                 style={
                   isClaiming
@@ -394,7 +394,7 @@ const Tasks: React.FC = () => {
           <div
             className={cn(
               'flex items-center gap-3 p-3 rounded-xl border-2 border-dashed transition-all',
-              allDailyComplete && !state.dailyBonusClaimed ? 'border-amber-400 bg-amber-500/10' : state.dailyBonusClaimed ? 'border-emerald-400/50 bg-emerald-500/5' : 'border-border/30 bg-muted/30',
+              allDailyComplete && !state.dailyBonusClaimed ? 'border-amber-400 bg-amber-500/10' : state.dailyBonusClaimed ? 'border-emerald-400/50 bg-emerald-500/5' : 'border-border bg-muted/30',
             )}
           >
             <Gift className={cn('w-6 h-6', allDailyComplete && !state.dailyBonusClaimed ? 'text-amber-500' : state.dailyBonusClaimed ? 'text-emerald-500' : 'text-muted-foreground/40')} />

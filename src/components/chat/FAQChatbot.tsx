@@ -291,203 +291,173 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
 
   return (
     <div ref={containerRef} className="fixed bottom-6 right-6 z-50">
-      {/* Decorative ambient particles when open */}
-      {isOpen && (
-        <div className="absolute inset-0 pointer-events-none overflow-visible">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1.5 h-1.5 rounded-full bg-primary/40"
-              style={{
-                right: `${-20 + Math.random() * 400}px`,
-                bottom: `${50 + Math.random() * 450}px`,
-                animationName: 'sparkle',
-                animationDuration: `${2 + Math.random() * 2}s`,
-                animationTimingFunction: 'ease-in-out',
-                animationIterationCount: 'infinite',
-                animationDelay: `${i * 0.4}s`,
-              }}
-            />
-          ))}
-        </div>
-      )}
-
       {/* Chat Window */}
       <div
         className={cn(
-          'absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-48px)] transition-all duration-500 origin-bottom-right',
-          isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-90 translate-y-8 pointer-events-none',
+          'absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-48px)]',
+          'transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right',
+          isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-90 translate-y-6 pointer-events-none',
         )}
       >
-        {/* Main chat container with organic shape */}
-        <div className="relative">
-          {/* Main card */}
-          <div className="relative bg-card/95 backdrop-blur-xl rounded-[1.5rem] border border-border/40 shadow-2xl overflow-hidden">
-            {/* Decorative top edge with gradient */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-secondary" />
+        <div className="rounded-xl border border-zinc-200 bg-white shadow-lg overflow-hidden">
+          {/* Accent top line — matches site-wide pattern */}
+          <div className="h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
 
-            {/* Header */}
-            <div className="relative px-5 pt-5 pb-4">
-              <div className="relative flex items-center gap-4">
-                {/* Paws avatar */}
-                <div className="relative">
-                  <div className="relative w-12 h-12 bg-[#D96A4A]/15 rounded-2xl flex items-center justify-center">
-                    <PawPrint className="w-6 h-6 text-[#D96A4A]" />
-                  </div>
-                  {/* Online indicator */}
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-[#4CAF50] rounded-full border-2 border-card" />
+          {/* Header — mirrors the navbar logo block */}
+          <div className="px-5 pt-4 pb-3 border-b border-zinc-100">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
+                  <PawPrint className="w-5 h-5 text-primary" />
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-serif font-bold text-lg text-foreground tracking-tight">Paws</h3>
-                  <p className="text-xs text-muted-foreground">Your friendly guide</p>
-                </div>
-
-                {/* Close button */}
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 rounded-xl bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-105"
-                  aria-label="Close chat"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white" />
               </div>
-            </div>
 
-            {/* Messages area */}
-            <div className="h-[340px] overflow-y-auto px-4 pb-3 space-y-3 scrollbar-hide">
-              {messages.map((message, index) => (
+              <div className="flex-1 min-w-0">
+                <h3 className="font-serif font-bold text-base text-foreground tracking-tight leading-tight">Paws</h3>
+                <p className="text-xs text-muted-foreground">Your friendly guide</p>
+              </div>
+
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-zinc-100 transition-colors duration-200"
+                aria-label="Close chat"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Messages area */}
+          <div className="h-[320px] overflow-y-auto px-4 py-3 space-y-3 bg-zinc-50/50">
+            {messages.map((message, index) => (
+              <div
+                key={message.id}
+                className={cn('flex gap-2', message.role === 'user' ? 'flex-row-reverse' : 'flex-row')}
+                style={{
+                  opacity: 0,
+                  animationName: 'fadeInUp',
+                  animationDuration: '0.4s',
+                  animationTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                  animationFillMode: 'forwards',
+                  animationDelay: `${index * 0.04}s`,
+                }}
+              >
+                {message.role === 'assistant' && (
+                  <div className="w-6 h-6 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                    <PawPrint className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                )}
                 <div
-                  key={message.id}
-                  className={cn('flex gap-2.5', message.role === 'user' ? 'flex-row-reverse' : 'flex-row')}
-                  style={{
-                    animationName: 'fadeInUp',
-                    animationDuration: '0.4s',
-                    animationTimingFunction: 'ease-out',
-                    animationFillMode: 'forwards',
-                    animationDelay: `${index * 0.05}s`,
-                  }}
+                  className={cn(
+                    'max-w-[82%] px-3.5 py-2.5 text-sm leading-relaxed rounded-xl',
+                    message.role === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-tr-sm shadow-sm'
+                      : 'bg-white text-foreground rounded-tl-sm border border-zinc-200 shadow-sm',
+                  )}
                 >
-                  {message.role === 'assistant' && (
-                    <div className="w-7 h-7 rounded-lg bg-[#D96A4A]/15 flex items-center justify-center shrink-0">
-                      <PawPrint className="w-4 h-4 text-[#D96A4A]" />
-                    </div>
-                  )}
-                  <div
-                    className={cn(
-                      'max-w-[80%] px-4 py-2.5 text-sm leading-relaxed',
-                      message.role === 'user'
-                        ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground rounded-2xl rounded-br-lg shadow-md'
-                        : 'bg-gradient-to-br from-muted/80 to-muted/40 text-foreground rounded-2xl rounded-bl-lg border border-border/30',
-                    )}
-                  >
-                    <p className="whitespace-pre-wrap">{message.content}</p>
-                  </div>
-                  {message.role === 'user' && (
-                    <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-                      <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                  )}
+                  <p className="whitespace-pre-wrap">{message.content}</p>
                 </div>
-              ))}
+                {message.role === 'user' && (
+                  <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            ))}
 
-              {isLoading && (
-                <div className="flex gap-2.5">
-                  <div className="w-7 h-7 rounded-lg bg-[#D96A4A]/15 flex items-center justify-center shrink-0">
-                    <PawPrint className="w-4 h-4 text-[#D96A4A]" />
-                  </div>
-                  <div className="bg-gradient-to-br from-muted/80 to-muted/40 rounded-2xl rounded-bl-lg border border-border/30 px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex gap-1">
-                        {[0, 1, 2].map((i) => (
-                          <div
-                            key={i}
-                            className="w-2 h-2 rounded-full bg-primary/60"
-                            style={{
-                              animationName: 'bounce',
-                              animationDuration: '1.4s',
-                              animationTimingFunction: 'ease-in-out',
-                              animationIterationCount: 'infinite',
-                              animationDelay: `${i * 0.16}s`,
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+            {isLoading && (
+              <div className="flex gap-2">
+                <div className="w-6 h-6 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                  <PawPrint className="w-3.5 h-3.5 text-primary" />
                 </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Suggested Questions */}
-            {messages.length <= 2 && (
-              <div className="px-4 pb-3">
-                <div className="flex flex-wrap gap-1.5">
-                  {suggestedQuestions.map((question, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setInputValue(question);
-                        inputRef.current?.focus();
-                      }}
-                      className="text-xs px-3 py-1.5 rounded-full bg-accent/50 hover:bg-accent text-accent-foreground border border-border/30 transition-all duration-200 hover:scale-[1.02] hover:shadow-sm"
-                      style={{
-                        animationName: 'fadeInUp',
-                        animationDuration: '0.3s',
-                        animationTimingFunction: 'ease-out',
-                        animationFillMode: 'forwards',
-                        animationDelay: `${0.2 + index * 0.08}s`,
-                        opacity: 0,
-                      }}
-                    >
-                      {question}
-                    </button>
-                  ))}
+                <div className="bg-white border border-zinc-200 rounded-xl rounded-tl-sm shadow-sm px-4 py-3">
+                  <div className="flex gap-1">
+                    {[0, 1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="w-1.5 h-1.5 rounded-full bg-primary/50"
+                        style={{
+                          animationName: 'bounce',
+                          animationDuration: '1.4s',
+                          animationTimingFunction: 'ease-in-out',
+                          animationIterationCount: 'infinite',
+                          animationDelay: `${i * 0.16}s`,
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Input area */}
-            <div className="p-4 pt-2 border-t border-border/30 bg-muted/20">
-              <div className="flex gap-2 items-center">
-                <div className="relative flex-1">
-                  <Input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Ask anything..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    disabled={isLoading}
-                    className="pr-4 rounded-xl bg-background/80 border-border/40 focus:border-primary/50 focus:bg-background focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 placeholder:text-muted-foreground/60"
-                  />
-                </div>
-                <Button
-                  onClick={sendMessage}
-                  disabled={!inputValue.trim() || isLoading}
-                  size="icon"
-                  className={cn(
-                    'rounded-xl h-10 w-10 transition-all duration-300',
-                    inputValue.trim()
-                      ? 'bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 scale-100'
-                      : 'bg-muted text-muted-foreground scale-95',
-                  )}
-                >
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                </Button>
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Suggested questions */}
+          {messages.length <= 2 && (
+            <div className="px-4 pb-3 bg-zinc-50/50 border-b border-zinc-100">
+              <div className="flex flex-wrap gap-1.5">
+                {suggestedQuestions.map((question, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setInputValue(question);
+                      inputRef.current?.focus();
+                    }}
+                    className="text-xs px-3 py-1.5 rounded-full bg-white border border-zinc-200 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 shadow-sm"
+                    style={{
+                      opacity: 0,
+                      animationName: 'fadeInUp',
+                      animationDuration: '0.3s',
+                      animationTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                      animationFillMode: 'forwards',
+                      animationDelay: `${0.15 + index * 0.07}s`,
+                    }}
+                  >
+                    {question}
+                  </button>
+                ))}
               </div>
+            </div>
+          )}
+
+          {/* Input area */}
+          <div className="p-3 bg-white">
+            <div className="flex gap-2 items-center">
+              <Input
+                ref={inputRef}
+                type="text"
+                placeholder="Ask anything..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyPress}
+                disabled={isLoading}
+                className="rounded-xl border-zinc-200 bg-zinc-50 focus:bg-white focus:border-primary/40 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-200 text-sm placeholder:text-muted-foreground/60 h-9"
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={!inputValue.trim() || isLoading}
+                size="icon"
+                className={cn(
+                  'rounded-xl h-9 w-9 shrink-0 transition-all duration-300',
+                  inputValue.trim()
+                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm'
+                    : 'bg-zinc-100 text-zinc-400 cursor-not-allowed',
+                )}
+              >
+                {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Floating Toggle Button - Enchanted Creature Style */}
+      {/* Floating Toggle Button */}
       <div className="relative">
         {/* Hover tooltip */}
         <div
@@ -496,62 +466,56 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
             isHovering && !isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none',
           )}
         >
-          <div className="px-3 py-1.5 bg-card rounded-lg shadow-lg border border-border/50 text-sm font-medium">Need help? Ask Paws!</div>
-          <div className="absolute -bottom-1 right-6 w-2 h-2 bg-card border-r border-b border-border/50 rotate-45" />
+          <div className="px-3 py-1.5 bg-white rounded-lg shadow-md border border-zinc-200 text-sm font-medium text-foreground">
+            Need help? Ask Paws!
+          </div>
+          <div className="absolute -bottom-1 right-5 w-2 h-2 bg-white border-r border-b border-zinc-200 rotate-45" />
         </div>
 
-        {/* Ambient glow ring */}
-        <div
-          className={cn('absolute inset-0 rounded-full transition-all duration-500', isOpen ? 'scale-100 opacity-0' : 'scale-150 opacity-100')}
-          style={{
-            background: 'radial-gradient(circle, rgba(217, 106, 74, 0.2) 0%, transparent 70%)',
-            animation: !isOpen ? 'breathe 3s ease-in-out infinite' : 'none',
-          }}
-        />
+        {/* Ambient glow */}
+        {!isOpen && (
+          <div
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, hsl(var(--primary) / 0.18) 0%, transparent 70%)',
+              transform: 'scale(1.6)',
+              animation: 'breathe 3s ease-in-out infinite',
+            }}
+          />
+        )}
 
-        {/* Main button */}
+        {/* Main button — matches site's primary button style */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
           className={cn(
-            'relative w-14 h-14 rounded-full shadow-xl transition-all duration-500 transform',
-            'focus:outline-none focus:ring-2 focus:ring-[#D96A4A]/50 focus:ring-offset-2 focus:ring-offset-background',
-            isOpen ? 'bg-muted hover:bg-muted/80 rotate-0 scale-90' : 'bg-[#D96A4A] hover:bg-[#C55A3A] hover:scale-110 hover:shadow-2xl hover:shadow-[#D96A4A]/40',
+            'relative w-14 h-14 rounded-full shadow-md transition-all duration-300',
+            'focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background',
+            isOpen
+              ? 'bg-zinc-100 hover:bg-zinc-200 scale-90'
+              : 'bg-primary hover:bg-primary/90 hover:scale-110 hover:shadow-lg hover:shadow-primary/25',
           )}
           aria-label={isOpen ? 'Close chat' : 'Open chat'}
           style={{
             animation: !isOpen && !isHovering ? 'float 4s ease-in-out infinite' : 'none',
           }}
         >
-          {/* Button content */}
           <div className="absolute inset-0 flex items-center justify-center">
             {isOpen ? (
               <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             ) : (
-              <PawPrint className="w-6 h-6 text-white" />
+              <PawPrint className="w-6 h-6 text-primary-foreground" />
             )}
           </div>
-
-          {/* Shine effect on hover */}
-          {!isOpen && (
-            <div
-              className={cn(
-                'absolute inset-0 rounded-full overflow-hidden',
-                'before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent',
-                'before:translate-x-[-100%] before:transition-transform before:duration-700',
-                isHovering && 'before:translate-x-[100%]',
-              )}
-            />
-          )}
         </button>
 
         {/* Notification dot when closed */}
         {!isOpen && (
-          <div className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-white rounded-full border-2 border-background flex items-center justify-center shadow-sm">
-            <div className="w-1.5 h-1.5 bg-[#D96A4A] rounded-full" />
+          <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-white rounded-full border-2 border-background shadow-sm flex items-center justify-center">
+            <div className="w-1.5 h-1.5 bg-primary rounded-full" />
           </div>
         )}
       </div>

@@ -233,7 +233,7 @@ const ActionButtons: React.FC = () => {
       </div>
 
       {/* Tip */}
-      <div className="mt-4 pt-3 border-t border-border/30">
+      <div className="mt-4 pt-3 border-t border-border">
         <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
           <span className="text-primary">Tip:</span>
           <span>{state.petAsleep ? 'Wake up your pet to play!' : 'Shop items give bigger stat boosts'}</span>

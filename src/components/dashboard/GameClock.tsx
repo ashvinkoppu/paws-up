@@ -369,7 +369,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
             <div
               className={cn(
                 'flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border cursor-pointer',
-                'bg-card/95 backdrop-blur-xl border-border/50',
+                'bg-card border-border shadow-lg',
                 'hover:scale-[1.02] transition-transform duration-200',
               )}
             >

@@ -61,9 +61,9 @@ const SidePanel: React.FC = () => {
   const status = getOverallStatus();
 
   return (
-    <div className="glass-card rounded-2xl shadow-md overflow-hidden transition-all duration-300">
+    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border/30 bg-gradient-to-r from-accent/40 via-accent/20 to-transparent">
+      <div className="px-4 py-3 border-b border-border bg-accent/20">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg">
@@ -77,7 +77,7 @@ const SidePanel: React.FC = () => {
         </div>
 
         {/* Colorful stat bars */}
-        <div className="flex flex-col gap-2 mt-3 pt-2 border-t border-border/30">
+        <div className="flex flex-col gap-2 mt-3 pt-2 border-t border-border">
           {(Object.keys(STAT_CONFIG) as (keyof PetStats)[]).map((stat) => {
             const value = stats[stat];
             const config = STAT_CONFIG[stat];
