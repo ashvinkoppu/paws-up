@@ -1,7 +1,7 @@
 /**
  * @file FinancePanel.tsx
  *
- * Cost of Care Report — an FBLA-ready financial report inside the Manage area.
+ * Cost of Care Report - an FBLA-ready financial report inside the Manage area.
  *
  * Features:
  * - Summary cards: balance, weekly budget, spending, net, top category
@@ -238,7 +238,7 @@ const FinancePanel: React.FC = () => {
       );
     } else if (budgetUsedPercent >= 80) {
       list.push(
-        `You have used ${budgetUsedPercent.toFixed(0)}% of your weekly budget — compare categories before spending more.`,
+        `You have used ${budgetUsedPercent.toFixed(0)}% of your weekly budget; compare categories before spending more.`,
       );
     } else if (budgetUsedPercent > 0) {
       list.push(
@@ -259,7 +259,7 @@ const FinancePanel: React.FC = () => {
     if (list.length < 2 && totalIncome > 0 && totalExpenses > 0) {
       if (netAmount > 0) {
         list.push(
-          `You are net positive by $${netAmount.toFixed(2)} — income is covering costs.`,
+          `You are net positive by $${netAmount.toFixed(2)}; income is covering costs.`,
         );
       } else if (netAmount < 0) {
         list.push(
@@ -395,7 +395,7 @@ const FinancePanel: React.FC = () => {
                 topCategory
                   ? topCategory[0].charAt(0).toUpperCase() +
                     topCategory[0].slice(1)
-                  : "—"
+                  : "-"
               }
               sub={
                 topCategory
@@ -578,7 +578,7 @@ const FinancePanel: React.FC = () => {
         <CardContent>
           {displayTransactions.length > 0 ? (
             <div>
-              {/* Column headers — desktop only */}
+              {/* Column headers - desktop only */}
               <div className="hidden sm:grid grid-cols-[72px_1fr_100px_80px] gap-2 px-3 pb-2 border-b border-border/50">
                 {(["Date", "Description", "Category", "Amount"] as const).map(
                   (heading) => (
@@ -605,7 +605,7 @@ const FinancePanel: React.FC = () => {
                       animationFillMode: "forwards",
                     }}
                   >
-                    {/* Date — desktop */}
+                    {/* Date - desktop */}
                     <span className="hidden sm:block text-xs font-mono text-muted-foreground tabular-nums">
                       {formatDate(transaction.timestamp)}
                     </span>
@@ -636,7 +636,7 @@ const FinancePanel: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Category — desktop */}
+                    {/* Category - desktop */}
                     <span className="hidden sm:block text-xs px-2 py-0.5 bg-accent/50 rounded-full text-muted-foreground capitalize text-center">
                       {transaction.category}
                     </span>

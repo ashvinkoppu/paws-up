@@ -1,5 +1,5 @@
 /**
- * GameContext — top-level barrel re-export.
+ * GameContext - top-level barrel re-export.
  *
  * Proxies everything from `@/context/game` so legacy imports from
  * `@/context/GameContext` continue to work. Prefer importing directly

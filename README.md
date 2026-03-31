@@ -4,7 +4,7 @@ A virtual pet game that teaches financial literacy. Care for your pet while lear
 
 ## The Concept
 
-Players adopt a virtual pet and must balance its needs (food, play, health, rest) against a limited budget. Every decision has a cost — teaching real-world financial trade-offs through engaging gameplay rather than lectures.
+Players adopt a virtual pet and must balance its needs (food, play, health, rest) against a limited budget. Every decision has a cost - teaching real-world financial trade-offs through engaging gameplay rather than lectures.
 
 ## Features
 
@@ -87,9 +87,9 @@ cp .env.example .env.local
 
 Required variables:
 
-- `VITE_SUPABASE_URL` — Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` — Your Supabase anon/public key
-- `OPENAI_API_KEY` — OpenAI API key for the FAQ chatbot
+- `VITE_SUPABASE_URL` - Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Your Supabase anon/public key
+- `OPENAI_API_KEY` - OpenAI API key for the FAQ chatbot
 
 3. Run the Supabase migration to create the database tables:
 
@@ -152,53 +152,53 @@ src/
 
 ### Core Framework
 
-- **[React](https://react.dev/)** (v19) — UI component library
-- **[TypeScript](https://www.typescriptlang.org/)** (v5) — Type-safe JavaScript
-- **[Vite](https://vitejs.dev/)** (v5) — Frontend build tool and dev server
-- **[React Router DOM](https://reactrouter.com/)** (v6) — Client-side routing
+- **[React](https://react.dev/)** (v19) - UI component library
+- **[TypeScript](https://www.typescriptlang.org/)** (v5) - Type-safe JavaScript
+- **[Vite](https://vitejs.dev/)** (v5) - Frontend build tool and dev server
+- **[React Router DOM](https://reactrouter.com/)** (v6) - Client-side routing
 
 ### UI & Styling
 
-- **[Tailwind CSS](https://tailwindcss.com/)** (v3) — Utility-first CSS framework
-- **[tailwindcss-animate](https://github.com/jamiebuilds/tailwindcss-animate)** — Animation utilities
-- **[shadcn/ui](https://ui.shadcn.com/)** — Component library built on Radix UI
-- **[Radix UI](https://www.radix-ui.com/)** — Accessible, unstyled UI primitives
-- **[Lucide React](https://lucide.dev/)** — Icon library
-- **[class-variance-authority](https://cva.style/)** — Component variant utility
-- **[clsx](https://github.com/lukeed/clsx)** + **[tailwind-merge](https://github.com/dcastil/tailwind-merge)** — Class name utilities
-- **[Recharts](https://recharts.org/)** — Charting library
-- **[Sonner](https://sonner.emilkowal.dev/)** — Toast notification library
-- **[next-themes](https://github.com/pacocoursey/next-themes)** — Theme management
+- **[Tailwind CSS](https://tailwindcss.com/)** (v3) - Utility-first CSS framework
+- **[tailwindcss-animate](https://github.com/jamiebuilds/tailwindcss-animate)** - Animation utilities
+- **[shadcn/ui](https://ui.shadcn.com/)** - Component library built on Radix UI
+- **[Radix UI](https://www.radix-ui.com/)** - Accessible, unstyled UI primitives
+- **[Lucide React](https://lucide.dev/)** - Icon library
+- **[class-variance-authority](https://cva.style/)** - Component variant utility
+- **[clsx](https://github.com/lukeed/clsx)** + **[tailwind-merge](https://github.com/dcastil/tailwind-merge)** - Class name utilities
+- **[Recharts](https://recharts.org/)** - Charting library
+- **[Sonner](https://sonner.emilkowal.dev/)** - Toast notification library
+- **[next-themes](https://github.com/pacocoursey/next-themes)** - Theme management
 
 ### Backend & Data
 
-- **[Supabase](https://supabase.com/)** — Auth, PostgreSQL, real-time sync
-- **[@supabase/auth-ui-react](https://supabase.com/docs/guides/auth/auth-helpers/auth-ui)** — Pre-built auth UI
-- **[TanStack React Query](https://tanstack.com/query)** — Server state management
-- **[OpenAI API](https://platform.openai.com/)** — FAQ chatbot (GPT-5 Nano)
-- **[Vercel Serverless Functions](https://vercel.com/docs/functions)** — Secure OpenAI proxy
+- **[Supabase](https://supabase.com/)** - Auth, PostgreSQL, real-time sync
+- **[@supabase/auth-ui-react](https://supabase.com/docs/guides/auth/auth-helpers/auth-ui)** - Pre-built auth UI
+- **[TanStack React Query](https://tanstack.com/query)** - Server state management
+- **[OpenAI API](https://platform.openai.com/)** - FAQ chatbot (GPT-5 Nano)
+- **[Vercel Serverless Functions](https://vercel.com/docs/functions)** - Secure OpenAI proxy
 
 ### Dev Tools
 
-- **[ESLint](https://eslint.org/)** (v9) + **[typescript-eslint](https://typescript-eslint.io/)** — Linting
-- **[PostCSS](https://postcss.org/)** + **[Autoprefixer](https://github.com/postcss/autoprefixer)** — CSS processing
-- **[@vitejs/plugin-react-swc](https://github.com/nicolo-ribaudo/vite-plugin-react-swc)** — Fast React refresh
-- **[concurrently](https://github.com/open-cli-tools/concurrently)** — Parallel dev scripts
+- **[ESLint](https://eslint.org/)** (v9) + **[typescript-eslint](https://typescript-eslint.io/)** - Linting
+- **[PostCSS](https://postcss.org/)** + **[Autoprefixer](https://github.com/postcss/autoprefixer)** - CSS processing
+- **[@vitejs/plugin-react-swc](https://github.com/nicolo-ribaudo/vite-plugin-react-swc)** - Fast React refresh
+- **[concurrently](https://github.com/open-cli-tools/concurrently)** - Parallel dev scripts
 
 ### Fonts (via Google Fonts)
 
-- **[Fredoka](https://fonts.google.com/specimen/Fredoka)** — Primary display font
-- **[Fraunces](https://fonts.google.com/specimen/Fraunces)** — Serif accent font
-- **[Inconsolata](https://fonts.google.com/specimen/Inconsolata)** — Monospace for numbers and code
+- **[Fredoka](https://fonts.google.com/specimen/Fredoka)** - Primary display font
+- **[Fraunces](https://fonts.google.com/specimen/Fraunces)** - Serif accent font
+- **[Inconsolata](https://fonts.google.com/specimen/Inconsolata)** - Monospace for numbers and code
 
 ## Credits & Attributions
 
 See the full [Attributions page](/attributions) for library licenses and credits.
 
-- **[shadcn/ui](https://ui.shadcn.com/)** by shadcn — Component templates
-- **[Radix UI](https://www.radix-ui.com/)** by WorkOS — Accessible primitives
-- **[OpenAI](https://openai.com/)** — GPT-5 Nano powering the FAQ chatbot
-- **[Supabase](https://supabase.com/)** — Authentication and database
-- **[Google Fonts](https://fonts.google.com/)** — Fredoka, Fraunces, Inconsolata
-- **[Lucide](https://lucide.dev/)** — Open-source icon set
-- **[Vercel](https://vercel.com/)** — Hosting and serverless functions
+- **[shadcn/ui](https://ui.shadcn.com/)** by shadcn - Component templates
+- **[Radix UI](https://www.radix-ui.com/)** by WorkOS - Accessible primitives
+- **[OpenAI](https://openai.com/)** - GPT-5 Nano powering the FAQ chatbot
+- **[Supabase](https://supabase.com/)** - Authentication and database
+- **[Google Fonts](https://fonts.google.com/)** - Fredoka, Fraunces, Inconsolata
+- **[Lucide](https://lucide.dev/)** - Open-source icon set
+- **[Vercel](https://vercel.com/)** - Hosting and serverless functions

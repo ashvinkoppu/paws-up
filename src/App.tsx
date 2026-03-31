@@ -3,12 +3,12 @@
  * and defines the client-side route map.
  *
  * Provider nesting order (outermost → innermost):
- *  1. {@link ErrorBoundary} – catches uncaught render errors.
- *  2. QueryClientProvider – powers react-query data fetching.
- *  3. TooltipProvider – shadcn/ui tooltip context.
- *  4. {@link AuthProvider} – Supabase session state.
- *  5. {@link GameProvider} – virtual-pet game state & actions.
- *  6. BrowserRouter – react-router client-side navigation.
+ *  1. {@link ErrorBoundary} - catches uncaught render errors.
+ *  2. QueryClientProvider - powers react-query data fetching.
+ *  3. TooltipProvider - shadcn/ui tooltip context.
+ *  4. {@link AuthProvider} - Supabase session state.
+ *  5. {@link GameProvider} - virtual-pet game state & actions.
+ *  6. BrowserRouter - react-router client-side navigation.
  *
  * Routes:
  *  - `/`          → Landing page (Index)

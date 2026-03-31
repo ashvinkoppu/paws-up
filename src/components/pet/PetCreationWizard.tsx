@@ -1,5 +1,5 @@
 /**
- * PetCreationWizard — a full-screen onboarding flow for creating a new pet.
+ * PetCreationWizard - a full-screen onboarding flow for creating a new pet.
  *
  * Redesigned to match the landing page and auth pages design system:
  * semantic color tokens, consistent navbar, warm parchment palette,
@@ -409,10 +409,10 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Accent top line — matches landing page and auth pages */}
+      {/* Accent top line - matches landing page and auth pages */}
       <div className="h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 w-full" />
 
-      {/* Navbar — matches Login and Signup pages exactly */}
+      {/* Navbar - matches Login and Signup pages exactly */}
       <nav
         className={`border-b border-border sticky top-0 bg-background/95 backdrop-blur-sm z-50 transition-all duration-300 ${
           scrolled ? "shadow-md" : ""
@@ -434,7 +434,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({
         </div>
       </nav>
 
-      {/* Background decoration — matches landing page and auth pages */}
+      {/* Background decoration - matches landing page and auth pages */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className="absolute top-0 right-0 w-[700px] h-[600px] bg-primary/[0.06] rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-secondary/[0.05] rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
@@ -509,7 +509,7 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({
               </div>
             </div>
 
-            {/* Starter details — compact */}
+            {/* Starter details - compact */}
             <div className="mt-4 space-y-2">
               {STARTER_DETAILS.map((item) => {
                 const Icon = item.icon;

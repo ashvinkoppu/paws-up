@@ -157,7 +157,7 @@ const EventModal: React.FC = () => {
           })}
         </div>
 
-        {/* Balance footer — only shown when choices involve money */}
+        {/* Balance footer - only shown when choices involve money */}
         {hasAnyCost && (
           <div className="px-5 pb-4 flex flex-col items-center gap-1.5">
             {allUnaffordable && (

@@ -22,7 +22,7 @@ export function useScrolled(threshold = 20): boolean {
 /**
  * Returns [ref, inView] where inView flips to true the first time the element
  * enters the viewport. The observer is disconnected afterwards so the state
- * never reverts — safe for entrance animations.
+ * never reverts - safe for entrance animations.
  */
 export function useInView(
   threshold = 0.12,

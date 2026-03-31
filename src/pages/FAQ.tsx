@@ -124,14 +124,14 @@ const FAQ: React.FC = () => {
       id: 8,
       question: "What happens if I neglect my pet?",
       answer:
-        "If your pet's needs aren't met, their stats will decrease over time. A neglected pet may become:\n\n• Hungry and lose health\n• Unhappy and less responsive\n• Dirty and more prone to illness\n\nDon't worry though — you can always restore your pet's stats by providing proper care! We'll also send you reminders to help you remember.",
+        "If your pet's needs aren't met, their stats will decrease over time. A neglected pet may become:\n\n• Hungry and lose health\n• Unhappy and less responsive\n• Dirty and more prone to illness\n\nDon't worry though, you can always restore your pet's stats by providing proper care! We'll also send you reminders to help you remember.",
       category: "pet-care",
     },
     {
       id: 14,
       question: "What do the different stats mean?",
       answer:
-        "Your pet has five main stats:\n\n• **Hunger**: How full your pet is — feed regularly!\n• **Happiness**: Your pet's mood — play and give treats\n• **Cleanliness**: How clean your pet is — bathe often\n• **Health**: Overall wellness — keep other stats up\n• **Energy**: How rested your pet is — let them sleep\n\nAll stats affect your pet's overall well-being!",
+        "Your pet has five main stats:\n\n• **Hunger**: How full your pet is - feed regularly!\n• **Happiness**: Your pet's mood - play and give treats\n• **Cleanliness**: How clean your pet is - bathe often\n• **Health**: Overall wellness - keep other stats up\n• **Energy**: How rested your pet is - let them sleep\n\nAll stats affect your pet's overall well-being!",
       category: "pet-care",
     },
     {

@@ -42,7 +42,7 @@ import { calculateLevel } from "@/data/tasks";
 import { getAccessoryById, ACCESSORY_POSITIONS } from "@/data/accessories";
 import ConfettiOverlay from "@/components/overlays/ConfettiOverlay";
 
-// Mood visual config — controls aura, pet animation, and ambient particles
+// Mood visual config - controls aura, pet animation, and ambient particles
 type MoodVisual = {
   auraColor: string;
   auraIntensity: string;
@@ -463,7 +463,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
                 stageConfig.scale,
               )}
             >
-              {/* Mood aura — pulsing gradient ring behind the pet circle */}
+              {/* Mood aura - pulsing gradient ring behind the pet circle */}
               <div
                 className={cn(
                   "absolute inset-0 rounded-full transition-all duration-700",
@@ -487,7 +487,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
                   "border-2 border-border/20 shadow-xl ring-4 ring-white/10",
                 )}
               >
-                {/* Pet image — the pet itself animates based on mood */}
+                {/* Pet image - the pet itself animates based on mood */}
                 <img
                   src={PET_IMAGES[pet.species]}
                   alt={pet.name}
@@ -705,7 +705,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
                 )}
               </div>
 
-              {/* Equipped accessory overlays — outside overflow-hidden circle so they aren't clipped */}
+              {/* Equipped accessory overlays - outside overflow-hidden circle so they aren't clipped */}
               {pet.equippedAccessories &&
                 (
                   Object.entries(pet.equippedAccessories) as [
@@ -744,7 +744,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
                   );
                 })}
 
-              {/* Evolution announcement — positioned above the circle */}
+              {/* Evolution announcement - positioned above the circle */}
               {isEvolving && evolutionTarget && (
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-40 pointer-events-none animate-evolution-text">
                   <div className="bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 rounded-2xl px-6 py-3 shadow-2xl text-center whitespace-nowrap border-2 border-yellow-300/50">
@@ -760,7 +760,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
                 </div>
               )}
 
-              {/* Hunger result after eating — positioned above the circle */}
+              {/* Hunger result after eating - positioned above the circle */}
               {eatingState === "done" && hungerAfter !== null && (
                 <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-fade-in-up">
                   <div className="bg-card border-2 border-secondary/40 rounded-xl px-4 py-2 shadow-lg text-center whitespace-nowrap">

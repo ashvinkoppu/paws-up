@@ -3,7 +3,7 @@
  *
  * Polished notification dropdown that renders inline beneath the bell icon
  * in the GameDashboard header.  Consumes `GameNotification[]` directly from
- * the caller — no internal state for open/close; that lives in GameDashboard.
+ * the caller - no internal state for open/close; that lives in GameDashboard.
  *
  * Design system tokens used:
  *   - bg-card / bg-background / bg-accent
@@ -123,7 +123,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
       className={cn(
         "absolute right-0 top-full mt-2 w-[22rem] z-50",
         "bg-card border border-border rounded-xl shadow-lg overflow-hidden",
-        // Entrance animation – reuse existing fadeInUp utility
+        // Entrance animation - reuse existing fadeInUp utility
         "animate-fade-in-up",
       )}
       style={{ animationDuration: "0.2s" }}

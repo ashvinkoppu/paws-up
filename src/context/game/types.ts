@@ -1,12 +1,12 @@
 /**
- * Game Context Types — central type definitions for the game state layer.
+ * Game Context Types - central type definitions for the game state layer.
  *
  * Contains:
- * - `initialState`          — default values used when no save data exists.
- * - `GameAction`            — discriminated union of every reducer action.
- * - `ActionFeedbackEvent`   — lightweight data object surfaced by the UI
+ * - `initialState`          - default values used when no save data exists.
+ * - `GameAction`            - discriminated union of every reducer action.
+ * - `ActionFeedbackEvent`   - lightweight data object surfaced by the UI
  *                             layer after the player performs an action.
- * - `GameContextType`       — shape of the React context value consumed
+ * - `GameContextType`       - shape of the React context value consumed
  *                             by `useGame()`.
  *
  * @module context/game/types

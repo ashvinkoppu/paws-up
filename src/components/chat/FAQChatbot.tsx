@@ -300,10 +300,10 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
         )}
       >
         <div className="rounded-xl border border-zinc-200 bg-white shadow-lg overflow-hidden">
-          {/* Accent top line — matches site-wide pattern */}
+          {/* Accent top line - matches site-wide pattern */}
           <div className="h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40" />
 
-          {/* Header — mirrors the navbar logo block */}
+          {/* Header - mirrors the navbar logo block */}
           <div className="px-5 pt-4 pb-3 border-b border-zinc-100">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -484,7 +484,7 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
           />
         )}
 
-        {/* Main button — matches site's primary button style */}
+        {/* Main button - matches site's primary button style */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           onMouseEnter={() => setIsHovering(true)}

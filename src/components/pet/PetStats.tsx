@@ -478,7 +478,7 @@ const PetStats: React.FC = () => {
                       {log.action}
                     </span>
                     <span className="text-muted-foreground ml-1">
-                      — {log.description}
+                      - {log.description}
                     </span>
                     {log.statChanges && (
                       <span className="ml-1 text-secondary">

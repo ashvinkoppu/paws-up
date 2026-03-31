@@ -155,7 +155,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                   <Coins className="w-4 h-4" />
                   <span className="font-semibold text-sm">
                     {isRewardAvailable("catch")
-                      ? "$2–$8 per catch"
+                      ? "$2-$8 per catch"
                       : "Daily Limit Reached"}
                   </span>
                 </div>
@@ -212,7 +212,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                   <Coins className="w-4 h-4" />
                   <span className="font-semibold text-sm">
                     {isRewardAvailable("memory")
-                      ? "$5–$12 per game"
+                      ? "$5-$12 per game"
                       : "Daily Limit Reached"}
                   </span>
                 </div>
@@ -272,7 +272,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                   <Coins className="w-4 h-4" />
                   <span className="font-semibold text-sm">
                     {isRewardAvailable("quiz")
-                      ? "$6–$15 per game"
+                      ? "$6-$15 per game"
                       : "Daily Limit Reached"}
                   </span>
                 </div>
@@ -329,7 +329,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                   <Coins className="w-4 h-4" />
                   <span className="font-semibold text-sm">
                     {isRewardAvailable("whack")
-                      ? "$2–$5 per whack"
+                      ? "$2-$5 per whack"
                       : "Daily Limit Reached"}
                   </span>
                 </div>

@@ -1,5 +1,5 @@
 /**
- * Game Helpers — pure utility functions used by the game reducer.
+ * Game Helpers - pure utility functions used by the game reducer.
  *
  * All functions in this module are **side-effect-free** so they can
  * be safely called from the reducer without triggering React warnings.
@@ -26,9 +26,9 @@ export const ACHIEVEMENT_REWARD = 10;
  * inflicts a hunger penalty.
  */
 export const MEAL_WINDOWS = [
-  { name: 'breakfast' as const, start: 420, end: 540 }, // 7:00 AM – 9:00 AM
-  { name: 'lunch' as const, start: 720, end: 840 }, // 12:00 PM – 2:00 PM
-  { name: 'dinner' as const, start: 1080, end: 1200 }, // 6:00 PM – 8:00 PM
+  { name: 'breakfast' as const, start: 420, end: 540 }, // 7:00 AM - 9:00 AM
+  { name: 'lunch' as const, start: 720, end: 840 }, // 12:00 PM - 2:00 PM
+  { name: 'dinner' as const, start: 1080, end: 1200 }, // 6:00 PM - 8:00 PM
 ];
 
 export type MealName = 'breakfast' | 'lunch' | 'dinner';

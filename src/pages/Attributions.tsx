@@ -15,13 +15,13 @@ const Attributions: React.FC = () => {
   const sections = [
     {
       title: "UI Framework & Rendering",
-      content: `React — Copyright © Meta Platforms, Inc. and affiliates
+      content: `React - Copyright © Meta Platforms, Inc. and affiliates
 License: MIT
 https://github.com/facebook/react
 
 The core library powering Paws Up's component-based UI. All interactive elements, state management, and rendering are built on top of React 19.
 
-React Router DOM — Copyright © Remix Software Inc.
+React Router DOM - Copyright © Remix Software Inc.
 License: MIT
 https://github.com/remix-run/react-router
 
@@ -29,49 +29,49 @@ Handles all client-side navigation and route definitions within the app.`,
     },
     {
       title: "Component Library & Styling",
-      content: `shadcn/ui — Copyright © shadcn
+      content: `shadcn/ui - Copyright © shadcn
 License: MIT
 https://github.com/shadcn-ui/ui
 
 Paws Up uses shadcn/ui as its component foundation. Components are copied directly into the codebase and customized to fit the app's design language.
 
-Radix UI — Copyright © WorkOS
+Radix UI - Copyright © WorkOS
 License: MIT
 https://github.com/radix-ui/primitives
 
 Accessible, unstyled primitives used under the hood by shadcn/ui components including dialogs, dropdowns, tooltips, accordions, and more.
 
-Tailwind CSS — Copyright © Tailwind Labs Inc.
+Tailwind CSS - Copyright © Tailwind Labs Inc.
 License: MIT
 https://github.com/tailwindlabs/tailwindcss
 
 Utility-first CSS framework used for all layout, spacing, typography, and color styling throughout the app.
 
-tailwind-merge — Copyright © Dany Castillo
+tailwind-merge - Copyright © Dany Castillo
 License: MIT
 https://github.com/nicolo-ribaudo/tailwind-merge
 
 Utility for merging Tailwind class names without style conflicts.
 
-class-variance-authority — Copyright © Joe Bell
+class-variance-authority - Copyright © Joe Bell
 License: Apache-2.0
 https://github.com/joe-bell/cva
 
 Used internally by shadcn/ui to define component variants in a type-safe way.
 
-clsx — Copyright © Luke Edwards
+clsx - Copyright © Luke Edwards
 License: MIT
 https://github.com/lukeed/clsx
 
 Lightweight utility for conditionally joining class names.
 
-tailwindcss-animate — Copyright © Jamie Kyle
+tailwindcss-animate - Copyright © Jamie Kyle
 License: MIT
 https://github.com/jamiebuilds/tailwindcss-animate
 
 Tailwind plugin providing pre-built CSS animation utilities used for transitions and motion throughout the UI.
 
-next-themes — Copyright © Pacocoursey
+next-themes - Copyright © Pacocoursey
 License: MIT
 https://github.com/pacocoursey/next-themes
 
@@ -79,15 +79,15 @@ Provides seamless theme switching support (light/dark mode) for the application.
     },
     {
       title: "Icons",
-      content: `Lucide React — Copyright © Lucide Contributors
+      content: `Lucide React - Copyright © Lucide Contributors
 License: ISC
 https://github.com/lucide-icons/lucide
 
-All icons used throughout Paws Up — paw prints, shields, arrows, and more — come from the Lucide icon library.`,
+All icons used throughout Paws Up - paw prints, shields, arrows, and more - come from the Lucide icon library.`,
     },
     {
       title: "Backend & Authentication",
-      content: `Supabase — Copyright © Supabase Inc.
+      content: `Supabase - Copyright © Supabase Inc.
 License: Apache-2.0
 https://github.com/supabase/supabase
 
@@ -95,7 +95,7 @@ Paws Up uses Supabase for user authentication, database storage, and real-time d
     },
     {
       title: "Data Fetching",
-      content: `TanStack React Query — Copyright © TanStack
+      content: `TanStack React Query - Copyright © TanStack
 License: MIT
 https://github.com/TanStack/query
 
@@ -103,7 +103,7 @@ Used for server-state management, caching, and data synchronization between the 
     },
     {
       title: "Notifications",
-      content: `Sonner — Copyright © emilkowalski_
+      content: `Sonner - Copyright © emilkowalski_
 License: MIT
 https://github.com/emilkowalski/sonner
 
@@ -111,13 +111,13 @@ Toast notification library used for feedback messages across the app (success, e
     },
     {
       title: "Build Tooling",
-      content: `Vite — Copyright © Evan You and Vite Contributors
+      content: `Vite - Copyright © Evan You and Vite Contributors
 License: MIT
 https://github.com/vitejs/vite
 
 The build tool and development server powering Paws Up's fast hot-module replacement and optimized production builds.
 
-@vitejs/plugin-react-swc — Copyright © Vite Contributors
+@vitejs/plugin-react-swc - Copyright © Vite Contributors
 License: MIT
 https://github.com/vitejs/vite-plugin-react-swc
 
@@ -125,7 +125,7 @@ Vite plugin enabling fast React transforms using the SWC compiler.`,
     },
     {
       title: "Deployment",
-      content: `Vercel — Copyright © Vercel Inc.
+      content: `Vercel - Copyright © Vercel Inc.
 https://vercel.com
 
 Paws Up is hosted and deployed on Vercel's platform. Serverless API functions are powered by @vercel/node.`,

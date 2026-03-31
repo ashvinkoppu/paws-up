@@ -1,5 +1,5 @@
 /**
- * AnimatedSection — fade + slide entrance animation driven by IntersectionObserver.
+ * AnimatedSection - fade + slide entrance animation driven by IntersectionObserver.
  *
  * Used on public marketing pages to animate content as the user scrolls.
  * The animation fires once and never reverses.
@@ -12,7 +12,7 @@ interface AnimatedSectionProps {
   className?: string;
   /** Stagger delay in seconds */
   delay?: number;
-  /** Slide direction — "up" by default */
+  /** Slide direction - "up" by default */
   direction?: "up" | "left" | "right";
 }
 

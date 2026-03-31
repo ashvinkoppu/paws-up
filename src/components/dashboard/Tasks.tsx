@@ -289,7 +289,7 @@ const Tasks: React.FC = () => {
               <div key={tier}>
                 <div className="flex items-center gap-2 mb-2">
                   <span className={cn('text-xs font-bold uppercase tracking-wider', tierColor)}>
-                    Tier {tier} — {tierLabel}
+                    Tier {tier} - {tierLabel}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {tierCompletedCount}/{milestones.length}

@@ -1,5 +1,5 @@
 /**
- * Shop item catalog — all purchasable items available in the in-game Pet Shop.
+ * Shop item catalog - all purchasable items available in the in-game Pet Shop.
  *
  * Items are grouped by category, each mapping to a pet stat it primarily affects:
  *  - hunger     → Food items (buy food in the shop)

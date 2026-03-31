@@ -1,5 +1,5 @@
 /**
- * GameProvider — the React context provider that owns and manages
+ * GameProvider - the React context provider that owns and manages
  * the entire game state.
  *
  * Responsibilities:
@@ -214,7 +214,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [state.gameStarted, state.pet?.id]);
 
-  // Stat decay timer — depend only on pet existence, not the pet object itself,
+  // Stat decay timer - depend only on pet existence, not the pet object itself,
   // to avoid tearing down and recreating the interval on every decay tick.
   const hasPet = !!state.pet;
   useEffect(() => {
@@ -444,13 +444,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
         payload: {
           type: "achievement",
           title: "Achievement Unlocked!",
-          description: `${achievement.name} — +$${ACHIEVEMENT_REWARD} reward!`,
+          description: `${achievement.name} - +$${ACHIEVEMENT_REWARD} reward!`,
           icon: "🏆",
         },
       });
       toast({
         title: `🏆 Achievement Unlocked!`,
-        description: `${achievement.name} — +$${ACHIEVEMENT_REWARD} reward!`,
+        description: `${achievement.name} - +$${ACHIEVEMENT_REWARD} reward!`,
       });
     }
   };
@@ -738,7 +738,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
 
     dispatch({ type: "USE_DAILY_ACTION" });
     dispatch({ type: "CHECK_MILESTONES" });
-    // feed's message is empty — skip the notification for that action
+    // feed's message is empty - skip the notification for that action
     if (actionData.message) {
       dispatch({
         type: "ADD_NOTIFICATION",

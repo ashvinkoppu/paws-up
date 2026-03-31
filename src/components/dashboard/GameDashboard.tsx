@@ -416,7 +416,7 @@ const GameDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Two-button screen nav — directly below header */}
+        {/* Two-button screen nav - directly below header */}
         <div className="max-w-6xl mx-auto px-6 pb-3 pt-1 flex gap-2">
           <Button
             variant="ghost"
@@ -495,7 +495,7 @@ const GameDashboard: React.FC = () => {
                   <div className="flex items-center gap-2 min-w-0">
                     <AlertTriangle className="w-4 h-4 text-rose-500 flex-shrink-0" />
                     <span className="text-sm text-rose-700 dark:text-rose-400">
-                      {state.pet?.name} needs attention — {needsAttentionCount} {needsAttentionCount === 1 ? 'stat is' : 'stats are'} low.
+                      {state.pet?.name} needs attention: {needsAttentionCount} {needsAttentionCount === 1 ? 'stat is' : 'stats are'} low.
                     </span>
                   </div>
                   <Button

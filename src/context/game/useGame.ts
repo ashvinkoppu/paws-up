@@ -1,5 +1,5 @@
 /**
- * useGame Hook — convenient accessor for the Game context.
+ * useGame Hook - convenient accessor for the Game context.
  *
  * Wraps `useContext(GameContext)` and throws a descriptive error when
  * called outside of a `<GameProvider>`, preventing silent undefined-context

@@ -1,5 +1,5 @@
 /**
- * PublicFooter — consistent footer used across all public-facing pages.
+ * PublicFooter - consistent footer used across all public-facing pages.
  *
  * Centralising this avoids the same footer being hand-written (and
  * diverging) in every page file. The link set is the canonical list:

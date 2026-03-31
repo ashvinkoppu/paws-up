@@ -1,5 +1,5 @@
 /**
- * Game Reducer — pure function that handles every state transition.
+ * Game Reducer - pure function that handles every state transition.
  *
  * Each `GameAction` dispatched from the provider is matched in a
  * `switch` statement and returns the next immutable `GameState`.
@@ -348,7 +348,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     /**
-     * DECAY_STATS — runs on the shared simulation interval.
+     * DECAY_STATS - runs on the shared simulation interval.
      * Reduces each stat based on personality modifiers and current behavior.
      * Advances game time by the shared decay increment,
      * checks for skipped meals, evaluates pet behavior, and handles extreme neglect (pet death).
@@ -457,7 +457,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     /**
-     * LOAD_GAME — restores a previously saved state from the cloud.
+     * LOAD_GAME - restores a previously saved state from the cloud.
      * Performs migration for fields that may be missing in older save
      * formats, ensuring backwards compatibility.
      */
@@ -1015,7 +1015,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         notifications: prependNotification(resultState.notifications, createNotification({
           type: 'milestone',
           title: 'Weekly Goal Complete!',
-          description: `${goal.name} — +${goal.reward.xp} XP, +$${goal.reward.money}`,
+          description: `${goal.name} - +${goal.reward.xp} XP, +$${goal.reward.money}`,
           icon: '🎯',
         })),
       };

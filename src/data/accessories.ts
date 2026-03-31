@@ -1,5 +1,5 @@
 /**
- * Accessory catalog — all equippable cosmetic items available in the Wardrobe tab.
+ * Accessory catalog - all equippable cosmetic items available in the Wardrobe tab.
  *
  * Each {@link AccessoryDef} belongs to a {@link AccessorySlot} (head/neck/body/tag)
  * and may be restricted to a specific pet gender via `genderFilter`. Items with a

@@ -12,7 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useScrolled } from "@/hooks/use-scroll-state";
 import AnimatedSection from "@/components/layout/AnimatedSection";
 import PublicFooter from "@/components/layout/PublicFooter";
-import { PawPrint, ArrowRight, CheckCircle } from "lucide-react";
+import { PawPrint, ArrowRight } from "lucide-react";
 
 // ── Product mockup ─────────────────────────────────────────────────────────────
 const ProductMockup: React.FC = () => (
@@ -27,136 +27,116 @@ const ProductMockup: React.FC = () => (
           <div className="w-2.5 h-2.5 rounded-full bg-zinc-300" />
         </div>
         <div className="flex-1 bg-white rounded border border-zinc-200 px-3 py-0.5 text-xs text-zinc-400">
-          app.pawsup.com/dashboard
+          pawsup.vercel.app/dashboard
         </div>
       </div>
 
       {/* Dashboard */}
-      <div className="bg-zinc-50 p-4">
-        {/* Balance + pet name */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-base">
-              🐱
+      <div className="bg-zinc-50 p-3">
+        {/* Header strip */}
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] font-bold text-zinc-800">Paws Up</span>
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 px-2 py-0.5 bg-white border border-zinc-200 rounded-full text-[10px] font-mono font-bold text-zinc-700 tabular-nums">
+              $120
             </div>
-            <div>
-              <p className="text-xs font-semibold text-zinc-800 leading-tight">
+            <div className="flex items-center gap-0.5 px-2 py-0.5 bg-white border border-zinc-200 rounded-full text-[10px] text-zinc-500">
+              ⚡ 3/5
+            </div>
+            <div className="flex items-center gap-0.5 px-2 py-0.5 bg-white border border-zinc-200 rounded-full text-[10px] text-zinc-500">
+              ☀ Day 4
+            </div>
+          </div>
+        </div>
+
+        {/* Play / Manage toggle */}
+        <div className="flex gap-1.5 mb-3">
+          <div className="px-3 py-1 bg-primary text-white rounded-lg text-[10px] font-semibold">
+            Play
+          </div>
+          <div className="px-3 py-1 bg-white border border-zinc-200 rounded-lg text-[10px] text-zinc-500">
+            Manage
+          </div>
+        </div>
+
+        <div className="grid grid-cols-5 gap-2">
+          {/* Pet column */}
+          <div className="col-span-2 space-y-2">
+            <div className="bg-white rounded-lg border border-zinc-200 p-2">
+              <div className="w-full aspect-square bg-amber-50 rounded-lg flex items-center justify-center text-4xl mb-1.5 border border-amber-100">
+                🐱
+              </div>
+              <p className="text-[10px] font-bold text-zinc-800 text-center leading-tight">
                 Whiskers
               </p>
-              <p className="text-[10px] text-zinc-400">Level 3 · Cat</p>
+              <p className="text-[8px] text-zinc-400 text-center">Lv.3 Cat</p>
             </div>
           </div>
-          <div className="bg-white border border-zinc-200 rounded-md px-2.5 py-1 text-xs font-bold text-zinc-800 tabular-nums">
-            $248.50
-          </div>
-        </div>
 
-        {/* Pet stats card */}
-        <div className="bg-white rounded-lg border border-zinc-200 p-3 mb-3 flex items-center gap-3">
-          <div className="w-14 h-14 bg-amber-50 rounded-lg flex items-center justify-center text-3xl shrink-0 border border-amber-100">
-            🐱
-          </div>
-          <div className="flex-1 space-y-1.5 min-w-0">
-            {[
-              {
-                label: "Health",
-                width: "80%",
-                color: "bg-emerald-400",
-                value: "80%",
-              },
-              {
-                label: "Happiness",
-                width: "72%",
-                color: "bg-amber-400",
-                value: "72%",
-              },
-              {
-                label: "Hunger",
-                width: "55%",
-                color: "bg-rose-400",
-                value: "55%",
-              },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[10px] font-medium text-zinc-500">
-                    {stat.label}
-                  </span>
-                  <span className="text-[10px] text-zinc-400 tabular-nums">
-                    {stat.value}
-                  </span>
+          {/* Stats + Tasks column */}
+          <div className="col-span-3 space-y-2">
+            {/* 5-stat vital signs */}
+            <div className="bg-white rounded-lg border border-zinc-200 p-2 space-y-1.5">
+              {[
+                { label: "Hunger", width: "78%", color: "bg-orange-400" },
+                { label: "Happy", width: "65%", color: "bg-yellow-400" },
+                { label: "Energy", width: "82%", color: "bg-violet-400" },
+                { label: "Clean", width: "55%", color: "bg-sky-400" },
+                { label: "Health", width: "90%", color: "bg-emerald-400" },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[9px] text-zinc-500">
+                      {stat.label}
+                    </span>
+                    <span className="text-[9px] text-zinc-400 tabular-nums">
+                      {stat.width}
+                    </span>
+                  </div>
+                  <div className="h-1 bg-zinc-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${stat.color} rounded-full`}
+                      style={{ width: stat.width }}
+                    />
+                  </div>
                 </div>
-                <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+              ))}
+            </div>
+
+            {/* Today's tasks */}
+            <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden">
+              <div className="px-2.5 py-1.5 border-b border-zinc-100">
+                <p className="text-[9px] font-semibold text-zinc-600">
+                  Today's Tasks
+                </p>
+              </div>
+              {[
+                { task: "Feed Whiskers", done: true },
+                { task: "Play session", done: true },
+                { task: "Grooming", done: false },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 ${index < 2 ? "border-b border-zinc-50" : ""}`}
+                >
                   <div
-                    className={`h-full ${stat.color} rounded-full`}
-                    style={{ width: stat.width }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Transaction list */}
-        <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden">
-          <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-100">
-            <p className="text-[11px] font-semibold text-zinc-700">
-              Spending This Week
-            </p>
-            <p className="text-[10px] font-medium text-rose-500 tabular-nums">
-              –$34.00
-            </p>
-          </div>
-          {[
-            {
-              label: "Premium Cat Food",
-              category: "Food",
-              amount: "–$12.00",
-              positive: false,
-            },
-            {
-              label: "Coin Game Reward",
-              category: "Earned",
-              amount: "+$8.00",
-              positive: true,
-            },
-            {
-              label: "Vet Check-up",
-              category: "Health",
-              amount: "–$20.00",
-              positive: false,
-            },
-            {
-              label: "Toy Purchase",
-              category: "Fun",
-              amount: "–$10.00",
-              positive: false,
-            },
-          ].map((transaction, index) => (
-            <div
-              key={index}
-              className={`flex items-center justify-between px-3 py-2 ${index < 3 ? "border-b border-zinc-50" : ""}`}
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded bg-zinc-100 flex items-center justify-center text-[8px] text-zinc-500 shrink-0">
-                  {transaction.positive ? "↑" : "↓"}
-                </div>
-                <div>
-                  <p className="text-[11px] text-zinc-700 leading-tight">
-                    {transaction.label}
-                  </p>
-                  <p className="text-[9px] text-zinc-400">
-                    {transaction.category}
+                    className={`w-3 h-3 rounded-full flex items-center justify-center text-[7px] shrink-0 ${
+                      item.done
+                        ? "bg-emerald-100 text-emerald-600"
+                        : "border border-zinc-300"
+                    }`}
+                  >
+                    {item.done ? "✓" : ""}
+                  </div>
+                  <p
+                    className={`text-[10px] leading-tight ${item.done ? "text-zinc-400 line-through" : "text-zinc-700"}`}
+                  >
+                    {item.task}
                   </p>
                 </div>
-              </div>
-              <span
-                className={`text-[11px] font-semibold tabular-nums ${transaction.positive ? "text-emerald-600" : "text-zinc-600"}`}
-              >
-                {transaction.amount}
-              </span>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>
@@ -167,38 +147,53 @@ const ProductMockup: React.FC = () => (
 const CareLogVisual: React.FC = () => (
   <div className="bg-white rounded-xl border border-zinc-200 p-5">
     <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-4">
-      Care Log — Today
+      Care Actions
     </p>
-    <div className="space-y-3">
+    <div className="grid grid-cols-3 gap-2 mb-5">
       {[
-        { emoji: "🍖", action: "Fed Whiskers", time: "8:30 AM", done: true },
-        { emoji: "🎮", action: "Play session", time: "11:00 AM", done: true },
-        {
-          emoji: "💊",
-          action: "Vitamin supplement",
-          time: "2:00 PM",
-          done: false,
-        },
-        { emoji: "🛁", action: "Bath time", time: "6:00 PM", done: false },
-      ].map((item, index) => (
+        { emoji: "🍖", label: "Feed", stat: "Hunger", active: true },
+        { emoji: "🏃", label: "Play", stat: "Happiness", active: false },
+        { emoji: "🌙", label: "Rest", stat: "Energy", active: false },
+        { emoji: "✨", label: "Clean", stat: "Cleanliness", active: true },
+        { emoji: "💊", label: "Vet", stat: "Health", active: false },
+      ].map((action) => (
         <div
-          key={index}
-          className={`flex items-center gap-3 ${!item.done ? "opacity-40" : ""}`}
+          key={action.label}
+          className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border ${
+            action.active
+              ? "bg-primary/5 border-primary/20"
+              : "bg-zinc-50 border-zinc-100"
+          }`}
         >
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${item.done ? "bg-emerald-50" : "bg-zinc-50"}`}
-          >
-            {item.emoji}
+          <span className="text-xl">{action.emoji}</span>
+          <p className="text-[11px] font-medium text-zinc-700">
+            {action.label}
+          </p>
+          <p className="text-[9px] text-zinc-400">{action.stat}</p>
+        </div>
+      ))}
+    </div>
+    <div className="space-y-2.5">
+      {[
+        { label: "Hunger", width: "78%", color: "bg-orange-400" },
+        { label: "Energy", width: "45%", color: "bg-violet-400", low: true },
+        { label: "Health", width: "90%", color: "bg-emerald-400" },
+      ].map((stat) => (
+        <div key={stat.label}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-zinc-500">{stat.label}</span>
+            <span
+              className={`text-xs tabular-nums ${stat.low ? "text-amber-500 font-medium" : "text-zinc-400"}`}
+            >
+              {stat.width}
+            </span>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-zinc-800">{item.action}</p>
-            <p className="text-xs text-zinc-400">{item.time}</p>
+          <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full ${stat.color} rounded-full`}
+              style={{ width: stat.width }}
+            />
           </div>
-          {item.done ? (
-            <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-          ) : (
-            <div className="w-4 h-4 rounded-full border border-zinc-200 shrink-0" />
-          )}
         </div>
       ))}
     </div>
@@ -207,51 +202,70 @@ const CareLogVisual: React.FC = () => (
 
 const BudgetVisual: React.FC = () => (
   <div className="bg-white rounded-xl border border-zinc-200 p-5">
+    <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest mb-1">
+      Cost of Care Report
+    </p>
     <div className="flex items-end justify-between mb-4">
       <div>
-        <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-widest">
-          Monthly Spending
-        </p>
-        <p className="text-3xl font-bold text-zinc-900 mt-1 tabular-nums">
-          $248.50
-        </p>
+        <p className="text-3xl font-bold text-zinc-900 tabular-nums">$48.50</p>
+        <p className="text-xs text-zinc-400 mt-0.5">spent this week</p>
       </div>
       <div className="text-right">
-        <p className="text-xs text-zinc-500">Budget</p>
+        <p className="text-xs text-zinc-500">Weekly budget</p>
         <p className="text-sm font-semibold text-zinc-600 tabular-nums">
-          $300.00
+          $75.00
         </p>
       </div>
     </div>
-    <div className="h-2 bg-zinc-100 rounded-full overflow-hidden flex gap-px mb-4">
-      {[
-        { color: "bg-amber-400", width: "45%" },
-        { color: "bg-primary", width: "30%" },
-        { color: "bg-violet-400", width: "15%" },
-        { color: "bg-zinc-300", width: "10%" },
-      ].map((segment, index) => (
-        <div
-          key={index}
-          className={`${segment.color} h-full`}
-          style={{ width: segment.width }}
-        />
-      ))}
+    <div className="h-2 bg-zinc-100 rounded-full overflow-hidden mb-1.5">
+      <div
+        className="h-full bg-primary/70 rounded-full"
+        style={{ width: "65%" }}
+      />
     </div>
-    <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+    <p className="text-[10px] text-zinc-400 tabular-nums mb-4">
+      65% of budget used - $26.50 remaining
+    </p>
+    <div className="space-y-2.5">
       {[
-        { color: "bg-amber-400", label: "Food", value: "$111.75" },
-        { color: "bg-primary", label: "Health", value: "$74.50" },
-        { color: "bg-violet-400", label: "Fun", value: "$37.25" },
-        { color: "bg-zinc-300", label: "Other", value: "$25.00" },
+        {
+          color: "bg-orange-400",
+          label: "Hunger",
+          value: "$18.00",
+          pct: "37%",
+        },
+        { color: "bg-rose-400", label: "Health", value: "$15.50", pct: "32%" },
+        { color: "bg-violet-400", label: "Energy", value: "$9.00", pct: "19%" },
+        {
+          color: "bg-sky-400",
+          label: "Cleanliness",
+          value: "$6.00",
+          pct: "12%",
+        },
       ].map((category) => (
-        <div key={category.label} className="flex items-center gap-2">
-          <div
-            className={`w-2.5 h-2.5 rounded-sm shrink-0 ${category.color}`}
-          />
-          <span className="text-xs text-zinc-600">{category.label}</span>
-          <span className="text-xs text-zinc-400 ml-auto tabular-nums">
-            {category.value}
-          </span>
+        <div key={category.label} className="space-y-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-2.5 h-2.5 rounded-sm shrink-0 ${category.color}`}
+              />
+              <span className="text-xs text-zinc-600">{category.label}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-400 tabular-nums">
+                {category.pct}
+              </span>
+              <span className="text-xs font-medium text-zinc-600 tabular-nums w-12 text-right">
+                {category.value}
+              </span>
+            </div>
+          </div>
+          <div className="h-1 bg-zinc-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full ${category.color} rounded-full`}
+              style={{ width: category.pct }}
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -440,7 +454,8 @@ const Index: React.FC = () => {
               Pet Care
             </p>
             <h2 className="font-serif text-4xl lg:text-5xl font-bold text-foreground leading-[1.1] tracking-tight mb-5">
-              Every meal, every game —<br />
+              Every meal, every game,
+              <br />
               logged.
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-7 max-w-sm">
@@ -530,7 +545,7 @@ const Index: React.FC = () => {
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-7 max-w-sm">
               Mini-games reward you with coins you can spend on your pet. Unlock
-              achievements as you hit milestones — the more you play, the more
+              achievements as you hit milestones. The more you play, the more
               your pet thrives.
             </p>
             <ul className="space-y-3">
