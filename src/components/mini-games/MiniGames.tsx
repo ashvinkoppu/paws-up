@@ -46,7 +46,6 @@ interface MiniGamesProps {
 const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
   const {
     state,
-    claimGameReward,
     updateStats,
     updateHighScore,
     setIsPlayingMiniGame,
@@ -427,7 +426,6 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                 {selectedGame === "memory" && (
                   <MemoryGame
                     onWin={handleWin}
-                    onLose={handleLose}
                     highScore={state.highScores?.["memory"] || 0}
                     onNewHighScore={(score) => updateHighScore("memory", score)}
                   />

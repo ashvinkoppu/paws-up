@@ -11,16 +11,14 @@
  * High score tracks fewest moves (lower is better).
  *
  * @prop {(reward: number) => void} onWin - Called with the dollar reward on completion.
- * @prop {() => void} onLose - Unused (the player always eventually wins this game).
  * @prop {number} highScore - Best (lowest) move count to display. 0 means no prior game.
  * @prop {(score: number) => void} onNewHighScore - Called when the player beats their record.
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface MemoryGameProps {
   onWin: (reward: number) => void;
-  onLose: () => void;
   highScore: number;
   onNewHighScore: (score: number) => void;
 }
@@ -29,7 +27,6 @@ const EMOJIS = ["🐕", "🐈", "🐰", "🐹", "🦴", "🐟"];
 
 const MemoryGame: React.FC<MemoryGameProps> = ({
   onWin,
-  onLose,
   highScore,
   onNewHighScore,
 }) => {
@@ -41,6 +38,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({
   const [matches, setMatches] = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
   const [matchMessage, setMatchMessage] = useState<string | null>(null);
+  const resolvingPairRef = useRef(false);
 
   // Initialize board: duplicate emoji array to create pairs, then shuffle
   useEffect(() => {
@@ -58,42 +56,49 @@ const MemoryGame: React.FC<MemoryGameProps> = ({
   // When two cards are flipped, check for a match. Matching cards stay face-up;
   // non-matching cards flip back after an 800ms delay so the player can memorize them.
   useEffect(() => {
-    if (flippedCards.length === 2) {
-      const [first, second] = flippedCards;
-      setMoves((currentMoves) => currentMoves + 1);
-
-      if (cards[first].emoji === cards[second].emoji) {
-        setCards((previous) =>
-          previous.map((card) =>
-            card.id === first || card.id === second
-              ? { ...card, matched: true }
-              : card,
-          ),
-        );
-        setMatches((currentMatches) => currentMatches + 1);
-        setFlippedCards([]);
-
-        // Flash a "MATCH FOUND!" banner with the per-match reward amount.
-        // Reward per match is higher when total moves are low.
-        const currentMoveCount = moves + 1;
-        const perMatchReward =
-          currentMoveCount <= 10 ? 2 : currentMoveCount <= 15 ? 1 : 1;
-        setMatchMessage(`MATCH FOUND!  +$${perMatchReward}`);
-        setTimeout(() => setMatchMessage(null), 1200);
-      } else {
-        setTimeout(() => {
-          setCards((previous) =>
-            previous.map((card) =>
-              card.id === first || card.id === second
-                ? { ...card, flipped: false }
-                : card,
-            ),
-          );
-          setFlippedCards([]);
-        }, 800);
-      }
+    if (flippedCards.length !== 2 || resolvingPairRef.current) {
+      return;
     }
-  }, [flippedCards, cards]);
+
+    resolvingPairRef.current = true;
+    const [first, second] = flippedCards;
+    const currentMoveCount = moves + 1;
+    setMoves(currentMoveCount);
+
+    if (cards[first].emoji === cards[second].emoji) {
+      setCards((previous) =>
+        previous.map((card) =>
+          card.id === first || card.id === second
+            ? { ...card, matched: true }
+            : card,
+        ),
+      );
+      setMatches((currentMatches) => currentMatches + 1);
+      setFlippedCards([]);
+      resolvingPairRef.current = false;
+
+      // Flash a "MATCH FOUND!" banner with the per-match reward amount.
+      // Reward per match is higher when total moves are low.
+      const perMatchReward = currentMoveCount <= 10 ? 2 : 1;
+      setMatchMessage(`MATCH FOUND!  +$${perMatchReward}`);
+      setTimeout(() => setMatchMessage(null), 1200);
+      return;
+    }
+
+    const mismatchTimer = setTimeout(() => {
+      setCards((previous) =>
+        previous.map((card) =>
+          card.id === first || card.id === second
+            ? { ...card, flipped: false }
+            : card,
+        ),
+      );
+      setFlippedCards([]);
+      resolvingPairRef.current = false;
+    }, 800);
+
+    return () => clearTimeout(mismatchTimer);
+  }, [cards, flippedCards, moves]);
 
   // End-of-game: when all 6 pairs matched, calculate tiered reward based on move count
   useEffect(() => {

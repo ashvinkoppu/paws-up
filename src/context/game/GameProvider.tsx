@@ -43,6 +43,7 @@ import { clampStat, ACHIEVEMENT_REWARD } from "@/context/game/helpers";
 import {
   RANDOM_EVENT_CHANCE_PER_DECAY_TICK,
   STAT_DECAY_INTERVAL_MS,
+  PLAY_WINDOW_RANGES,
 } from "@/data/gameTiming";
 
 export const GameContext = createContext<GameContextType | undefined>(
@@ -75,49 +76,17 @@ async function ensureProfileExists(session: Session): Promise<boolean> {
 }
 
 /**
- * Initialise game state. Attempts to restore a previous guest save
- * from localStorage; falls back to the supplied `initial` defaults.
- *
- * @param initial - The static default state object.
- * @returns Restored state or the initial defaults.
- */
-function isValidSaveData(data: unknown): data is GameState {
-  if (typeof data !== "object" || data === null) return false;
-  const save = data as Record<string, unknown>;
-  return (
-    typeof save.gameStarted === "boolean" &&
-    typeof save.money === "number" &&
-    Array.isArray(save.transactions) &&
-    Array.isArray(save.achievements)
-  );
-}
-
-const initGame = (initial: GameState): GameState => {
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("guestGameState");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (isValidSaveData(parsed)) {
-          return parsed;
-        }
-        console.error("Failed to load guest save: invalid shape");
-      } catch (e) {
-        console.error("Failed to load guest save", e);
-      }
-    }
-  }
-  return initial;
-};
-
-/**
  * Top-level provider component. Wrap the app (or a subtree) with this
  * to give descendants access to game state and actions via `useGame()`.
  */
 export const GameProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [state, dispatch] = useReducer(gameReducer, initialState, initGame);
+  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const hasPet = !!state.pet;
+  const dailyTrackingDate = state.dailyTracking?.date;
+  const dailyTaskCount = state.dailyTasks.length;
+  const milestoneCount = state.milestones.length;
   const [lastActionFeedback, setLastActionFeedback] =
     useState<ActionFeedbackEvent | null>(null);
   const [isPlayingMiniGame, setIsPlayingMiniGame] = useState(false);
@@ -160,9 +129,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
       } = await supabase.auth.getSession();
 
       if (!session?.user) {
-        if (state.isGuestMode && state.gameStarted) {
-          localStorage.setItem("guestGameState", JSON.stringify(state));
-        }
         hasPendingSaveRef.current = false;
         return;
       }
@@ -197,26 +163,33 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     return () => clearTimeout(timeout);
   }, [state]);
 
-  // Initialize daily tasks and milestones on load
+  // Ensure daily tasks and milestones are hydrated for the current save/day.
   useEffect(() => {
-    if (state.gameStarted && state.pet) {
-      const today = new Date().toDateString();
-      if (
-        !state.dailyTracking?.date ||
-        state.dailyTracking.date !== today ||
-        state.dailyTasks.length === 0
-      ) {
-        dispatch({ type: "RESET_DAILY_TASKS" });
-      }
-      if (!state.milestones || state.milestones.length === 0) {
-        dispatch({ type: "CHECK_MILESTONES" });
-      }
+    if (!state.gameStarted || !hasPet) {
+      return;
     }
-  }, [state.gameStarted, state.pet?.id]);
+
+    const today = new Date().toDateString();
+    if (
+      !dailyTrackingDate ||
+      dailyTrackingDate !== today ||
+      dailyTaskCount === 0
+    ) {
+      dispatch({ type: "RESET_DAILY_TASKS" });
+    }
+    if (milestoneCount === 0) {
+      dispatch({ type: "CHECK_MILESTONES" });
+    }
+  }, [
+    dailyTaskCount,
+    dailyTrackingDate,
+    hasPet,
+    milestoneCount,
+    state.gameStarted,
+  ]);
 
   // Stat decay timer - depend only on pet existence, not the pet object itself,
   // to avoid tearing down and recreating the interval on every decay tick.
-  const hasPet = !!state.pet;
   useEffect(() => {
     if (!hasPet) return;
     const interval = setInterval(() => {
@@ -568,7 +541,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     document.body.style.overflow = "";
 
     // Reset local state immediately so UI transitions are instant
-    localStorage.removeItem("guestGameState");
     cloudSaveLoadedRef.current = false;
     dispatch({ type: "LOAD_GAME", payload: initialState });
     toast({ title: "Game Reset", description: "Starting fresh!" });
@@ -798,6 +770,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
       });
     }
 
+    // Satisfy any play window that is currently open so GameClock
+    // does not apply the missed-window happiness penalty.
+    const activeWindowIndex = PLAY_WINDOW_RANGES.findIndex(
+      (window) =>
+        state.gameTime >= window.startMinute &&
+        state.gameTime < window.endMinute,
+    );
+    if (activeWindowIndex !== -1) {
+      dispatch({ type: "SATISFY_PLAY_WINDOW", payload: activeWindowIndex });
+    }
+
     dispatch({ type: "CHECK_MILESTONES" });
   };
 
@@ -890,18 +873,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     dispatch({ type: "CLAIM_GAME_REWARD", payload: { gameId, amount } });
     return true;
   };
-
-  /** Toggles guest mode. In guest mode saves go to localStorage only. */
-  const setGuestMode = useCallback((isGuest: boolean) => {
-    dispatch({ type: "SET_GUEST_MODE", payload: isGuest });
-    if (isGuest) {
-      cloudSaveLoadedRef.current = true; // Allow local saves in guest mode
-      toast({
-        title: "🎮 Guest Mode",
-        description: "Your progress will be saved locally only.",
-      });
-    }
-  }, []);
 
   /** Consumes one daily action point. Returns `false` if none remain. */
   const useDailyAction = useCallback((): boolean => {
@@ -1020,7 +991,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
         claimGameReward,
         updateGameTime,
         // New feature functions
-        setGuestMode,
         useDailyAction,
         initWeeklyGoals,
         claimWeeklyGoal,

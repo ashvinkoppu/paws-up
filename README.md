@@ -10,27 +10,27 @@ Players adopt a virtual pet and must balance its needs (food, play, health, rest
 
 **Pet Care**
 
-- 4 species (dog, cat, rabbit, hamster) with customizable colours and personalities
+- 4 species (dog, cat, rabbit, hamster) with customizable colours, gender, and personality
 - Dynamic stats: hunger, happiness, energy, cleanliness, health
-- Growth stages and leveling system
-- Equippable accessories
-- Park area for walks and fetch mini-activities
+- Teen/adult growth stages and leveling system
+- Wardrobe system with 13 equippable accessories across 4 slots
+- Park playground with fetch, feeding, agility, and NPC pet interactions
 
 **Financial System**
 
 - Weekly budget management with full transaction history
-- Shop with 40+ items across 6 categories
-- Spending breakdown by category with budget visualisation
+- 22 care items across 5 care categories, plus 13 wardrobe accessories
+- Spending breakdown by category with custom budget visualisation
 - Finance lessons based on current spending behaviour
 - Consequences for overspending (pet needs go unmet)
 
 **Gameplay**
 
-- 4 mini-games to earn coins: Catch the Treat, Memory Match, Quiz, Whack-a-Mole
-- Daily tasks with discount rewards
+- 4 mini-games to earn coins: Catch the Treat, Memory Match, Pet Trivia, Whack-a-Critter
+- 5 daily tasks per day, including timed hard tasks and discount rewards
 - 13 milestones across 3 difficulty tiers
-- 20+ achievements
-- Random events (emergencies, discounts, opportunities)
+- 10 achievements
+- 8 random events (emergencies, discounts, opportunities)
 - In-game day/night cycle with game clock
 
 **Cloud Saves**
@@ -57,11 +57,11 @@ Players adopt a virtual pet and must balance its needs (food, play, health, rest
 | **State Management** | React Context + useReducer, TanStack React Query |
 | **Backend / Auth** | Supabase (authentication + PostgreSQL) |
 | **AI Chatbot** | OpenAI API (GPT-5 Nano) via Vercel Serverless Function |
-| **Charts** | Recharts (via shadcn/ui chart component) |
+| **Data Visualisation** | Custom React + Tailwind budget breakdown UI |
 | **Icons** | Lucide React |
 | **Fonts** | Google Fonts (Fredoka, Fraunces, Inconsolata) |
 | **Notifications** | Sonner toast library |
-| **Deployment** | Vercel |
+| **Deployment / Analytics** | Vercel + Vercel Analytics + Speed Insights |
 
 ## Quick Start
 
@@ -91,6 +91,10 @@ Required variables:
 - `VITE_SUPABASE_ANON_KEY` - Your Supabase anon/public key
 - `OPENAI_API_KEY` - OpenAI API key for the FAQ chatbot
 
+Optional production variable:
+
+- `SUPABASE_SERVICE_ROLE_KEY` - Recommended for server-side JWT verification in Vercel deployments
+
 3. Run the Supabase migration to create the database tables:
 
 ```bash
@@ -119,11 +123,11 @@ npm run dev:full
 src/
 ├── components/
 │   ├── chat/          # AI FAQ chatbot
-│   ├── dashboard/     # Game UI panels (finance, shop, achievements, tasks…)
+│   ├── dashboard/     # Play/manage UI panels (finance, shop, achievements, tasks…)
 │   ├── layout/        # Shared layout components (AnimatedSection, PublicFooter, …)
-│   ├── mini-games/    # Catch, Memory, Quiz, Whack mini-games
+│   ├── mini-games/    # Catch, Memory, Trivia, and Whack mini-games
 │   ├── overlays/      # Modals and overlays (events, tutorial, new day, confetti)
-│   ├── park/          # Park playground
+│   ├── park/          # Park playground scene
 │   ├── pet/           # Pet display, stats, creation wizard, death overlay
 │   └── ui/            # shadcn/ui primitives
 ├── context/           # AuthContext, GameContext, GameProvider, reducer
@@ -143,10 +147,10 @@ src/
 | `/signup` | Create an account |
 | `/dashboard` | Main game (protected) |
 | `/park` | Park area (protected) |
-| `/faq` | FAQ with AI chatbot |
+| `/faq` | FAQ and AI assistant |
 | `/privacy` | Privacy policy |
 | `/terms` | Terms of service |
-| `/attributions` | Open-source credits |
+| `/attributions` | Open-source, font, and asset credits |
 
 ## Libraries & Templates
 
@@ -166,17 +170,23 @@ src/
 - **[Lucide React](https://lucide.dev/)** - Icon library
 - **[class-variance-authority](https://cva.style/)** - Component variant utility
 - **[clsx](https://github.com/lukeed/clsx)** + **[tailwind-merge](https://github.com/dcastil/tailwind-merge)** - Class name utilities
-- **[Recharts](https://recharts.org/)** - Charting library
 - **[Sonner](https://sonner.emilkowal.dev/)** - Toast notification library
-- **[next-themes](https://github.com/pacocoursey/next-themes)** - Theme management
+- **[next-themes](https://github.com/pacocoursey/next-themes)** - Theme helper used by the Sonner toast wrapper
 
 ### Backend & Data
 
 - **[Supabase](https://supabase.com/)** - Auth, PostgreSQL, real-time sync
 - **[@supabase/auth-ui-react](https://supabase.com/docs/guides/auth/auth-helpers/auth-ui)** - Pre-built auth UI
+- **[@supabase/auth-ui-shared](https://supabase.com/docs/guides/auth/auth-helpers/auth-ui)** - Shared Supabase Auth UI theming tokens
 - **[TanStack React Query](https://tanstack.com/query)** - Server state management
 - **[OpenAI API](https://platform.openai.com/)** - FAQ chatbot (GPT-5 Nano)
 - **[Vercel Serverless Functions](https://vercel.com/docs/functions)** - Secure OpenAI proxy
+
+### Deployment & Observability
+
+- **[Vercel](https://vercel.com/)** - Hosting and serverless deployment
+- **[@vercel/analytics](https://vercel.com/docs/analytics)** - Client-side usage analytics
+- **[@vercel/speed-insights](https://vercel.com/docs/speed-insights)** - Performance telemetry
 
 ### Dev Tools
 
@@ -191,9 +201,15 @@ src/
 - **[Fraunces](https://fonts.google.com/specimen/Fraunces)** - Serif accent font
 - **[Inconsolata](https://fonts.google.com/specimen/Inconsolata)** - Monospace for numbers and code
 
+## Asset Provenance
+
+- Bundled pet sprite assets live in `src/assets/pet-dog.png`, `src/assets/pet-cat.png`, `src/assets/pet-rabbit.png`, and `src/assets/pet-hamster.png`.
+- These PNGs are imported directly by the app and tinted at runtime via CSS filters in `src/data/petVisuals.ts`.
+- This repository does not currently include a separate third-party stock-art or marketplace attribution file for those sprites. If externally sourced artwork is added later, document the creator, source URL, and license here and on `/attributions`.
+
 ## Credits & Attributions
 
-See the full [Attributions page](/attributions) for library licenses and credits.
+See the full [Attributions page](/attributions) for third-party library licenses, font credits, and bundled asset notes.
 
 - **[shadcn/ui](https://ui.shadcn.com/)** by shadcn - Component templates
 - **[Radix UI](https://www.radix-ui.com/)** by WorkOS - Accessible primitives
@@ -202,3 +218,4 @@ See the full [Attributions page](/attributions) for library licenses and credits
 - **[Google Fonts](https://fonts.google.com/)** - Fredoka, Fraunces, Inconsolata
 - **[Lucide](https://lucide.dev/)** - Open-source icon set
 - **[Vercel](https://vercel.com/)** - Hosting and serverless functions
+- **Bundled pet sprite assets** - Stored locally under `src/assets/`; no separate third-party source is documented in-repo today

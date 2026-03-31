@@ -4,6 +4,19 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
+const sharedExportFiles = [
+  'src/components/ui/badge.tsx',
+  'src/components/ui/button.tsx',
+  'src/components/ui/form.tsx',
+  'src/components/ui/navigation-menu.tsx',
+  'src/components/ui/sidebar.tsx',
+  'src/components/ui/sonner.tsx',
+  'src/components/ui/toggle.tsx',
+  'src/context/AuthContext.tsx',
+  'src/context/GameContext.tsx',
+  'src/context/game/GameProvider.tsx',
+];
+
 export default tseslint.config(
   { ignores: ['dist'] },
   {
@@ -21,6 +34,12 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+  {
+    files: sharedExportFiles,
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
 );

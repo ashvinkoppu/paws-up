@@ -24,6 +24,14 @@ interface CatchGameProps {
   onNewHighScore: (score: number) => void;
 }
 
+const BONES = [
+  { emoji: "🦴", label: "Bone", value: 2 },
+  { emoji: "🍖", label: "Meat Bone", value: 3 },
+  { emoji: "🥩", label: "Steak Bone", value: 4 },
+  { emoji: "🦷", label: "Rare Bone", value: 6 },
+  { emoji: "💎", label: "Diamond Bone", value: 8 },
+] as const;
+
 const CatchGame: React.FC<CatchGameProps> = ({
   onWin,
   onLose,
@@ -42,15 +50,6 @@ const CatchGame: React.FC<CatchGameProps> = ({
   >([]);
   const [currentBoneIndex, setCurrentBoneIndex] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
-
-  // Bone types with escalating dollar values. A random bone is chosen each spawn.
-  const BONES = [
-    { emoji: "🦴", label: "Bone", value: 2 },
-    { emoji: "🍖", label: "Meat Bone", value: 3 },
-    { emoji: "🥩", label: "Steak Bone", value: 4 },
-    { emoji: "🦷", label: "Rare Bone", value: 6 },
-    { emoji: "💎", label: "Diamond Bone", value: 8 },
-  ];
 
   const getPetEmoji = (species: string) => {
     switch (species) {

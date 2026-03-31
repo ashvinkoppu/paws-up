@@ -30,6 +30,7 @@ import {
   BarChart3,
   PawPrint,
   AlertTriangle,
+  Printer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -174,7 +175,9 @@ const FinancePanel: React.FC = () => {
   const timeFilteredTransactions = useMemo(() => {
     if (timeRange === "week") {
       const cutoff = Date.now() - ONE_WEEK_MS;
-      return state.transactions.filter((t) => t.timestamp >= cutoff);
+      return state.transactions.filter(
+        (transaction) => transaction.timestamp >= cutoff,
+      );
     }
     return state.transactions;
   }, [state.transactions, timeRange]);
@@ -184,7 +187,9 @@ const FinancePanel: React.FC = () => {
     const typed =
       transactionFilter === "all"
         ? timeFilteredTransactions
-        : timeFilteredTransactions.filter((t) => t.type === transactionFilter);
+        : timeFilteredTransactions.filter(
+            (transaction) => transaction.type === transactionFilter,
+          );
     return [...typed].sort((a, b) =>
       sortOrder === "newest" ? b.timestamp - a.timestamp : b.amount - a.amount,
     );
@@ -196,12 +201,13 @@ const FinancePanel: React.FC = () => {
       let income = 0;
       let expenses = 0;
       const byCategory: Record<string, number> = {};
-      for (const t of timeFilteredTransactions) {
-        if (t.type === "income") {
-          income += t.amount;
+      for (const transaction of timeFilteredTransactions) {
+        if (transaction.type === "income") {
+          income += transaction.amount;
         } else {
-          expenses += t.amount;
-          byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
+          expenses += transaction.amount;
+          byCategory[transaction.category] =
+            (byCategory[transaction.category] || 0) + transaction.amount;
         }
       }
       return {
@@ -221,9 +227,7 @@ const FinancePanel: React.FC = () => {
 
   // Weekly budget metrics always come from game-engine state for accuracy
   const budgetUsedPercent =
-    state.weeklyBudget > 0
-      ? (state.weeklySpent / state.weeklyBudget) * 100
-      : 0;
+    state.weeklyBudget > 0 ? (state.weeklySpent / state.weeklyBudget) * 100 : 0;
   const isOverBudget = state.weeklySpent > state.weeklyBudget;
   const remainingBudget = state.weeklyBudget - state.weeklySpent;
 
@@ -295,7 +299,7 @@ const FinancePanel: React.FC = () => {
     });
 
   return (
-    <div className="space-y-5">
+    <div id="finance-report-print" className="space-y-5">
       {/* ── Report Header + Budget Snapshot ── */}
       <Card className="bg-card border border-border rounded-xl shadow-sm">
         <CardContent className="pt-5 pb-5">
@@ -315,9 +319,18 @@ const FinancePanel: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 rounded-full shrink-0 mt-0.5">
-              <PawPrint className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-semibold text-primary">Live</span>
+            <div className="flex items-center gap-2 shrink-0 mt-0.5">
+              <button
+                onClick={() => window.print()}
+                className="print:hidden flex items-center gap-1.5 px-3 py-1.5 bg-accent border border-border rounded-full text-xs font-semibold text-foreground hover:bg-accent/80 transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print
+              </button>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 rounded-full">
+                <PawPrint className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-semibold text-primary">Live</span>
+              </div>
             </div>
           </div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-2">

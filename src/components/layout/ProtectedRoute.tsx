@@ -1,25 +1,18 @@
 /**
  * @file ProtectedRoute.tsx
  *
- * Route guard that restricts access to authenticated users and guest-mode
- * players. Wraps child routes and checks two conditions:
- *   1. The user has an active Supabase session (logged in), OR
- *   2. The game state has `isGuestMode` enabled (playing without an account).
- *
- * If neither condition is met, the user is redirected to `/login`.
- * While the auth session is still loading, a centered loading indicator is
- * shown to prevent a flash of the login redirect.
+ * Route guard that restricts access to authenticated users.
+ * Redirects to `/login` if no active Supabase session exists.
+ * Shows a loading indicator while auth state is resolving.
  */
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { useGame } from "@/context/GameContext";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { session, loading } = useAuth();
-  const { state } = useGame();
 
   // Show a loading state while Supabase resolves the session to avoid
   // an incorrect redirect to /login before auth state is known.
@@ -31,8 +24,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
     );
   }
 
-  // Allow access if user is logged in OR in guest mode
-  if (!session && !state.isGuestMode) {
+  if (!session) {
     return <Navigate to="/login" replace />;
   }
 

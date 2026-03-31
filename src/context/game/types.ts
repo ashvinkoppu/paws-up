@@ -54,7 +54,6 @@ export const initialState: GameState = {
   mealsEatenToday: { breakfast: false, lunch: false, dinner: false },
   playWindowsSatisfied: [false, false, false],
   // New features
-  isGuestMode: false,
   dailyActionsRemaining: 15, // 15 actions per day
   dailyActionsMax: 15,
   lastActionResetDate: '',
@@ -113,7 +112,6 @@ export type GameAction =
   | { type: 'CLAIM_GAME_REWARD'; payload: { gameId: string; amount: number } }
   | { type: 'UPDATE_GAME_TIME'; payload: number }
   // New actions
-  | { type: 'SET_GUEST_MODE'; payload: boolean }
   | { type: 'USE_DAILY_ACTION' }
   | { type: 'RESET_DAILY_ACTIONS' }
   | { type: 'UPDATE_PET_BEHAVIOR' }
@@ -192,7 +190,6 @@ export interface GameContextType {
   claimGameReward: (gameId: string, amount: number) => boolean;
   updateGameTime: (minutes: number) => void;
   // New features
-  setGuestMode: (isGuest: boolean) => void;
   useDailyAction: () => boolean;
   initWeeklyGoals: () => void;
   claimWeeklyGoal: (goalId: string) => void;

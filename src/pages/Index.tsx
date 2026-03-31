@@ -516,7 +516,7 @@ const Index: React.FC = () => {
               {[
                 "Full transaction history with categories and timestamps",
                 "Spending breakdown across food, health, and fun",
-                "Monthly budget tracking with remaining balance",
+                "Weekly budget tracking with remaining balance",
               ].map((item) => (
                 <li
                   key={item}

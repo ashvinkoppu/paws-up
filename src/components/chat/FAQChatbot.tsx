@@ -17,26 +17,29 @@
  *
  * @module components/chat/FAQChatbot
  */
-import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Send, Loader2, PawPrint } from 'lucide-react';
-import { Pet, GameState } from '@/types/game';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Send, Loader2, PawPrint } from "lucide-react";
+import { Pet, GameState } from "@/types/game";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
 
 const MAX_MESSAGE_LENGTH = 500;
 
-// Strip newlines and control characters from user-controlled values before
-// interpolating them into the AI system prompt to prevent prompt injection.
+// Strip control characters from user-controlled values before interpolating
+// them into the AI system prompt to prevent prompt injection.
 function sanitizeForPrompt(value: string): string {
-  return value.replace(/[\r\n\t\x00-\x1F\x7F]/g, ' ').trim();
+  return value
+    .replace(/[\x00-\x1F\x7F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: Date;
 }
@@ -66,36 +69,36 @@ const FAQChatbot: React.FC<FAQChatbotProps> = ({ context }) => {
     if (context?.pet) {
       const petName = context.pet.name;
       const lowStats = [];
-      if (context.pet.stats.hunger <= 40) lowStats.push('hungry');
-      if (context.pet.stats.happiness <= 40) lowStats.push('sad');
-      if (context.pet.stats.energy <= 40) lowStats.push('tired');
-      if (context.pet.stats.cleanliness <= 40) lowStats.push('dirty');
-      if (context.pet.stats.health <= 40) lowStats.push('unwell');
+      if (context.pet.stats.hunger <= 40) lowStats.push("hungry");
+      if (context.pet.stats.happiness <= 40) lowStats.push("sad");
+      if (context.pet.stats.energy <= 40) lowStats.push("tired");
+      if (context.pet.stats.cleanliness <= 40) lowStats.push("dirty");
+      if (context.pet.stats.health <= 40) lowStats.push("unwell");
 
       if (lowStats.length > 0) {
-        return `Hi! I noticed ${petName} might need some attention - they seem ${lowStats.join(' and ')}. How can I help you take better care of them?`;
+        return `Hi! I noticed ${petName} might need some attention - they seem ${lowStats.join(" and ")}. How can I help you take better care of them?`;
       }
       return `Hey there! ${petName} looks happy and healthy! I'm Paws, your assistant. Ask me anything about caring for ${petName}, earning coins, or playing games!`;
     }
     return "Hi there! I'm Paws, your helpful assistant! Ask me anything about Paws Up - pet care, finances, mini-games, or how to get started. I'm here to help!";
   };
 
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useState<Message[]>(() => [
     {
-      id: '1',
-      role: 'assistant',
+      id: "1",
+      role: "assistant",
       content: getGreeting(),
       timestamp: new Date(),
     },
   ]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -113,12 +116,14 @@ const FAQChatbot: React.FC<FAQChatbotProps> = ({ context }) => {
     let basePrompt = `You are Paws, a friendly and helpful AI assistant for "Paws Up" - a virtual pet care and budgeting game. Your personality is warm, playful, and encouraging - like a helpful friend who loves pets!
 
 Key information about Paws Up:
-- Players adopt virtual pets (dogs and cats) and care for them
+- Players adopt virtual pets (dogs, cats, rabbits, and hamsters) and care for them
 - Pets have 5 stats: Hunger, Happiness, Cleanliness, Health, and Energy
-- Players earn virtual currency through daily tasks, mini-games, and achievements
-- The shop sells items organized by category (Hunger, Happiness, Cleanliness, Health, Energy items)
-- Mini-games include Memory Match, Quick Tap, and puzzle challenges
+- Players receive 5 daily tasks per day, and some hard tasks are timed
+- Players earn money through mini-games, achievements, milestones, level-ups, and the daily bonus
+- The shop has consumables, a wardrobe for accessories, and an inventory tab for using purchased items
+- Mini-games include Catch the Treat, Memory Match, Pet Trivia, and Whack-a-Critter
 - Players can customize pets with colors, accessories, and gender options
+- There is a park area with fetch, feeding, agility, and friendly NPC pet interactions
 - The game teaches budgeting skills while being fun and engaging
 - All features are free to play`;
 
@@ -135,11 +140,11 @@ CURRENT USER CONTEXT (use this to personalize your responses):
 - Pet Color: ${sanitizeForPrompt(pet.color)}
 - Pet Level: ${pet.level}
 - Current Stats:
-  • Hunger: ${Math.round(stats.hunger)}% ${stats.hunger <= 40 ? '⚠️ LOW!' : stats.hunger >= 80 ? '✓ Great' : ''}
-  • Happiness: ${Math.round(stats.happiness)}% ${stats.happiness <= 40 ? '⚠️ LOW!' : stats.happiness >= 80 ? '✓ Great' : ''}
-  • Energy: ${Math.round(stats.energy)}% ${stats.energy <= 40 ? '⚠️ LOW!' : stats.energy >= 80 ? '✓ Great' : ''}
-  • Cleanliness: ${Math.round(stats.cleanliness)}% ${stats.cleanliness <= 40 ? '⚠️ LOW!' : stats.cleanliness >= 80 ? '✓ Great' : ''}
-  • Health: ${Math.round(stats.health)}% ${stats.health <= 40 ? '⚠️ LOW!' : stats.health >= 80 ? '✓ Great' : ''}
+  • Hunger: ${Math.round(stats.hunger)}% ${stats.hunger <= 40 ? "⚠️ LOW!" : stats.hunger >= 80 ? "✓ Great" : ""}
+  • Happiness: ${Math.round(stats.happiness)}% ${stats.happiness <= 40 ? "⚠️ LOW!" : stats.happiness >= 80 ? "✓ Great" : ""}
+  • Energy: ${Math.round(stats.energy)}% ${stats.energy <= 40 ? "⚠️ LOW!" : stats.energy >= 80 ? "✓ Great" : ""}
+  • Cleanliness: ${Math.round(stats.cleanliness)}% ${stats.cleanliness <= 40 ? "⚠️ LOW!" : stats.cleanliness >= 80 ? "✓ Great" : ""}
+  • Health: ${Math.round(stats.health)}% ${stats.health <= 40 ? "⚠️ LOW!" : stats.health >= 80 ? "✓ Great" : ""}
 - User's Money: $${context.money}
 - Care Streak: ${context.careStreak} days
 - Days Playing: ${context.totalDaysPlayed}
@@ -161,7 +166,7 @@ Guidelines:
 - If asked about something unrelated to Paws Up, gently redirect to game topics
 - Be encouraging and positive
 - If unsure about specific game details, give general helpful guidance
-${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.name)}" when relevant` : ''}`;
+${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.name)}" when relevant` : ""}`;
 
     return basePrompt;
   };
@@ -171,22 +176,22 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
 
     if (inputValue.trim().length > MAX_MESSAGE_LENGTH) {
       toast({
-        title: 'Message too long',
+        title: "Message too long",
         description: `Please keep your message under ${MAX_MESSAGE_LENGTH} characters.`,
-        variant: 'destructive',
+        variant: "destructive",
       });
       return;
     }
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      role: 'user',
+      role: "user",
       content: inputValue.trim(),
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setInputValue('');
+    setInputValue("");
     setIsLoading(true);
 
     try {
@@ -195,21 +200,24 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
         data: { session },
       } = await supabase.auth.getSession();
       if (!session?.access_token) {
-        throw new Error('Not authenticated');
+        throw new Error("Not authenticated");
       }
 
-      const response = await fetch('/api/chat', {
-        method: 'POST',
+      const response = await fetch("/api/chat", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           // Send the system prompt + last 10 messages for context window management
           messages: [
-            { role: 'system', content: buildSystemPrompt() },
-            ...messages.slice(-10).map((message) => ({ role: message.role, content: message.content })),
-            { role: 'user', content: userMessage.content },
+            { role: "system", content: buildSystemPrompt() },
+            ...messages.slice(-10).map((message) => ({
+              role: message.role,
+              content: message.content,
+            })),
+            { role: "user", content: userMessage.content },
           ],
           max_completion_tokens: 300,
         }),
@@ -217,27 +225,30 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('API Error:', response.status, errorData);
-        throw new Error(errorData.error || 'Failed to get response');
+        console.error("API Error:", response.status, errorData);
+        throw new Error(errorData.error || "Failed to get response");
       }
 
       const data = await response.json();
-      const assistantContent = data.choices[0]?.message?.content || "I'm sorry, I couldn't process that. Please try again!";
+      const assistantContent =
+        data.choices[0]?.message?.content ||
+        "I'm sorry, I couldn't process that. Please try again!";
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
+        role: "assistant",
         content: assistantContent,
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('Chat error:', error);
+      console.error("Chat error:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: "Oops! I'm having trouble connecting right now. 🐾 Please try again in a moment, or check out the FAQ questions above for quick answers!",
+        role: "assistant",
+        content:
+          "Oops! I'm having trouble connecting right now. 🐾 Please try again in a moment, or check out the FAQ questions above for quick answers!",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -247,7 +258,7 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
@@ -268,7 +279,7 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
         questions.push(`How can I make ${petName} happier?`);
       }
       if (context.money < 20) {
-        questions.push('How do I earn more coins?');
+        questions.push("How do I earn more coins?");
       }
 
       // Fill with general questions if needed
@@ -276,27 +287,42 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
         questions.push(`Tips for caring for ${petName}?`);
       }
       if (questions.length < 3) {
-        questions.push('What games can I play?');
+        questions.push("What games can I play?");
       }
       if (questions.length < 3) {
-        questions.push('How do achievements work?');
+        questions.push("How do achievements work?");
       }
 
       return questions.slice(0, 3);
     }
-    return ['How do I care for my pet?', 'How do I earn coins?', 'What are mini-games?'];
+    return [
+      "How do I care for my pet?",
+      "How do I earn coins?",
+      "What are mini-games?",
+    ];
   };
 
-  const suggestedQuestions = getSuggestedQuestions();
+  const suggestedQuestions = useMemo(
+    () => getSuggestedQuestions(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      context?.pet?.stats.hunger,
+      context?.pet?.stats.happiness,
+      context?.money,
+      context?.pet?.name,
+    ],
+  );
 
   return (
     <div ref={containerRef} className="fixed bottom-6 right-6 z-50">
       {/* Chat Window */}
       <div
         className={cn(
-          'absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-48px)]',
-          'transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right',
-          isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-90 translate-y-6 pointer-events-none',
+          "absolute bottom-20 right-0 w-[380px] max-w-[calc(100vw-48px)]",
+          "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom-right",
+          isOpen
+            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 scale-90 translate-y-6 pointer-events-none",
         )}
       >
         <div className="rounded-xl border border-zinc-200 bg-white shadow-lg overflow-hidden">
@@ -314,8 +340,12 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
               </div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-serif font-bold text-base text-foreground tracking-tight leading-tight">Paws</h3>
-                <p className="text-xs text-muted-foreground">Your friendly guide</p>
+                <h3 className="font-serif font-bold text-base text-foreground tracking-tight leading-tight">
+                  Paws
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Your friendly guide
+                </p>
               </div>
 
               <button
@@ -323,8 +353,18 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-zinc-100 transition-colors duration-200"
                 aria-label="Close chat"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -335,35 +375,48 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
             {messages.map((message, index) => (
               <div
                 key={message.id}
-                className={cn('flex gap-2', message.role === 'user' ? 'flex-row-reverse' : 'flex-row')}
+                className={cn(
+                  "flex gap-2",
+                  message.role === "user" ? "flex-row-reverse" : "flex-row",
+                )}
                 style={{
                   opacity: 0,
-                  animationName: 'fadeInUp',
-                  animationDuration: '0.4s',
-                  animationTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-                  animationFillMode: 'forwards',
+                  animationName: "fadeInUp",
+                  animationDuration: "0.4s",
+                  animationTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+                  animationFillMode: "forwards",
                   animationDelay: `${index * 0.04}s`,
                 }}
               >
-                {message.role === 'assistant' && (
+                {message.role === "assistant" && (
                   <div className="w-6 h-6 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
                     <PawPrint className="w-3.5 h-3.5 text-primary" />
                   </div>
                 )}
                 <div
                   className={cn(
-                    'max-w-[82%] px-3.5 py-2.5 text-sm leading-relaxed rounded-xl',
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-tr-sm shadow-sm'
-                      : 'bg-white text-foreground rounded-tl-sm border border-zinc-200 shadow-sm',
+                    "max-w-[82%] px-3.5 py-2.5 text-sm leading-relaxed rounded-xl",
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground rounded-tr-sm shadow-sm"
+                      : "bg-white text-foreground rounded-tl-sm border border-zinc-200 shadow-sm",
                   )}
                 >
                   <p className="whitespace-pre-wrap">{message.content}</p>
                 </div>
-                {message.role === 'user' && (
+                {message.role === "user" && (
                   <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <svg
+                      className="w-3.5 h-3.5 text-primary"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
                     </svg>
                   </div>
                 )}
@@ -382,10 +435,10 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
                         key={i}
                         className="w-1.5 h-1.5 rounded-full bg-primary/50"
                         style={{
-                          animationName: 'bounce',
-                          animationDuration: '1.4s',
-                          animationTimingFunction: 'ease-in-out',
-                          animationIterationCount: 'infinite',
+                          animationName: "bounce",
+                          animationDuration: "1.4s",
+                          animationTimingFunction: "ease-in-out",
+                          animationIterationCount: "infinite",
                           animationDelay: `${i * 0.16}s`,
                         }}
                       />
@@ -412,10 +465,10 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
                     className="text-xs px-3 py-1.5 rounded-full bg-white border border-zinc-200 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 shadow-sm"
                     style={{
                       opacity: 0,
-                      animationName: 'fadeInUp',
-                      animationDuration: '0.3s',
-                      animationTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)',
-                      animationFillMode: 'forwards',
+                      animationName: "fadeInUp",
+                      animationDuration: "0.3s",
+                      animationTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+                      animationFillMode: "forwards",
                       animationDelay: `${0.15 + index * 0.07}s`,
                     }}
                   >
@@ -444,13 +497,17 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
                 disabled={!inputValue.trim() || isLoading}
                 size="icon"
                 className={cn(
-                  'rounded-xl h-9 w-9 shrink-0 transition-all duration-300',
+                  "rounded-xl h-9 w-9 shrink-0 transition-all duration-300",
                   inputValue.trim()
-                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm'
-                    : 'bg-zinc-100 text-zinc-400 cursor-not-allowed',
+                    ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                    : "bg-zinc-100 text-zinc-400 cursor-not-allowed",
                 )}
               >
-                {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                {isLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
               </Button>
             </div>
           </div>
@@ -462,8 +519,10 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
         {/* Hover tooltip */}
         <div
           className={cn(
-            'absolute bottom-full right-0 mb-3 whitespace-nowrap transition-all duration-300',
-            isHovering && !isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none',
+            "absolute bottom-full right-0 mb-3 whitespace-nowrap transition-all duration-300",
+            isHovering && !isOpen
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-2 pointer-events-none",
           )}
         >
           <div className="px-3 py-1.5 bg-white rounded-lg shadow-md border border-zinc-200 text-sm font-medium text-foreground">
@@ -477,9 +536,10 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
           <div
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{
-              background: 'radial-gradient(circle, hsl(var(--primary) / 0.18) 0%, transparent 70%)',
-              transform: 'scale(1.6)',
-              animation: 'breathe 3s ease-in-out infinite',
+              background:
+                "radial-gradient(circle, hsl(var(--primary) / 0.18) 0%, transparent 70%)",
+              transform: "scale(1.6)",
+              animation: "breathe 3s ease-in-out infinite",
             }}
           />
         )}
@@ -490,21 +550,32 @@ ${context?.pet ? `- Always refer to the pet as "${sanitizeForPrompt(context.pet.
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
           className={cn(
-            'relative w-14 h-14 rounded-full shadow-md transition-all duration-300',
-            'focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background',
+            "relative w-14 h-14 rounded-full shadow-md transition-all duration-300",
+            "focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background",
             isOpen
-              ? 'bg-zinc-100 hover:bg-zinc-200 scale-90'
-              : 'bg-primary hover:bg-primary/90 hover:scale-110 hover:shadow-lg hover:shadow-primary/25',
+              ? "bg-zinc-100 hover:bg-zinc-200 scale-90"
+              : "bg-primary hover:bg-primary/90 hover:scale-110 hover:shadow-lg hover:shadow-primary/25",
           )}
-          aria-label={isOpen ? 'Close chat' : 'Open chat'}
+          aria-label={isOpen ? "Close chat" : "Open chat"}
           style={{
-            animation: !isOpen && !isHovering ? 'float 4s ease-in-out infinite' : 'none',
+            animation:
+              !isOpen && !isHovering ? "float 4s ease-in-out infinite" : "none",
           }}
         >
           <div className="absolute inset-0 flex items-center justify-center">
             {isOpen ? (
-              <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5 text-muted-foreground"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             ) : (
               <PawPrint className="w-6 h-6 text-primary-foreground" />

@@ -61,26 +61,36 @@
     --sidebar-ring: 12 70% 52%;
 
     /* Chart colors - vibrant saturated palette */
-    --chart-1: 24 92% 55%;  /* Vivid amber for hunger */
+    --chart-1: 24 92% 55%; /* Vivid amber for hunger */
     --chart-2: 335 78% 58%; /* Hot pink for happiness */
-    --chart-3: 40 95% 55%;  /* Bright gold for energy */
+    --chart-3: 40 95% 55%; /* Bright gold for energy */
     --chart-4: 152 65% 42%; /* Vivid green for cleanliness */
-    --chart-5: 2 82% 55%;   /* Bright red for health */
+    --chart-5: 2 82% 55%; /* Bright red for health */
 
     --sidebar: 40 45% 97%;
 
-    --font-sans: 'Fredoka', ui-sans-serif, system-ui, sans-serif;
-    --font-serif: 'Fraunces', ui-serif, Georgia, serif;
-    --font-mono: 'Inconsolata', ui-monospace, monospace;
+    --font-sans: "Fredoka", ui-sans-serif, system-ui, sans-serif;
+    --font-serif: "Fraunces", ui-serif, Georgia, serif;
+    --font-mono: "Inconsolata", ui-monospace, monospace;
 
     /* Warm, soft shadows */
     --shadow-2xs: 0 1px 2px 0px hsl(25 30% 30% / 0.04);
     --shadow-xs: 0 1px 3px 0px hsl(25 30% 30% / 0.06);
-    --shadow-sm: 0 2px 4px 0px hsl(25 30% 30% / 0.08), 0 1px 2px -1px hsl(25 30% 30% / 0.06);
-    --shadow: 0 4px 6px -1px hsl(25 30% 30% / 0.08), 0 2px 4px -2px hsl(25 30% 30% / 0.06);
-    --shadow-md: 0 6px 10px -2px hsl(25 30% 30% / 0.1), 0 3px 6px -3px hsl(25 30% 30% / 0.08);
-    --shadow-lg: 0 10px 15px -3px hsl(25 30% 30% / 0.1), 0 4px 6px -4px hsl(25 30% 30% / 0.08);
-    --shadow-xl: 0 20px 25px -5px hsl(25 30% 30% / 0.1), 0 8px 10px -6px hsl(25 30% 30% / 0.08);
+    --shadow-sm:
+      0 2px 4px 0px hsl(25 30% 30% / 0.08),
+      0 1px 2px -1px hsl(25 30% 30% / 0.06);
+    --shadow:
+      0 4px 6px -1px hsl(25 30% 30% / 0.08),
+      0 2px 4px -2px hsl(25 30% 30% / 0.06);
+    --shadow-md:
+      0 6px 10px -2px hsl(25 30% 30% / 0.1),
+      0 3px 6px -3px hsl(25 30% 30% / 0.08);
+    --shadow-lg:
+      0 10px 15px -3px hsl(25 30% 30% / 0.1),
+      0 4px 6px -4px hsl(25 30% 30% / 0.08);
+    --shadow-xl:
+      0 20px 25px -5px hsl(25 30% 30% / 0.1),
+      0 8px 10px -6px hsl(25 30% 30% / 0.08);
     --shadow-2xl: 0 25px 50px -12px hsl(25 30% 30% / 0.2);
 
     --tracking-normal: 0.01em;
@@ -138,20 +148,28 @@
 
     --shadow-2xs: 0 1px 2px 0px hsl(22 25% 5% / 0.2);
     --shadow-xs: 0 1px 3px 0px hsl(22 25% 5% / 0.28);
-    --shadow-sm: 0 2px 4px 0px hsl(22 25% 5% / 0.32), 0 1px 2px -1px hsl(22 25% 5% / 0.25);
-    --shadow: 0 4px 6px -1px hsl(22 25% 5% / 0.32), 0 2px 4px -2px hsl(22 25% 5% / 0.25);
-    --shadow-md: 0 6px 10px -2px hsl(22 25% 5% / 0.38), 0 3px 6px -3px hsl(22 25% 5% / 0.3);
-    --shadow-lg: 0 10px 15px -3px hsl(22 25% 5% / 0.38), 0 4px 6px -4px hsl(22 25% 5% / 0.3);
-    --shadow-xl: 0 20px 25px -5px hsl(22 25% 5% / 0.38), 0 8px 10px -6px hsl(22 25% 5% / 0.3);
+    --shadow-sm:
+      0 2px 4px 0px hsl(22 25% 5% / 0.32), 0 1px 2px -1px hsl(22 25% 5% / 0.25);
+    --shadow:
+      0 4px 6px -1px hsl(22 25% 5% / 0.32), 0 2px 4px -2px hsl(22 25% 5% / 0.25);
+    --shadow-md:
+      0 6px 10px -2px hsl(22 25% 5% / 0.38), 0 3px 6px -3px hsl(22 25% 5% / 0.3);
+    --shadow-lg:
+      0 10px 15px -3px hsl(22 25% 5% / 0.38),
+      0 4px 6px -4px hsl(22 25% 5% / 0.3);
+    --shadow-xl:
+      0 20px 25px -5px hsl(22 25% 5% / 0.38),
+      0 8px 10px -6px hsl(22 25% 5% / 0.3);
     --shadow-2xl: 0 25px 50px -12px hsl(22 25% 5% / 0.6);
   }
 }
 
 @layer base {
-  html, body {
+  html,
+  body {
     @apply h-full w-full overflow-x-hidden;
   }
-  
+
   #root {
     @apply min-h-screen flex flex-col w-full;
   }
@@ -169,7 +187,12 @@
     font-optical-sizing: auto;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-serif);
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -179,44 +202,94 @@
 
 /* Custom animations */
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes wiggle {
-  0%, 100% { transform: rotate(-2deg); }
-  50% { transform: rotate(2deg); }
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
 }
 
 @keyframes breathe {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.02); opacity: 0.95; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.95;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.1); }
-  50% { transform: scale(1); }
-  75% { transform: scale(1.05); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.05);
+  }
 }
 
 /* XP floater - used in the Tasks component when a daily task is claimed */
 @keyframes xpFloat {
-  0%   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-  50%  { opacity: 1; transform: translateX(-50%) translateY(-30px) scale(1.2); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-60px) scale(0.8); }
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-30px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-60px) scale(0.8);
+  }
 }
 
 /* Task slide-out - used when a claimed daily task is removed from the list */
 @keyframes taskSlideOut {
-  0%   { opacity: 1; transform: translateX(0) scaleY(1); }
-  50%  { opacity: 0; transform: translateX(40px) scaleY(1); }
-  100% { opacity: 0; transform: translateX(40px) scaleY(0); margin-top: 0; margin-bottom: 0; }
+  0% {
+    opacity: 1;
+    transform: translateX(0) scaleY(1);
+  }
+  50% {
+    opacity: 0;
+    transform: translateX(40px) scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(40px) scaleY(0);
+    margin-top: 0;
+    margin-bottom: 0;
+  }
 }
 
 @keyframes fadeInUp {
@@ -254,7 +327,12 @@
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--primary) / 0.1),
+    transparent
+  );
   background-size: 200% 100%;
   animation: shimmer 2s linear infinite;
 }
@@ -276,45 +354,105 @@
 }
 
 @keyframes happyJump {
-  0% { transform: scale(1) translateY(0); }
-  33% { transform: scale(0.9) translateY(5px); }
-  66% { transform: scale(1.1) translateY(-30px); }
-  100% { transform: scale(1) translateY(0); }
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  33% {
+    transform: scale(0.9) translateY(5px);
+  }
+  66% {
+    transform: scale(1.1) translateY(-30px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
 }
 
 @keyframes sadShake {
-  0% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(0.95) rotate(-5deg) translateY(5px); }
-  50% { transform: scale(0.95) rotate(0deg) translateY(5px); }
-  75% { transform: scale(0.95) rotate(5deg) translateY(5px); }
-  100% { transform: scale(1) rotate(0deg); }
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(0.95) rotate(-5deg) translateY(5px);
+  }
+  50% {
+    transform: scale(0.95) rotate(0deg) translateY(5px);
+  }
+  75% {
+    transform: scale(0.95) rotate(5deg) translateY(5px);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 @keyframes urgentShake {
-  0%, 100% { transform: translateX(0); }
-  10% { transform: translateX(-4px); }
-  20% { transform: translateX(4px); }
-  30% { transform: translateX(-4px); }
-  40% { transform: translateX(4px); }
-  50% { transform: translateX(-4px); }
-  60% { transform: translateX(4px); }
-  70% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
-  90% { transform: translateX(-4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10% {
+    transform: translateX(-4px);
+  }
+  20% {
+    transform: translateX(4px);
+  }
+  30% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+  70% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+  90% {
+    transform: translateX(-4px);
+  }
 }
 
 /* Eating animations */
 @keyframes petEating {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  10% { transform: scale(1.05) rotate(-3deg); }
-  20% { transform: scale(0.95) rotate(3deg); }
-  30% { transform: scale(1.05) rotate(-2deg); }
-  40% { transform: scale(0.98) rotate(2deg); }
-  50% { transform: scale(1.03) rotate(-1deg); }
-  60% { transform: scale(0.97) rotate(1deg); }
-  70% { transform: scale(1.02) rotate(0deg); }
-  80% { transform: scale(0.99) rotate(-1deg); }
-  90% { transform: scale(1.01) rotate(1deg); }
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  10% {
+    transform: scale(1.05) rotate(-3deg);
+  }
+  20% {
+    transform: scale(0.95) rotate(3deg);
+  }
+  30% {
+    transform: scale(1.05) rotate(-2deg);
+  }
+  40% {
+    transform: scale(0.98) rotate(2deg);
+  }
+  50% {
+    transform: scale(1.03) rotate(-1deg);
+  }
+  60% {
+    transform: scale(0.97) rotate(1deg);
+  }
+  70% {
+    transform: scale(1.02) rotate(0deg);
+  }
+  80% {
+    transform: scale(0.99) rotate(-1deg);
+  }
+  90% {
+    transform: scale(1.01) rotate(1deg);
+  }
 }
 
 @keyframes foodFloat {
@@ -357,7 +495,8 @@
   75% {
     transform: translateX(-50%) scale(1.1);
   }
-  90%, 100% {
+  90%,
+  100% {
     opacity: 0;
     transform: translateX(-50%) scale(0.8);
   }
@@ -376,52 +515,107 @@
 }
 
 @keyframes actionFeedbackIn {
-  0% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.8); }
-  60% { opacity: 1; transform: translateX(-50%) translateY(4px) scale(1.02); }
-  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-30px) scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(4px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
 }
 
 @keyframes actionFeedbackOut {
-  0% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px) scale(0.9);
+  }
 }
 
 @keyframes actionEmojiPop {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.4); }
-  70% { transform: scale(0.9); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes actionStatBounce {
-  0% { opacity: 0; transform: translateY(10px); }
-  40% { opacity: 1; transform: translateY(-6px); }
-  70% { transform: translateY(2px); }
-  100% { transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
+  70% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 /* New Day popup animations */
 @keyframes newDayFadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes newDayFadeOut {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes newDayPop {
-  0% { transform: scale(0.5); }
-  60% { transform: scale(1.05); }
-  80% { transform: scale(0.98); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  80% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes newDaySunSpin {
-  0% { transform: rotate(-180deg) scale(0); }
-  60% { transform: rotate(15deg) scale(1.1); }
-  100% { transform: rotate(0deg) scale(1); }
+  0% {
+    transform: rotate(-180deg) scale(0);
+  }
+  60% {
+    transform: rotate(15deg) scale(1.1);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
 }
 
 /* Item use animations - toys bounce/drop near the pet */
@@ -584,11 +778,21 @@
 }
 
 /* Staggered animation delays for lists */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+.stagger-4 {
+  animation-delay: 0.2s;
+}
+.stagger-5 {
+  animation-delay: 0.25s;
+}
 
 /* Money swoop animation */
 @keyframes moneySwoopUp {
@@ -606,7 +810,8 @@
   }
   100% {
     opacity: 0;
-    transform: translate(var(--swoop-x, 100px), var(--swoop-y, -300px)) scale(0.4);
+    transform: translate(var(--swoop-x, 100px), var(--swoop-y, -300px))
+      scale(0.4);
   }
 }
 
@@ -616,9 +821,15 @@
 }
 
 @keyframes walletPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .animate-wallet-pulse {
@@ -628,9 +839,21 @@
 /* Paper texture background - layered parchment effect */
 .paper-texture {
   background-image:
-    radial-gradient(ellipse at 20% 50%, hsl(var(--primary) / 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, hsl(var(--secondary) / 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, hsl(var(--accent) / 0.06) 0%, transparent 50%),
+    radial-gradient(
+      ellipse at 20% 50%,
+      hsl(var(--primary) / 0.04) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 20%,
+      hsl(var(--secondary) / 0.04) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 50% 80%,
+      hsl(var(--accent) / 0.06) 0%,
+      transparent 50%
+    ),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
@@ -638,7 +861,9 @@
 .glass-card {
   background: hsl(var(--card));
   border: 1px solid hsl(var(--border));
-  box-shadow: 0 2px 4px hsl(25 30% 30% / 0.06), 0 1px 2px hsl(25 30% 30% / 0.04);
+  box-shadow:
+    0 2px 4px hsl(25 30% 30% / 0.06),
+    0 1px 2px hsl(25 30% 30% / 0.04);
 }
 
 /* Ambient glow for important elements */
@@ -646,11 +871,15 @@
   position: relative;
 }
 .ambient-glow::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -2px;
   border-radius: inherit;
-  background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--secondary) / 0.15));
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.15),
+    hsl(var(--secondary) / 0.15)
+  );
   z-index: -1;
   filter: blur(16px);
   opacity: 0.6;
@@ -664,16 +893,19 @@
 .page-edge {
   border-left: 4px solid transparent;
   border-image: linear-gradient(
-    to bottom,
-    hsl(var(--primary) / 0.3),
-    hsl(var(--accent) / 0.5),
-    hsl(var(--secondary) / 0.3)
-  ) 1;
+      to bottom,
+      hsl(var(--primary) / 0.3),
+      hsl(var(--accent) / 0.5),
+      hsl(var(--secondary) / 0.3)
+    )
+    1;
 }
 
 /* Glowing stat bar effect */
 .stat-bar-glow {
-  box-shadow: 0 0 10px currentColor, 0 0 4px currentColor;
+  box-shadow:
+    0 0 10px currentColor,
+    0 0 4px currentColor;
 }
 
 /* Decorative border style */
@@ -713,7 +945,11 @@
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary)),
+    hsl(var(--secondary))
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -754,8 +990,15 @@
 
 /* Notification badge pulse */
 @keyframes notificationBadgePulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-  50% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
 }
 
 .notification-badge-pulse {
@@ -764,21 +1007,47 @@
 
 /* Pet mood body-language animations */
 @keyframes petDroopy {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  30% { transform: translateY(4px) rotate(-1deg); }
-  60% { transform: translateY(6px) rotate(1deg); }
-  80% { transform: translateY(3px) rotate(0deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(4px) rotate(-1deg);
+  }
+  60% {
+    transform: translateY(6px) rotate(1deg);
+  }
+  80% {
+    transform: translateY(3px) rotate(0deg);
+  }
 }
 
 @keyframes petShiver {
-  0%, 100% { transform: translateX(0) scale(1); }
-  10% { transform: translateX(-2px) scale(0.98); }
-  20% { transform: translateX(2px) scale(0.98); }
-  30% { transform: translateX(-1.5px) scale(0.99); }
-  40% { transform: translateX(1.5px) scale(0.99); }
-  50% { transform: translateX(-1px) scale(1); }
-  60% { transform: translateX(1px); }
-  70% { transform: translateX(0); }
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  10% {
+    transform: translateX(-2px) scale(0.98);
+  }
+  20% {
+    transform: translateX(2px) scale(0.98);
+  }
+  30% {
+    transform: translateX(-1.5px) scale(0.99);
+  }
+  40% {
+    transform: translateX(1.5px) scale(0.99);
+  }
+  50% {
+    transform: translateX(-1px) scale(1);
+  }
+  60% {
+    transform: translateX(1px);
+  }
+  70% {
+    transform: translateX(0);
+  }
 }
 
 .animate-pet-droopy {
@@ -791,25 +1060,64 @@
 
 /* Ambient mood particles (CSS-based, no emojis) */
 @keyframes petSparkle {
-  0% { opacity: 0; transform: scale(0) translateY(0); }
-  20% { opacity: 1; transform: scale(1.2) translateY(-4px); }
-  50% { opacity: 1; transform: scale(0.8) translateY(-10px); }
-  80% { opacity: 0.5; transform: scale(1) translateY(-18px); }
-  100% { opacity: 0; transform: scale(0.3) translateY(-24px); }
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(0);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.2) translateY(-4px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(0.8) translateY(-10px);
+  }
+  80% {
+    opacity: 0.5;
+    transform: scale(1) translateY(-18px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-24px);
+  }
 }
 
 @keyframes petHeartFloat {
-  0% { opacity: 0; transform: scale(0) translateY(0); }
-  15% { opacity: 0.8; transform: scale(1.1) translateY(-6px); }
-  50% { opacity: 0.6; transform: scale(0.9) translateY(-20px); }
-  100% { opacity: 0; transform: scale(0.5) translateY(-36px); }
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(0);
+  }
+  15% {
+    opacity: 0.8;
+    transform: scale(1.1) translateY(-6px);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.9) translateY(-20px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-36px);
+  }
 }
 
 @keyframes petSweatDrop {
-  0% { opacity: 0; transform: translateY(-4px) scaleY(0.5); }
-  20% { opacity: 0.7; transform: translateY(0) scaleY(1); }
-  70% { opacity: 0.5; transform: translateY(16px) scaleY(1.2); }
-  100% { opacity: 0; transform: translateY(28px) scaleY(0.3); }
+  0% {
+    opacity: 0;
+    transform: translateY(-4px) scaleY(0.5);
+  }
+  20% {
+    opacity: 0.7;
+    transform: translateY(0) scaleY(1);
+  }
+  70% {
+    opacity: 0.5;
+    transform: translateY(16px) scaleY(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(28px) scaleY(0.3);
+  }
 }
 
 .animate-pet-sparkle {
@@ -845,7 +1153,8 @@
 }
 
 @keyframes petSleeping {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1) rotate(0deg);
   }
   25% {
@@ -873,16 +1182,33 @@
 
 /* Sparkle twinkle for ambient decoration */
 @keyframes sparkle {
-  0%, 100% { opacity: 0; transform: scale(0); }
-  50% { opacity: 1; transform: scale(1); }
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes gentleDrift {
-  0% { transform: translateY(0) translateX(0); }
-  25% { transform: translateY(-12px) translateX(6px); }
-  50% { transform: translateY(-6px) translateX(-4px); }
-  75% { transform: translateY(-18px) translateX(8px); }
-  100% { transform: translateY(0) translateX(0); }
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(-12px) translateX(6px);
+  }
+  50% {
+    transform: translateY(-6px) translateX(-4px);
+  }
+  75% {
+    transform: translateY(-18px) translateX(8px);
+  }
+  100% {
+    transform: translateY(0) translateX(0);
+  }
 }
 
 .animate-sparkle {
@@ -895,50 +1221,134 @@
 
 /* Pet evolution animations */
 @keyframes evolutionGlow {
-  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
-  20% { box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.4), 0 0 60px 20px rgba(255, 215, 0, 0.2); }
-  50% { box-shadow: 0 0 50px 20px rgba(255, 215, 0, 0.6), 0 0 100px 40px rgba(255, 215, 0, 0.3), 0 0 150px 60px rgba(255, 215, 0, 0.1); }
-  80% { box-shadow: 0 0 30px 10px rgba(255, 215, 0, 0.3), 0 0 60px 20px rgba(255, 215, 0, 0.1); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+  }
+  20% {
+    box-shadow:
+      0 0 30px 10px rgba(255, 215, 0, 0.4),
+      0 0 60px 20px rgba(255, 215, 0, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 50px 20px rgba(255, 215, 0, 0.6),
+      0 0 100px 40px rgba(255, 215, 0, 0.3),
+      0 0 150px 60px rgba(255, 215, 0, 0.1);
+  }
+  80% {
+    box-shadow:
+      0 0 30px 10px rgba(255, 215, 0, 0.3),
+      0 0 60px 20px rgba(255, 215, 0, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+  }
 }
 
 @keyframes evolutionScaleBurst {
-  0% { transform: scale(1); }
-  15% { transform: scale(0.85); }
-  35% { transform: scale(0.8); }
-  50% { transform: scale(1.25); }
-  65% { transform: scale(1.1); }
-  80% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(0.85);
+  }
+  35% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  65% {
+    transform: scale(1.1);
+  }
+  80% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes evolutionSparkle {
-  0% { opacity: 0; transform: translate(0, 0) scale(0); }
-  30% { opacity: 1; transform: translate(var(--spark-x), var(--spark-y)) scale(1.5); }
-  70% { opacity: 0.8; transform: translate(calc(var(--spark-x) * 1.8), calc(var(--spark-y) * 1.8)) scale(1); }
-  100% { opacity: 0; transform: translate(calc(var(--spark-x) * 2.5), calc(var(--spark-y) * 2.5)) scale(0); }
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(var(--spark-x), var(--spark-y)) scale(1.5);
+  }
+  70% {
+    opacity: 0.8;
+    transform: translate(calc(var(--spark-x) * 1.8), calc(var(--spark-y) * 1.8))
+      scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--spark-x) * 2.5), calc(var(--spark-y) * 2.5))
+      scale(0);
+  }
 }
 
 @keyframes evolutionRing {
-  0% { transform: scale(0.8); opacity: 0; border-width: 4px; }
-  30% { transform: scale(1); opacity: 1; border-width: 4px; }
-  70% { transform: scale(1.6); opacity: 0.5; border-width: 2px; }
-  100% { transform: scale(2); opacity: 0; border-width: 0px; }
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+    border-width: 4px;
+  }
+  30% {
+    transform: scale(1);
+    opacity: 1;
+    border-width: 4px;
+  }
+  70% {
+    transform: scale(1.6);
+    opacity: 0.5;
+    border-width: 2px;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+    border-width: 0px;
+  }
 }
 
 @keyframes evolutionTextReveal {
-  0% { opacity: 0; transform: translateY(20px) scale(0.8); }
-  40% { opacity: 1; transform: translateY(-5px) scale(1.05); }
-  60% { opacity: 1; transform: translateY(0) scale(1); }
-  85% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.05);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
 }
 
 @keyframes evolutionFlash {
-  0% { opacity: 0; }
-  40% { opacity: 0.7; }
-  60% { opacity: 0.7; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.7;
+  }
+  60% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .animate-evolution-glow {
@@ -980,11 +1390,16 @@
   background-clip: padding-box;
 }
 .gradient-border::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -2px;
   border-radius: inherit;
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--secondary)));
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary)),
+    hsl(var(--accent)),
+    hsl(var(--secondary))
+  );
   z-index: -1;
 }
 
@@ -1005,22 +1420,29 @@
 }
 
 @keyframes reminderPulse {
-  0%, 100% {
-    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.15), 0 0 0 0 rgba(245, 158, 11, 0.4);
+  0%,
+  100% {
+    box-shadow:
+      0 4px 20px -4px rgba(0, 0, 0, 0.15),
+      0 0 0 0 rgba(245, 158, 11, 0.4);
   }
   50% {
-    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.2), 0 0 0 8px rgba(245, 158, 11, 0);
+    box-shadow:
+      0 8px 30px -4px rgba(0, 0, 0, 0.2),
+      0 0 0 8px rgba(245, 158, 11, 0);
   }
 }
 
 .animate-reminder-slide-in {
-  animation: reminderSlideIn 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards,
-             reminderPulse 2s ease-in-out 0.4s infinite;
+  animation:
+    reminderSlideIn 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards,
+    reminderPulse 2s ease-in-out 0.4s infinite;
 }
 
 /* Clock glow effect during meal times */
 @keyframes clockMealGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 currentColor;
   }
   50% {
@@ -1062,7 +1484,8 @@
 
 /* Tutorial Overlay Animations */
 @keyframes tutorialPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
   }
   50% {
@@ -1090,7 +1513,8 @@
 }
 
 @keyframes deathHeartbeat {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   15% {
@@ -1109,7 +1533,9 @@
 
 /* Chatbot-specific animations */
 @keyframes bounce {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {
@@ -1143,15 +1569,23 @@
     transform: translateY(0) rotate(20deg) scale(1);
   }
   100% {
-    transform: translateY(calc(100vh + 40px)) rotate(var(--confetti-spin, 720deg)) scale(0.5);
+    transform: translateY(calc(100vh + 40px))
+      rotate(var(--confetti-spin, 720deg)) scale(0.5);
     opacity: 0;
   }
 }
 
 @keyframes confettiDrift {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(var(--confetti-drift, 15px)); }
-  75% { transform: translateX(calc(var(--confetti-drift, 15px) * -1)); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(var(--confetti-drift, 15px));
+  }
+  75% {
+    transform: translateX(calc(var(--confetti-drift, 15px) * -1));
+  }
 }
 
 @keyframes levelUpBanner {
@@ -1203,73 +1637,153 @@
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) translate(var(--particle-vx, 30px), var(--particle-vy, -30px)) scale(0.3);
+    transform: translate(-50%, -50%)
+      translate(var(--particle-vx, 30px), var(--particle-vy, -30px)) scale(0.3);
   }
 }
 
 /* ─── Park Playground Enhanced Animations ─── */
 
 @keyframes treeSway {
-  0%, 100% { transform: rotate(-1.5deg) scaleX(var(--tree-flip, 1)); }
-  50% { transform: rotate(1.5deg) scaleX(var(--tree-flip, 1)); }
+  0%,
+  100% {
+    transform: rotate(-1.5deg) scaleX(var(--tree-flip, 1));
+  }
+  50% {
+    transform: rotate(1.5deg) scaleX(var(--tree-flip, 1));
+  }
 }
 
 @keyframes butterflyFloat {
-  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
-  20% { transform: translate(12px, -18px) rotate(8deg) scale(1.05); }
-  40% { transform: translate(28px, -6px) rotate(-4deg) scale(0.95); }
-  60% { transform: translate(16px, 14px) rotate(6deg) scale(1.02); }
-  80% { transform: translate(-8px, 8px) rotate(-6deg) scale(0.98); }
-  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  20% {
+    transform: translate(12px, -18px) rotate(8deg) scale(1.05);
+  }
+  40% {
+    transform: translate(28px, -6px) rotate(-4deg) scale(0.95);
+  }
+  60% {
+    transform: translate(16px, 14px) rotate(6deg) scale(1.02);
+  }
+  80% {
+    transform: translate(-8px, 8px) rotate(-6deg) scale(0.98);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
 }
 
 @keyframes stationBreath {
-  0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.04); opacity: 1; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
 }
 
 @keyframes pawFadeOut {
-  0% { opacity: 0.3; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes stationGlowRing {
-  0% { transform: scale(0.95); opacity: 0; }
-  50% { opacity: 0.6; }
-  100% { transform: scale(1.4); opacity: 0; }
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
 }
 
 @keyframes dappledShift {
-  0%, 100% { opacity: 0.12; transform: translateX(0) translateY(0); }
-  33% { opacity: 0.2; transform: translateX(4px) translateY(-3px); }
-  66% { opacity: 0.15; transform: translateX(-3px) translateY(4px); }
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: translateX(0) translateY(0);
+  }
+  33% {
+    opacity: 0.2;
+    transform: translateX(4px) translateY(-3px);
+  }
+  66% {
+    opacity: 0.15;
+    transform: translateX(-3px) translateY(4px);
+  }
 }
 
 @keyframes grassWave {
-  0%, 100% { transform: scaleY(1) skewX(0deg); }
-  50% { transform: scaleY(1.05) skewX(1deg); }
+  0%,
+  100% {
+    transform: scaleY(1) skewX(0deg);
+  }
+  50% {
+    transform: scaleY(1.05) skewX(1deg);
+  }
 }
 
 @keyframes parkCloudDrift {
-  0% { transform: translateX(0) scale(var(--cloud-scale, 1)); }
-  100% { transform: translateX(var(--cloud-travel, 100vw)) scale(var(--cloud-scale, 1)); }
+  0% {
+    transform: translateX(0) scale(var(--cloud-scale, 1));
+  }
+  100% {
+    transform: translateX(var(--cloud-travel, 100vw))
+      scale(var(--cloud-scale, 1));
+  }
 }
 
 @keyframes dandelionFloat {
-  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
-  10% { opacity: 0.6; }
-  50% { transform: translate(var(--seed-dx, 40px), var(--seed-dy, -60px)) rotate(180deg); opacity: 0.4; }
-  100% { transform: translate(var(--seed-ex, 80px), var(--seed-ey, -120px)) rotate(360deg); opacity: 0; }
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(var(--seed-dx, 40px), var(--seed-dy, -60px))
+      rotate(180deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(var(--seed-ex, 80px), var(--seed-ey, -120px))
+      rotate(360deg);
+    opacity: 0;
+  }
 }
 
 @keyframes pondRipple {
-  0% { transform: scale(0.6); opacity: 0.4; }
-  100% { transform: scale(1.6); opacity: 0; }
+  0% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
 }
 
 @keyframes sunRays {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .animate-tree-sway {
@@ -1307,20 +1821,44 @@
 
 /* Park pet action animations */
 @keyframes parkRun {
-  0%, 100% { transform: translateY(0) scaleY(1); }
-  25% { transform: translateY(-6px) scaleY(0.95); }
-  50% { transform: translateY(0) scaleY(1.02); }
-  75% { transform: translateY(-4px) scaleY(0.97); }
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  25% {
+    transform: translateY(-6px) scaleY(0.95);
+  }
+  50% {
+    transform: translateY(0) scaleY(1.02);
+  }
+  75% {
+    transform: translateY(-4px) scaleY(0.97);
+  }
 }
 
 @keyframes parkSocial {
-  0%, 100% { transform: translateX(0) rotate(0deg); }
-  15% { transform: translateX(-3px) rotate(-4deg); }
-  30% { transform: translateX(3px) rotate(4deg); }
-  45% { transform: translateX(-2px) rotate(-3deg); }
-  60% { transform: translateX(2px) rotate(3deg); }
-  75% { transform: translateX(-1px) rotate(-1deg); }
-  90% { transform: translateX(1px) rotate(1deg); }
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  15% {
+    transform: translateX(-3px) rotate(-4deg);
+  }
+  30% {
+    transform: translateX(3px) rotate(4deg);
+  }
+  45% {
+    transform: translateX(-2px) rotate(-3deg);
+  }
+  60% {
+    transform: translateX(2px) rotate(3deg);
+  }
+  75% {
+    transform: translateX(-1px) rotate(-1deg);
+  }
+  90% {
+    transform: translateX(1px) rotate(1deg);
+  }
 }
 
 .animate-park-run {
@@ -1329,4 +1867,36 @@
 
 .animate-park-social {
   animation: parkSocial 0.35s ease-in-out infinite;
+}
+
+/* ─── Print / PDF Export ──────────────────────────────────────────────────── */
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only the Cost of Care Report */
+  #finance-report-print,
+  #finance-report-print * {
+    visibility: visible;
+  }
+
+  #finance-report-print {
+    position: absolute;
+    inset: 0;
+    padding: 24px;
+  }
+
+  /* Neutralise staggered-fade animations — elements start opacity-0 and the
+     animation may not have run yet, which would leave rows blank on paper. */
+  #finance-report-print .animate-fade-in-up {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  /* Remove decorative shadows and rounded corners that don't render well */
+  #finance-report-print .shadow-sm {
+    box-shadow: none !important;
+  }
 }

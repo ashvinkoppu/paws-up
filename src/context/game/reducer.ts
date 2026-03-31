@@ -30,6 +30,8 @@ import {
   MAX_NOTIFICATIONS,
 } from '@/context/game/helpers';
 
+const DEFAULT_LIFETIME_COUNTERS = { totalFeeds: 0, totalPlays: 0, totalGamesWon: 0, weeksUnderBudget: 0 };
+
 /**
  * Central game reducer. Receives the current state and an action,
  * then returns the next state without mutation.
@@ -124,7 +126,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const existingItemIndex = state.inventory.findIndex((item) => item.id === newItem.id);
 
       // Check if this item is new to collection
-      let newCollection = [...state.collection];
+      const newCollection = [...state.collection];
       const isInCollection = state.collection.some((item) => item.id === newItem.id);
 
       if (!isInCollection) {
@@ -280,17 +282,36 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         tomorrowReward = { ...tomorrowReward, available: true };
       }
 
+      const newTotalDaysPlayed = state.totalDaysPlayed + 1;
+
+      // Weekly budget reset: every 7 days played, reset weeklySpent and track achievement.
+      let weeklySpent = state.weeklySpent;
+      let lifetimeCounters = state.lifetimeCounters || DEFAULT_LIFETIME_COUNTERS;
+      if (newTotalDaysPlayed % 7 === 0) {
+        const wasUnderBudget = state.weeklySpent <= state.weeklyBudget;
+        const newWeeksUnderBudget = wasUnderBudget ? (lifetimeCounters.weeksUnderBudget || 0) + 1 : 0;
+        lifetimeCounters = { ...lifetimeCounters, weeksUnderBudget: newWeeksUnderBudget };
+        if (newWeeksUnderBudget >= 3) {
+          const [updated, reward] = unlockAchievementInList(achievements, 'budget-hero');
+          achievements = updated;
+          achievementMoney += reward;
+        }
+        weeklySpent = 0;
+      }
+
       const newState = {
         ...state,
         careStreak: newStreak,
         lastCareDate: today,
-        totalDaysPlayed: state.totalDaysPlayed + 1, // Increment days played
+        totalDaysPlayed: newTotalDaysPlayed,
         money: state.money + achievementMoney,
         achievements,
         dailyTracking,
         dailyTasks,
         dailyActionsRemaining, // Reset actions
         tomorrowReward,
+        weeklySpent,
+        lifetimeCounters,
         // Reset daily bonus claim status
         dailyBonusClaimed: false,
       };
@@ -388,7 +409,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const crossedMidnight = newGameTime < oldGameTime;
 
       // Reset meals when crossing midnight
-      let mealsEatenToday = crossedMidnight ? { breakfast: false, lunch: false, dinner: false } : { ...state.mealsEatenToday };
+      const mealsEatenToday = crossedMidnight ? { breakfast: false, lunch: false, dinner: false } : { ...state.mealsEatenToday };
 
       // Detect skipped meals (meal windows whose end was crossed without feeding)
       const skippedMeals = getSkippedMeals(oldGameTime, newGameTime, mealsEatenToday);
@@ -477,7 +498,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         dailyBonusClaimed: action.payload.dailyBonusClaimed || false,
         activeShopDiscount: action.payload.activeShopDiscount || 0,
         lifetimeCounters: {
-          ...(action.payload.lifetimeCounters || { totalFeeds: 0, totalPlays: 0, totalGamesWon: 0, weeksUnderBudget: 0 }),
+          ...(action.payload.lifetimeCounters || DEFAULT_LIFETIME_COUNTERS),
         },
         petAsleep: action.payload.petAsleep || false,
         lastSleepDate: action.payload.lastSleepDate || '',
@@ -487,7 +508,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         gameTime: action.payload.gameTime || 7 * 60,
         mealsEatenToday: action.payload.mealsEatenToday || { breakfast: false, lunch: false, dinner: false },
         // New feature migrations
-        isGuestMode: action.payload.isGuestMode || false,
         dailyActionsRemaining: action.payload.dailyActionsRemaining ?? 15,
         dailyActionsMax: action.payload.dailyActionsMax ?? 15,
         lastActionResetDate: action.payload.lastActionResetDate || '',
@@ -525,7 +545,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'RESET_WEEKLY_BUDGET': {
       // Track weeks under budget for budget-hero achievement
       const wasUnderBudget = state.weeklySpent <= state.weeklyBudget;
-      const counters = state.lifetimeCounters || { totalFeeds: 0, totalPlays: 0, totalGamesWon: 0, weeksUnderBudget: 0 };
+      const counters = state.lifetimeCounters || DEFAULT_LIFETIME_COUNTERS;
       const updatedWeeksUnderBudget = wasUnderBudget ? (counters.weeksUnderBudget || 0) + 1 : 0;
 
       let achievements = state.achievements;
@@ -707,7 +727,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     /** Bumps a lifetime counter (feeds, plays, wins, etc.) and checks related achievements. */
     case 'INCREMENT_LIFETIME_COUNTER': {
       const { counter, amount = 1 } = action.payload;
-      const counters = state.lifetimeCounters || { totalFeeds: 0, totalPlays: 0, totalGamesWon: 0, weeksUnderBudget: 0 };
+      const counters = state.lifetimeCounters || DEFAULT_LIFETIME_COUNTERS;
       const updatedCounters = {
         ...counters,
         [counter]: (counters[counter] || 0) + amount,
@@ -821,9 +841,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
-      let achievements = state.achievements;
-      // You could add specific achievements for earning game money here if needed
-
       return {
         ...state,
         money: state.money + amount,
@@ -851,15 +868,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     // ═══ NEW FEATURE REDUCERS ════════════════════════════════════
 
-    /** Enables or disables guest mode (local-only saves). */
-    case 'SET_GUEST_MODE': {
-      return {
-        ...state,
-        isGuestMode: action.payload,
-      };
-    }
-
-    /** Decrements the remaining daily-action counter by 1. */
+/** Decrements the remaining daily-action counter by 1. */
     case 'USE_DAILY_ACTION': {
       if (state.dailyActionsRemaining <= 0) return state;
       return {
@@ -971,7 +980,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         let daysCompleted = goal.daysCompleted;
 
         switch (goal.type) {
-          case 'health':
+          case 'health': {
             currentValue = state.pet?.stats.health ?? 0;
             // Check if today's health met the target (todayProgress is string[])
             const todayProgress = state.weeklyGoalProgress[goal.id] || [];
@@ -979,6 +988,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
               daysCompleted++;
             }
             break;
+          }
           case 'streak':
             currentValue = state.careStreak;
             daysCompleted = Math.min(currentValue, 7);

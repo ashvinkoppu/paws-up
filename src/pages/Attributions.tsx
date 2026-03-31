@@ -75,7 +75,7 @@ next-themes - Copyright © Pacocoursey
 License: MIT
 https://github.com/pacocoursey/next-themes
 
-Provides seamless theme switching support (light/dark mode) for the application.`,
+Used by the toast wrapper so notifications can follow the active theme when a theme provider is present.`,
     },
     {
       title: "Icons",
@@ -110,6 +110,20 @@ https://github.com/emilkowalski/sonner
 Toast notification library used for feedback messages across the app (success, error, and informational alerts).`,
     },
     {
+      title: "Fonts & Bundled Assets",
+      content: `Google Fonts
+https://fonts.google.com
+
+Paws Up imports Fredoka, Fraunces, and Inconsolata from Google Fonts in src/index.css.
+
+Bundled pet sprite assets
+Files: src/assets/pet-dog.png, src/assets/pet-cat.png, src/assets/pet-rabbit.png, src/assets/pet-hamster.png
+
+These PNG sprites are bundled directly with the repository and tinted in code via src/data/petVisuals.ts.
+
+No separate third-party stock-art or marketplace attribution file is currently included in this repository for those images. If externally sourced artwork is added later, its creator, source URL, and license should be added here.`,
+    },
+    {
       title: "Build Tooling",
       content: `Vite - Copyright © Evan You and Vite Contributors
 License: MIT
@@ -128,7 +142,7 @@ Vite plugin enabling fast React transforms using the SWC compiler.`,
       content: `Vercel - Copyright © Vercel Inc.
 https://vercel.com
 
-Paws Up is hosted and deployed on Vercel's platform. Serverless API functions are powered by @vercel/node.`,
+Paws Up is hosted and deployed on Vercel's platform. Serverless API functions are powered by @vercel/node, and the client also uses Vercel Analytics and Speed Insights.`,
     },
     {
       title: "License Summary",
@@ -221,9 +235,9 @@ If you believe any attribution is missing or incorrect, please open an issue on 
         <div className="mb-12">
           <p className="text-lg text-muted-foreground leading-relaxed">
             Paws Up is built on the shoulders of a fantastic open-source
-            ecosystem. This page credits the libraries, tools, and platforms
-            that make the app possible. We're grateful to every maintainer and
-            contributor behind these projects.
+            ecosystem. This page credits the libraries, tools, fonts, and
+            bundled asset notes that make the app possible. We're grateful to
+            every maintainer and contributor behind these projects.
           </p>
         </div>
 

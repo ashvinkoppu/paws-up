@@ -20,3 +20,11 @@ export const GAME_MINUTES_PER_DECAY_TICK = 18;
 
 // Random events should feel occasional, not relentless.
 export const RANDOM_EVENT_CHANCE_PER_DECAY_TICK = 0.03;
+
+// Play window timing ranges shared between GameClock (display/penalty) and
+// GameProvider (satisfaction dispatch). Order must match PLAY_WINDOWS in GameClock.
+export const PLAY_WINDOW_RANGES = [
+  { startMinute: 610, endMinute: 630 },  // Morning Play:   10:10 AM – 10:30 AM
+  { startMinute: 780, endMinute: 800 },  // Afternoon Play:  1:00 PM –  1:20 PM
+  { startMinute: 1050, endMinute: 1070 }, // Evening Play:   5:30 PM –  5:50 PM
+] as const;

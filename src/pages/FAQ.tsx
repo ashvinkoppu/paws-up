@@ -75,21 +75,21 @@ const FAQ: React.FC = () => {
       id: 1,
       question: "How do I get started with Paws Up?",
       answer:
-        "Welcome to Paws Up! Getting started is easy:\n\n1. Create an account using your email\n2. Choose your virtual pet companion\n3. Give your pet a name and customize their appearance\n4. Start taking care of your pet and managing your virtual finances!\n\nThe game will guide you through your first steps with helpful tutorials.",
+        "Welcome to Paws Up! Getting started is easy:\n\n1. Create an account using **email or Google sign-in**\n2. Choose your virtual pet companion\n3. Give your pet a name and customize their appearance\n4. Start taking care of your pet and managing your virtual finances\n\nThe tutorial walks you through the main dashboard, daily tasks, and the first few care actions.",
       category: "getting-started",
     },
     {
       id: 11,
       question: "What are achievements and how do I unlock them?",
       answer:
-        "Achievements are special milestones you can reach by playing the game:\n\n• **Pet Care Achievements**: Keep your pet healthy for consecutive days\n• **Finance Achievements**: Save or earn certain amounts\n• **Game Achievements**: Beat high scores or complete challenges\n• **Social Achievements**: Engage with various features\n\nEach achievement comes with bonus rewards when unlocked!",
+        "Achievements are fixed milestones tied to real game progress. You unlock them by doing things like adopting your first pet, building care streaks, reaching teen and adult growth stages, maxing out your pet's stats, saving up money, recovering from a health scare, staying under budget, and winning mini-games.\n\nEach achievement gives you a **$10 bonus** when it unlocks.",
       category: "getting-started",
     },
     {
       id: 13,
       question: "How do daily tasks work?",
       answer:
-        "Daily tasks refresh every 24 hours and come in different difficulties:\n\n• **Easy Tasks**: Quick to complete, smaller rewards\n• **Medium Tasks**: Moderate effort, better rewards\n• **Hard Tasks**: Time-limited challenges with the best rewards\n\nComplete tasks before they expire to earn coins and boost your progress!",
+        "You get **5 daily tasks** each day. The game picks a mix of easy and hard tasks from actions like feeding, playing, cleaning, resting, shopping, spending, mini-games, and vet care.\n\nSome hard tasks are timed for **10 minutes**, and one task each day can award a **shop discount** instead of just XP. If you finish all daily tasks, you can claim the daily bonus for **+30 XP and +$20**.",
       category: "getting-started",
     },
     {
@@ -103,28 +103,28 @@ const FAQ: React.FC = () => {
       id: 2,
       question: "What types of pets can I adopt?",
       answer:
-        "Currently, you can adopt dogs and cats in Paws Up! Each pet type has unique color options and accessories to choose from. We're always working on adding more furry friends to the game, so stay tuned for future updates with more pet varieties!",
+        "Right now you can adopt **dogs, cats, rabbits, and hamsters**. Every pet starts in the baby stage, and you can personalize them with a name, color, gender, and personality during setup.",
       category: "pet-care",
     },
     {
       id: 3,
       question: "How do I keep my pet happy and healthy?",
       answer:
-        "Your pet has several needs to maintain:\n\n• **Hunger**: Feed your pet regularly with items from the shop\n• **Happiness**: Play with your pet and give them treats\n• **Cleanliness**: Bathe and groom your pet\n• **Health**: Monitor for any health issues and provide care\n• **Energy**: Make sure your pet gets enough rest\n\nKeep an eye on the status bars in your dashboard to track each stat!",
+        "Keep an eye on the five stats: **Hunger, Happiness, Cleanliness, Health, and Energy**. Feeding, playing, resting, cleaning, and vet care all use matching items from your inventory, so buy supplies from the shop first.\n\nSleeping helps recover several stats, and missing breakfast, lunch, or dinner windows causes a bigger hunger drop. Watching the stat bars regularly is the best way to stay ahead.",
       category: "pet-care",
     },
     {
       id: 7,
       question: "Can I customize my pet?",
       answer:
-        "Yes! Pet customization options include:\n\n• **Color Selection**: Choose from various color palettes\n• **Accessories**: Equip items like hats, collars, and more\n• **Gender Options**: Select male, female, or neutral\n\nNew customization options may be unlocked through achievements or available in the shop!",
+        "Yes. During pet creation you choose your pet's **species, name, color palette, gender, and personality**.\n\nAfter that, the **Wardrobe** lets you buy and equip accessories for the **head, neck, body, and tag** slots. Some accessories are filtered by gender, and a few only show when your pet's stats are high enough.",
       category: "pet-care",
     },
     {
       id: 8,
       question: "What happens if I neglect my pet?",
       answer:
-        "If your pet's needs aren't met, their stats will decrease over time. A neglected pet may become:\n\n• Hungry and lose health\n• Unhappy and less responsive\n• Dirty and more prone to illness\n\nDon't worry though, you can always restore your pet's stats by providing proper care! We'll also send you reminders to help you remember.",
+        "Your pet's stats decay over time, and missed meal windows make **Hunger** drop faster. Low stats can make your pet act **sluggish, sad, grumpy, or disobedient**.\n\nYou can usually recover by caring for them, but extreme neglect can eventually lead to pet death if **all five stats** fall critically low. The game shows in-app warning notifications when things get dangerous.",
       category: "pet-care",
     },
     {
@@ -138,42 +138,42 @@ const FAQ: React.FC = () => {
       id: 4,
       question: "How do I earn money in the game?",
       answer:
-        "There are several ways to earn virtual currency:\n\n• **Complete Daily Tasks**: Check your tasks each day for rewards\n• **Play Mini-Games**: Win games to earn coins\n• **Achievements**: Unlock achievements for bonus rewards\n• **Streaks**: Maintain daily login streaks for multiplied earnings\n\nManage your finances wisely to afford the best care for your pet!",
+        "The main money sources are:\n\n• **Mini-Games**: Win a game to earn cash\n• **Achievements**: Each unlocked achievement gives **+$10**\n• **Milestones & Weekly Goals**: Bigger long-term rewards\n• **Level-Ups**: Reaching a new level gives **+$25**\n• **Daily Bonus**: Finish all daily tasks for **+$20**\n\nYou also start with **$100**, so early progress is about balancing care costs with the rewards you earn.",
       category: "finances",
     },
     {
       id: 6,
       question: "How does the shop work?",
       answer:
-        "The shop offers various items for your pet organized by category:\n\n• **Hunger Items**: Food and treats to keep your pet fed\n• **Happiness Items**: Toys and treats for entertainment\n• **Cleanliness Items**: Grooming supplies\n• **Health Items**: Medicine and wellness products\n• **Energy Items**: Rest and relaxation items\n\nPurchase items with your earned coins and use them to care for your pet!",
+        "The Pet Shop has three sections:\n\n• **Shop**: Buy consumable items for Hunger, Happiness, Cleanliness, Health, and Energy\n• **Wardrobe**: Buy and equip cosmetic accessories\n• **Items**: Use the consumables you've already purchased\n\nSome daily tasks can activate a temporary discount, and the shop will even suggest cheaper alternatives when you're short on cash.",
       category: "finances",
     },
     {
       id: 5,
       question: "What are mini-games and how do I play them?",
       answer:
-        "Mini-games are fun activities that help you earn coins! Available games include:\n\n• **Memory Match**: Find matching pairs of cards\n• **Quick Tap**: Test your reflexes by tapping targets\n• **Puzzle Challenges**: Solve puzzles for rewards\n\nAccess mini-games from your dashboard and compete to beat your high scores!",
+        "Mini-games are a quick way to earn money and boost your pet's happiness. The current games are:\n\n• **Catch the Treat**\n• **Memory Match**\n• **Pet Trivia**\n• **Whack-a-Critter**\n\nOpen the Mini Games panel from the dashboard, pick a game, and try to beat your high score. Each game currently has a **daily play limit of one run per day**.",
       category: "games",
     },
     {
       id: 9,
       question: "How do I change my account settings?",
       answer:
-        "You can manage your account from the dashboard settings:\n\n• Update your profile information\n• Change your password\n• Manage notification preferences\n• Delete your account (if needed)\n\nAccess settings through menus in your dashboard area.",
+        "The in-app account controls are currently simple. From the dashboard menu you can **save your game, restart the tutorial, reset your game, open the FAQ, or sign out**.\n\nThere isn't a full profile/settings page in the game yet. Sign-in options such as password recovery are handled through the Supabase auth screens on the login/signup pages.",
       category: "account",
     },
     {
       id: 10,
       question: "Is my data safe and private?",
       answer:
-        "Absolutely! We take your privacy seriously:\n\n• Your data is encrypted and stored securely\n• We never sell personal information\n• You control your data and can request deletion\n• We follow industry-standard security practices\n\nRead our full Privacy Policy for complete details on how we protect your information.",
+        "Your account authentication and saved game data are handled through **Supabase**, and signed-in players can save progress to the cloud. For the exact details on what data is collected and how it is handled, check the **Privacy Policy** linked at the bottom of the site.",
       category: "account",
     },
     {
       id: 12,
       question: "Can I play on multiple devices?",
       answer:
-        "Yes! Your progress is saved to your account, so you can:\n\n• Log in from any device with a web browser\n• Continue where you left off seamlessly\n• Keep all your progress, pets, and achievements\n\nJust sign in with the same account on your other device!",
+        "Yes, if you're using the same signed-in account. Your game save is loaded from the cloud, so you can log in on another device and continue with the same pet, money, achievements, and progress.",
       category: "account",
     },
   ];

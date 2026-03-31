@@ -265,7 +265,6 @@ export interface GameState {
   mealsEatenToday: { breakfast: boolean; lunch: boolean; dinner: boolean };
   playWindowsSatisfied: boolean[];
   // New features
-  isGuestMode: boolean; // Playing without an account
   dailyActionsRemaining: number; // Limited actions per day (adds pressure)
   dailyActionsMax: number; // Maximum actions per day
   lastActionResetDate: string; // When actions were last reset

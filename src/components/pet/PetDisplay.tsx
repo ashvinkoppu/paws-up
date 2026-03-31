@@ -146,6 +146,10 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
 }) => {
   const { state, lastActionFeedback } = useGame();
   const { petAsleep } = state;
+  const pet = state.pet;
+  const petStage = pet?.stage;
+  const petLevel = pet?.level;
+  const hasPet = pet !== null;
 
   const [interaction, setInteraction] = useState<"none" | "happy" | "sad">(
     "none",
@@ -165,16 +169,16 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
   );
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
   const [levelUpLevel, setLevelUpLevel] = useState(1);
-  const previousStageRef = useRef<GrowthStage>(state.pet?.stage ?? "baby");
-  const previousLevelRef = useRef<number>(state.pet?.level ?? 1);
+  const previousStageRef = useRef<GrowthStage>(petStage ?? "baby");
+  const previousLevelRef = useRef<number>(petLevel ?? 1);
   const lastFeedTimestamp = useRef<number>(0);
   const lastItemUseTimestamp = useRef<number>(0);
   const particleIdRef = useRef(0);
 
   // Detect stage evolution
   useEffect(() => {
-    if (!state.pet) return;
-    const currentStage = state.pet.stage;
+    if (!petStage) return;
+    const currentStage = petStage;
     const previousStage = previousStageRef.current;
 
     if (currentStage !== previousStage) {
@@ -198,12 +202,12 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
 
       previousStageRef.current = currentStage;
     }
-  }, [state.pet?.stage]);
+  }, [petStage]);
 
   // Detect level up
   useEffect(() => {
-    if (!state.pet) return;
-    const currentLevel = state.pet.level;
+    if (!petLevel) return;
+    const currentLevel = petLevel;
     const previousLevel = previousLevelRef.current;
 
     if (currentLevel > previousLevel) {
@@ -219,12 +223,12 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
     }
 
     previousLevelRef.current = currentLevel;
-  }, [state.pet?.level]);
+  }, [petLevel]);
 
   // Handle eating animation (food items)
   useEffect(() => {
     if (
-      state.pet &&
+      hasPet &&
       lastActionFeedback &&
       lastActionFeedback.action === "feed" &&
       lastActionFeedback.timestamp !== lastFeedTimestamp.current
@@ -254,12 +258,12 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
         clearTimeout(clearTimer);
       };
     }
-  }, [lastActionFeedback]);
+  }, [hasPet, lastActionFeedback]);
 
   // Handle item-use animation (toys, grooming, medicine, accessories)
   useEffect(() => {
     if (
-      state.pet &&
+      hasPet &&
       lastActionFeedback &&
       lastActionFeedback.action === "use-item" &&
       lastActionFeedback.timestamp !== lastItemUseTimestamp.current
@@ -304,11 +308,9 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
 
       return () => clearTimeout(clearTimer);
     }
-  }, [lastActionFeedback, state.pet]);
+  }, [hasPet, lastActionFeedback]);
 
-  if (!state.pet) return null;
-
-  const { pet } = state;
+  if (!pet) return null;
   const avgHealth =
     Object.values(pet.stats).reduce((sum, value) => sum + value, 0) / 5;
 
@@ -829,12 +831,7 @@ const PetDisplay: React.FC<PetDisplayProps> = ({
                   : "bg-destructive/10",
             )}
           >
-            <span
-              className={cn(
-                "text-sm font-semibold",
-                mood.color,
-              )}
-            >
+            <span className={cn("text-sm font-semibold", mood.color)}>
               {mood.text}
             </span>
           </div>

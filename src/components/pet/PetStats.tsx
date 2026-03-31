@@ -18,7 +18,7 @@
  *  - A collapsible action log showing the 10 most recent game actions
  *    with timestamps formatted as 12-hour game time.
  */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useGame } from "@/context/GameContext";
 import { PetStats as PetStatsType } from "@/types/game";
 import { cn } from "@/lib/utils";
@@ -110,7 +110,7 @@ const STAT_CONFIG: Record<
     dropColor: "bg-yellow-600",
   },
   cleanliness: {
-    label: "Clean",
+    label: "Cleanliness",
     icon: "✨",
     color: "bg-chart-4",
     bgColor: "bg-chart-4/20",
@@ -135,6 +135,8 @@ interface StatBarProps {
   previousValue: number;
   index: number;
   onWhyClick: (stat: keyof PetStatsType) => void;
+  onAction?: () => void;
+  canAct?: boolean;
 }
 
 const StatBar: React.FC<StatBarProps> = ({
@@ -143,6 +145,8 @@ const StatBar: React.FC<StatBarProps> = ({
   previousValue,
   index,
   onWhyClick,
+  onAction,
+  canAct,
 }) => {
   const config = STAT_CONFIG[stat];
   const tooltip = STAT_TOOLTIPS[stat];
@@ -187,6 +191,20 @@ const StatBar: React.FC<StatBarProps> = ({
           </button>
         </span>
         <div className="flex items-center gap-2">
+          {onAction && (
+            <button
+              onClick={onAction}
+              disabled={!canAct}
+              className={cn(
+                "text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-colors",
+                canAct
+                  ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+                  : "bg-muted/50 text-muted-foreground/50 border-border/30 cursor-not-allowed",
+              )}
+            >
+              {config.label}
+            </button>
+          )}
           {/* Rate of change indicator */}
           {isDroppingFast && (
             <span className="flex items-center gap-1 text-[10px] text-destructive animate-pulse">
@@ -287,8 +305,21 @@ const StatBar: React.FC<StatBarProps> = ({
   );
 };
 
+const STAT_ACTION_MAP: Record<
+  keyof PetStatsType,
+  "feed" | "play" | "rest" | "clean" | "vet"
+> = {
+  hunger: "feed",
+  happiness: "play",
+  energy: "rest",
+  cleanliness: "clean",
+  health: "vet",
+};
+
 const PetStats: React.FC = () => {
-  const { state } = useGame();
+  const { state, performAction } = useGame();
+  const pet = state.pet;
+  const statSnapshot = pet?.stats;
   const [previousStats, setPreviousStats] = useState<PetStatsType | null>(null);
   const [whyModalStat, setWhyModalStat] = useState<keyof PetStatsType | null>(
     null,
@@ -298,26 +329,26 @@ const PetStats: React.FC = () => {
 
   // Track previous stat values to detect fast drops
   useEffect(() => {
-    if (!state.pet) return;
+    if (!statSnapshot) return;
 
     const now = Date.now();
     // Update previous stats every 10 seconds
     if (now - lastCheckRef.current > 10000) {
-      setPreviousStats(state.pet.stats);
+      setPreviousStats(statSnapshot);
       lastCheckRef.current = now;
     }
-  }, [state.pet?.stats]);
+  }, [statSnapshot]);
 
   // Initialize previous stats
   useEffect(() => {
-    if (state.pet && !previousStats) {
-      setPreviousStats(state.pet.stats);
+    if (pet && !previousStats) {
+      setPreviousStats(pet.stats);
     }
-  }, [state.pet, previousStats]);
+  }, [pet, previousStats]);
 
-  if (!state.pet) return null;
+  if (!pet) return null;
 
-  const stats = state.pet.stats;
+  const stats = pet.stats;
   const avgStats =
     Object.values(stats).reduce((sum, value) => sum + value, 0) / 5;
 
@@ -409,6 +440,16 @@ const PetStats: React.FC = () => {
 
   const status = getOverallStatus();
   const currentStats = previousStats || stats;
+
+  const categoriesWithStock = useMemo(
+    () =>
+      new Set(
+        state.inventory
+          .filter((item) => item.quantity > 0)
+          .map((item) => item.category),
+      ),
+    [state.inventory],
+  );
 
   // Format game time for action log
   const formatGameTime = (minutes: number) => {
@@ -503,16 +544,22 @@ const PetStats: React.FC = () => {
 
       {/* Stats list */}
       <div className="space-y-4">
-        {(Object.keys(stats) as (keyof PetStatsType)[]).map((stat, index) => (
-          <StatBar
-            key={stat}
-            stat={stat}
-            value={stats[stat]}
-            previousValue={currentStats[stat]}
-            index={index}
-            onWhyClick={setWhyModalStat}
-          />
-        ))}
+        {(Object.keys(stats) as (keyof PetStatsType)[]).map((stat, index) => {
+          const canAct =
+            categoriesWithStock.has(stat) && state.dailyActionsRemaining > 0;
+          return (
+            <StatBar
+              key={stat}
+              stat={stat}
+              value={stats[stat]}
+              previousValue={currentStats[stat]}
+              index={index}
+              onWhyClick={setWhyModalStat}
+              onAction={() => performAction(STAT_ACTION_MAP[stat])}
+              canAct={canAct}
+            />
+          );
+        })}
       </div>
 
       {/* "Why?" Modal */}

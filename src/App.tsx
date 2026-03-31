@@ -15,9 +15,11 @@
  *  - `/login`     → Login form
  *  - `/signup`    → Registration form
  *  - `/dashboard` → Protected game dashboard
+ *  - `/park`      → Protected park scene
  *  - `/privacy`   → Privacy policy
  *  - `/terms`     → Terms of service
  *  - `/faq`       → Frequently asked questions
+ *  - `/attributions` → Third-party acknowledgements
  *  - `*`          → 404 catch-all
  *
  * @module App
