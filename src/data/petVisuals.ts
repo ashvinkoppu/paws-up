@@ -1,5 +1,5 @@
 /**
- * Pet visual assets — sprite images and CSS filter strings for coloring.
+ * Pet visual assets - sprite images and CSS filter strings for coloring.
  *
  * `PET_IMAGES` maps each {@link Species} to its static PNG asset.
  * `PET_COLOR_FILTERS` maps each {@link PetColor} to a CSS `filter` string that

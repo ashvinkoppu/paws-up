@@ -1,8 +1,8 @@
 /**
  * Random event catalog.
  *
- * `RANDOM_EVENTS` is the pool of events that can fire during gameplay (5% chance
- * per decay tick when no mini-game is active). Each event presents the player
+ * `RANDOM_EVENTS` is the pool of events that can fire during gameplay at the
+ * shared simulation cadence when no mini-game is active. Each event presents the player
  * with 2-3 choices that apply stat effects, cost money, earn money, or trigger
  * a shop discount.
  *

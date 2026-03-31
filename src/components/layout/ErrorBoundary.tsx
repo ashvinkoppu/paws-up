@@ -20,9 +20,9 @@
  * (getDerivedStateFromError / componentDidCatch) is not available to
  * function components.
  */
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -54,9 +54,9 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ errorInfo });
     // Log error to monitoring service in production
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       // Could integrate with error tracking service like Sentry here
-      console.error('Application error:', error, errorInfo);
+      console.error("Application error:", error, errorInfo);
     }
   }
 
@@ -67,7 +67,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   /** Hard navigate to root - avoids client-side routing so all state is reset. */
   handleGoHome = (): void => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   /** Clear error state in-place so React re-attempts rendering the children
@@ -96,12 +96,13 @@ class ErrorBoundary extends Component<Props, State> {
                 Something went wrong
               </h1>
               <p className="text-muted-foreground">
-                We're sorry, but something unexpected happened. Your game data is safe - try refreshing the page.
+                We're sorry, but something unexpected happened. Your game data
+                is safe - try refreshing the page.
               </p>
             </div>
 
             {/* Dev-only error details: hidden in production to avoid leaking internals. */}
-            {process.env.NODE_ENV !== 'production' && this.state.error && (
+            {process.env.NODE_ENV !== "production" && this.state.error && (
               <div className="bg-muted/50 rounded-lg p-4 text-left">
                 <p className="text-sm font-mono text-destructive break-all">
                   {this.state.error.message}

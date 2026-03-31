@@ -1,7 +1,7 @@
 /**
  * @file GameClock.tsx
  *
- * Manages and displays accelerated in-game time (1 real second = 5 game minutes).
+ * Manages and displays accelerated in-game time.
  * The clock drives several time-based game mechanics:
  *
  *  - **Meal windows** (Breakfast 8-10, Lunch 12-14, Dinner 18-20): triggers
@@ -13,20 +13,19 @@
  *  - **Bedtime** (10 PM): fires a bedtime reminder and onBedtimeReminder callback.
  *  - **Day rollover** (midnight): resets all reminder tracking and play windows.
  *
- * Local gameMinutes state ticks independently for smooth UI updates, syncing
- * back to the global GameContext every 5 game-minutes and re-syncing from
- * context on large drifts (e.g., loading a save).
+ * Local `gameMinutes` state ticks independently for smooth UI updates while
+ * the global `gameTime` is advanced by the simulation loop in GameProvider.
+ * The component re-syncs from context on meaningful drift (e.g. after load).
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Clock, Utensils, Moon, Sun, Coffee, Soup, Gamepad2 } from 'lucide-react';
+import {
+  DEFAULT_START_GAME_TIME,
+  GAME_MINUTES_PER_CLOCK_TICK,
+  REAL_MS_PER_CLOCK_TICK,
+} from '@/data/gameTiming';
 import { cn } from '@/lib/utils';
-
-// Time acceleration constants:
-// 1 real second = 5 game minutes, so 1 real minute = 5 game hours,
-// and a full 24-hour game day passes in ~4.8 real minutes.
-const GAME_MINUTES_PER_TICK = 5;
-const REAL_MS_PER_TICK = 1000;
 
 interface MealWindow {
   name: string;
@@ -117,9 +116,8 @@ interface GameClockProps {
 }
 
 const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder }) => {
-  const { state, updateGameTime, penalizeMissedPlayWindow, resetPlayWindows } = useGame();
-  // Start game time from saved state or default to 7:00 AM
-  const [gameMinutes, setGameMinutes] = useState(state.gameTime || 7 * 60);
+  const { state, penalizeMissedPlayWindow, resetPlayWindows } = useGame();
+  const [gameMinutes, setGameMinutes] = useState(state.gameTime || DEFAULT_START_GAME_TIME);
   const [reminders, setReminders] = useState<ReminderPopup[]>([]);
   const [shownReminders, setShownReminders] = useState<Set<string>>(new Set());
   // Refs track whether one-shot reminders (bedtime, wake) have fired this day cycle.
@@ -128,11 +126,11 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
   const lastBedtimeShownRef = useRef(false);
   const lastWakeShownRef = useRef(false);
 
-  // Game clock tick - advances 3 game minutes per second
+  // Local display tick - matches the simulation pace without mutating global state.
   useEffect(() => {
     const interval = setInterval(() => {
       setGameMinutes((prev) => {
-        const next = prev + GAME_MINUTES_PER_TICK;
+        const next = prev + GAME_MINUTES_PER_CLOCK_TICK;
         // Reset at midnight (1440 minutes = 24 hours)
         if (next >= 1440) {
           // Reset reminder tracking for new day
@@ -145,28 +143,18 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
         }
         return next;
       });
-    }, REAL_MS_PER_TICK);
+    }, REAL_MS_PER_CLOCK_TICK);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Re-sync local clock from global state when a large jump is detected (e.g., loading a save).
-  // Small diffs (< 20 min) are ignored to avoid jitter from the periodic context sync.
-  // Wrap-around diffs (> 1400 min) are also ignored since 0 and 1439 are only 1 min apart.
+  // Re-sync local clock from the simulation state on meaningful drift.
   useEffect(() => {
     const diff = Math.abs((state.gameTime || 0) - gameMinutes);
-    if (diff > 20 && diff < 1400) {
-      setGameMinutes(state.gameTime || 7 * 60);
+    if (diff > GAME_MINUTES_PER_CLOCK_TICK && diff < 1400) {
+      setGameMinutes(state.gameTime || DEFAULT_START_GAME_TIME);
     }
   }, [state.gameTime]);
-
-  // Push local clock to global context every 5 game-minutes (~1 real second)
-  // so the value persists across saves without flooding the reducer on every tick.
-  useEffect(() => {
-    if (gameMinutes % 5 === 0) {
-      updateGameTime(gameMinutes);
-    }
-  }, [gameMinutes, updateGameTime]);
 
   // Check for meal and bedtime reminders
   useEffect(() => {
@@ -182,7 +170,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
         const reminder: ReminderPopup = {
           id: Date.now().toString(),
           type: 'meal',
-          title: `${meal.name} Time! 🍽️`,
+          title: `${meal.name} Time!`,
           message: `It's ${meal.name.toLowerCase()} time for your pet! Feed them now for best health.`,
           icon: meal.icon,
           color: meal.color,
@@ -206,11 +194,11 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
       const playEndKey = `play-end-${i}`;
 
       // Show "Play Time!" reminder when entering the window
-      if (gameMinutes >= playWindow.startMinute && gameMinutes < playWindow.startMinute + GAME_MINUTES_PER_TICK && !shownReminders.has(playStartKey)) {
+      if (gameMinutes >= playWindow.startMinute && gameMinutes < playWindow.startMinute + GAME_MINUTES_PER_CLOCK_TICK && !shownReminders.has(playStartKey)) {
         const reminder: ReminderPopup = {
           id: `play-start-${Date.now()}`,
           type: 'play',
-          title: `Play Time! 🎮`,
+          title: `Play Time!`,
           message: `${playWindow.name} window is open! Play with your pet for a happiness bonus.`,
           icon: playWindow.icon,
           color: playWindow.color,
@@ -224,7 +212,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
       }
 
       // Check if window just ended and was missed
-      if (gameMinutes >= playWindow.endMinute && gameMinutes < playWindow.endMinute + GAME_MINUTES_PER_TICK && !shownReminders.has(playEndKey)) {
+      if (gameMinutes >= playWindow.endMinute && gameMinutes < playWindow.endMinute + GAME_MINUTES_PER_CLOCK_TICK && !shownReminders.has(playEndKey)) {
         setShownReminders((prev) => new Set(prev).add(playEndKey));
 
         if (!state.playWindowsSatisfied[i]) {
@@ -232,7 +220,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
           const reminder: ReminderPopup = {
             id: `play-miss-${Date.now()}`,
             type: 'play',
-            title: `Missed Play! 😿`,
+            title: `Missed Play!`,
             message: `${playWindow.name} window closed without playing. Happiness dropped!`,
             icon: playWindow.icon,
             color: 'text-red-500',
@@ -251,7 +239,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
       const reminder: ReminderPopup = {
         id: Date.now().toString(),
         type: 'bedtime',
-        title: 'Bedtime! 🌙',
+        title: 'Bedtime!',
         message: "It's getting late. Your pet should go to sleep now!",
         icon: <Moon className="w-4 h-4" />,
         color: 'text-indigo-600',
@@ -271,7 +259,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
       const reminder: ReminderPopup = {
         id: Date.now().toString(),
         type: 'wake',
-        title: 'Good Morning! ☀️',
+        title: 'Good Morning!',
         message: 'A new day begins! Time to wake up and care for your pet.',
         icon: <Sun className="w-4 h-4" />,
         color: 'text-amber-500',
@@ -337,29 +325,20 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
   return (
     <>
       {/* Clock Display */}
-      <div
-        className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all duration-300',
-          nightTime ? 'bg-indigo-500/10 border-indigo-500/20' : currentMeal ? currentMeal.bgColor : currentPlay ? currentPlay.bgColor : 'bg-sky-500/10 border-sky-500/20',
-        )}
-      >
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-accent border border-border rounded-full text-sm transition-all duration-300">
         {nightTime ? (
-          <Moon className="w-4 h-4 text-indigo-500" />
+          <Moon className="w-3.5 h-3.5 text-foreground/60" />
         ) : currentMeal ? (
-          <span className={currentMeal.color}>{currentMeal.icon}</span>
+          <span className="text-foreground/60">{currentMeal.icon}</span>
         ) : currentPlay ? (
-          <span className={currentPlay.color}>{currentPlay.icon}</span>
+          <span className="text-foreground/60">{currentPlay.icon}</span>
         ) : (
-          <Clock className="w-4 h-4 text-sky-600" />
+          <Clock className="w-3.5 h-3.5 text-foreground/60" />
         )}
-        <div className="flex items-baseline gap-1">
-          <span className={cn('font-mono font-bold text-sm tracking-tight', nightTime ? 'text-indigo-700' : currentMeal ? currentMeal.color : currentPlay ? currentPlay.color : 'text-sky-700')}>
-            {time}
-          </span>
-          <span className={cn('text-[10px] font-medium uppercase', nightTime ? 'text-indigo-500/70' : currentMeal ? 'opacity-70' : currentPlay ? 'opacity-70' : 'text-sky-500/70')}>{period}</span>
+        <div className="flex items-baseline gap-0.5">
+          <span className="font-mono font-semibold text-foreground tabular-nums">{time}</span>
+          <span className="text-[10px] font-medium uppercase text-foreground/50">{period}</span>
         </div>
-        {currentMeal && <span className={cn('text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full', currentMeal.bgColor, currentMeal.color)}>{currentMeal.name}</span>}
-        {currentPlay && !currentMeal && <span className={cn('text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full', currentPlay.bgColor, currentPlay.color)}>Play Time!</span>}
       </div>
 
       {/* Reminder Popups */}
@@ -369,7 +348,7 @@ const GameClock: React.FC<GameClockProps> = ({ onMealReminder, onBedtimeReminder
             <div
               className={cn(
                 'flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl border cursor-pointer',
-                'bg-card/95 backdrop-blur-xl border-border/50',
+                'bg-card border-border shadow-lg',
                 'hover:scale-[1.02] transition-transform duration-200',
               )}
             >

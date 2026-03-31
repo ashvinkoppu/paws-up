@@ -10,23 +10,23 @@
  * document.body) for cross-browser reliability. Also disables the
  * browser's native scroll restoration to prevent conflicts.
  */
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
     // Disable browser's automatic scroll restoration
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
     }
 
     // Use requestAnimationFrame to ensure DOM is ready before scrolling.
     // Three reset methods cover browser quirks: window.scrollTo for modern
     // browsers, documentElement for standards-mode, and body for quirks-mode.
     requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     });

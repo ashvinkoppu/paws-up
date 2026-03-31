@@ -1,211 +1,683 @@
 /**
  * @file FinancePanel.tsx
  *
- * The "Budget" tab content inside the activity hub. Displays four stacked
- * cards that give the player a full picture of their financial state:
+ * Cost of Care Report - an FBLA-ready financial report inside the Manage area.
  *
- * 1. **Balance card** - current money with a low-funds warning (< $20) and a
- *    care-streak bonus hint when the streak is >= 3 days.
- * 2. **Weekly budget card** - a progress bar showing `weeklySpent / weeklyBudget`.
- *    Turns destructive red when spending exceeds the budget.
- * 3. **Spending breakdown** - per-category totals derived by reducing the
- *    transactions array (expenses only) into a `Record<string, number>`.
- * 4. **Recent transactions** - the last 5 entries (newest first), with
- *    income/expense color differentiation.
- *
- * All monetary values are formatted to two decimal places.
+ * Features:
+ * - Summary cards: balance, weekly budget, spending, net, top category
+ * - Customization controls: time range (This Week / All Time), type filter, sort order
+ * - Spending breakdown by category with percentage bars
+ * - Filterable, sortable transaction list with date, description, category, type, amount
+ * - Plain-language insights based on currently filtered data
+ * - Strong empty states when data is sparse
  */
-import React from 'react';
-import { useGame } from '@/context/GameContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingDown, Wallet, AlertTriangle, Flame, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState, useMemo } from "react";
+import { useGame } from "@/context/GameContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DollarSign,
+  ArrowUpRight,
+  ArrowDownRight,
+  UtensilsCrossed,
+  Gamepad2,
+  Sparkles,
+  HeartPulse,
+  Zap,
+  Package,
+  CircleDollarSign,
+  Receipt,
+  Lightbulb,
+  BarChart3,
+  PawPrint,
+  AlertTriangle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type TimeRange = "week" | "all";
+type TransactionFilter = "all" | "expense" | "income";
+type SortOrder = "newest" | "amount";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  hunger: <UtensilsCrossed className="w-4 h-4" />,
+  happiness: <Gamepad2 className="w-4 h-4" />,
+  cleanliness: <Sparkles className="w-4 h-4" />,
+  health: <HeartPulse className="w-4 h-4" />,
+  energy: <Zap className="w-4 h-4" />,
+  earnings: <DollarSign className="w-4 h-4" />,
+  other: <Package className="w-4 h-4" />,
+};
+
+const CATEGORY_BAR_COLORS: Record<string, string> = {
+  hunger: "bg-orange-500",
+  happiness: "bg-yellow-500",
+  cleanliness: "bg-sky-500",
+  health: "bg-rose-500",
+  energy: "bg-violet-500",
+  earnings: "bg-emerald-500",
+  other: "bg-slate-400",
+};
+
+// ─── Summary Card ─────────────────────────────────────────────────────────────
+
+interface SummaryCardProps {
+  label: string;
+  value: string;
+  sub: string;
+  urgent?: boolean;
+  urgentSub?: string;
+  positive?: boolean;
+}
+
+const SummaryCard: React.FC<SummaryCardProps> = ({
+  label,
+  value,
+  sub,
+  urgent = false,
+  urgentSub,
+  positive = false,
+}) => (
+  <div
+    className={cn(
+      "bg-background border rounded-xl p-4",
+      urgent ? "border-rose-300 dark:border-rose-800" : "border-border",
+    )}
+  >
+    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-1.5">
+      {label}
+    </p>
+    <p
+      className={cn(
+        "font-mono font-bold text-xl leading-none",
+        urgent
+          ? "text-rose-600 dark:text-rose-400"
+          : positive
+            ? "text-secondary"
+            : "text-foreground",
+      )}
+    >
+      {value}
+    </p>
+    <p
+      className={cn(
+        "text-xs mt-1.5 leading-tight",
+        urgent && urgentSub ? "text-rose-500" : "text-muted-foreground",
+      )}
+    >
+      {urgent && urgentSub ? (
+        <span className="flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3 shrink-0" />
+          {urgentSub}
+        </span>
+      ) : (
+        sub
+      )}
+    </p>
+  </div>
+);
+
+// ─── Filter Button Group ──────────────────────────────────────────────────────
+
+interface FilterGroupProps<T extends string> {
+  label: string;
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+}
+
+function FilterGroup<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: FilterGroupProps<T>) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </span>
+      <div className="flex rounded-lg overflow-hidden border border-border">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            onClick={() => onChange(option.value)}
+            className={cn(
+              "px-3 py-1.5 text-xs font-medium transition-colors duration-150",
+              value === option.value
+                ? "bg-primary text-primary-foreground"
+                : "bg-background text-muted-foreground hover:bg-accent",
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const FinancePanel: React.FC = () => {
   const { state } = useGame();
+  const [timeRange, setTimeRange] = useState<TimeRange>("week");
+  const [transactionFilter, setTransactionFilter] =
+    useState<TransactionFilter>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
-  const budgetUsedPercent = (state.weeklySpent / state.weeklyBudget) * 100;
+  // Transactions filtered by selected time range
+  const timeFilteredTransactions = useMemo(() => {
+    if (timeRange === "week") {
+      const cutoff = Date.now() - ONE_WEEK_MS;
+      return state.transactions.filter((t) => t.timestamp >= cutoff);
+    }
+    return state.transactions;
+  }, [state.transactions, timeRange]);
+
+  // Further filtered by type, then sorted
+  const displayTransactions = useMemo(() => {
+    const typed =
+      transactionFilter === "all"
+        ? timeFilteredTransactions
+        : timeFilteredTransactions.filter((t) => t.type === transactionFilter);
+    return [...typed].sort((a, b) =>
+      sortOrder === "newest" ? b.timestamp - a.timestamp : b.amount - a.amount,
+    );
+  }, [timeFilteredTransactions, transactionFilter, sortOrder]);
+
+  // Aggregate totals for the selected time range
+  const { totalIncome, totalExpenses, netAmount, spendingByCategory } =
+    useMemo(() => {
+      let income = 0;
+      let expenses = 0;
+      const byCategory: Record<string, number> = {};
+      for (const t of timeFilteredTransactions) {
+        if (t.type === "income") {
+          income += t.amount;
+        } else {
+          expenses += t.amount;
+          byCategory[t.category] = (byCategory[t.category] || 0) + t.amount;
+        }
+      }
+      return {
+        totalIncome: income,
+        totalExpenses: expenses,
+        netAmount: income - expenses,
+        spendingByCategory: byCategory,
+      };
+    }, [timeFilteredTransactions]);
+
+  const sortedCategories = useMemo(
+    () => Object.entries(spendingByCategory).sort((a, b) => b[1] - a[1]),
+    [spendingByCategory],
+  );
+
+  const topCategory = sortedCategories[0] ?? null;
+
+  // Weekly budget metrics always come from game-engine state for accuracy
+  const budgetUsedPercent =
+    state.weeklyBudget > 0
+      ? (state.weeklySpent / state.weeklyBudget) * 100
+      : 0;
   const isOverBudget = state.weeklySpent > state.weeklyBudget;
   const remainingBudget = state.weeklyBudget - state.weeklySpent;
 
-  // Calculate spending by category
-  const spendingByCategory = state.transactions
-    .filter((transaction) => transaction.type === 'expense')
-    .reduce(
-      (accumulator, transaction) => {
-        accumulator[transaction.category] = (accumulator[transaction.category] || 0) + transaction.amount;
-        return accumulator;
-      },
-      {} as Record<string, number>,
-    );
+  // Plain-language insights (up to 2)
+  const insights = useMemo(() => {
+    const list: string[] = [];
 
-  const recentTransactions = state.transactions.slice(-5).reverse();
+    // Budget health
+    if (isOverBudget) {
+      list.push(
+        `Over budget by $${Math.abs(remainingBudget).toFixed(2)} this week. Pause non-essential purchases.`,
+      );
+    } else if (budgetUsedPercent >= 80) {
+      list.push(
+        `You have used ${budgetUsedPercent.toFixed(0)}% of your weekly budget; compare categories before spending more.`,
+      );
+    } else if (budgetUsedPercent > 0) {
+      list.push(
+        `You have used ${budgetUsedPercent.toFixed(0)}% of your weekly budget.`,
+      );
+    }
 
-  const categoryIcons: Record<string, string> = {
-    food: '🍖',
-    toy: '🎾',
-    grooming: '✨',
-    medicine: '💊',
-    other: '📦',
-  };
+    // Top category
+    if (topCategory) {
+      const [category, amount] = topCategory;
+      const period = timeRange === "week" ? "this week" : "overall";
+      list.push(
+        `Most spending is on ${category} ${period} ($${amount.toFixed(2)}).`,
+      );
+    }
+
+    // Net cashflow (fills a slot if budget insight was skipped)
+    if (list.length < 2 && totalIncome > 0 && totalExpenses > 0) {
+      if (netAmount > 0) {
+        list.push(
+          `You are net positive by $${netAmount.toFixed(2)}; income is covering costs.`,
+        );
+      } else if (netAmount < 0) {
+        list.push(
+          `You are spending $${Math.abs(netAmount).toFixed(2)} more than you earn.`,
+        );
+      }
+    }
+
+    if (list.length === 0) {
+      list.push(
+        "Interact with your pet to generate spending data and personalized insights.",
+      );
+    }
+
+    return list.slice(0, 2);
+  }, [
+    isOverBudget,
+    remainingBudget,
+    budgetUsedPercent,
+    topCategory,
+    timeRange,
+    totalIncome,
+    totalExpenses,
+    netAmount,
+  ]);
+
+  const periodLabel = timeRange === "week" ? "This Week" : "All Time";
+
+  const formatDate = (timestamp: number) =>
+    new Date(timestamp).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
 
   return (
     <div className="space-y-5">
-      {/* Balance Card */}
-      <Card className={cn('glass-card rounded-2xl transition-all duration-300 overflow-hidden', state.money < 20 ? 'ring-2 ring-destructive/30' : '')}>
-        {/* Decorative background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-[-30%] right-[-20%] w-[50%] h-[80%] bg-primary/3 blob-shape" />
-        </div>
+      {/* ── Report Header + Budget Snapshot ── */}
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
+        <CardContent className="pt-5 pb-5">
+          <div className="flex items-start justify-between gap-3 mb-5">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mb-0.5">
+                Financial Report
+              </p>
+              <h3 className="font-serif text-xl font-bold text-foreground">
+                Cost of Care Report
+              </h3>
+              {state.pet && (
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {state.pet.name} &middot;{" "}
+                  {state.pet.species.charAt(0).toUpperCase() +
+                    state.pet.species.slice(1)}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 rounded-full shrink-0 mt-0.5">
+              <PawPrint className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-semibold text-primary">Live</span>
+            </div>
+          </div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+            Budget Snapshot
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <SummaryCard
+              label="Balance"
+              value={`$${state.money.toFixed(2)}`}
+              sub="Available funds"
+              urgent={state.money < 20}
+              urgentSub="Low funds"
+            />
+            <SummaryCard
+              label="Weekly Budget"
+              value={`$${state.weeklyBudget.toFixed(2)}`}
+              sub="Spending limit"
+            />
+            <SummaryCard
+              label="Weekly Spent"
+              value={`$${state.weeklySpent.toFixed(2)}`}
+              sub={`${budgetUsedPercent.toFixed(0)}% used`}
+              urgent={isOverBudget}
+            />
+            <SummaryCard
+              label={isOverBudget ? "Over Budget" : "Budget Left"}
+              value={`$${Math.abs(remainingBudget).toFixed(2)}`}
+              sub={isOverBudget ? "Reduce spending" : "Remaining this week"}
+              urgent={isOverBudget}
+              urgentSub="Over budget"
+              positive={!isOverBudget}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-        <CardHeader className="pb-2 relative">
+      {/* ── Period Analysis Cards ── */}
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
+        <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-base">
               <div className="p-2 bg-primary/10 rounded-xl">
-                <Wallet className="w-5 h-5 text-primary" />
+                <BarChart3 className="w-4 h-4 text-primary" />
               </div>
-              <span className="font-serif">Current Balance</span>
+              <span className="font-serif">Period Analysis</span>
+            </div>
+            <span className="text-xs text-muted-foreground font-normal">
+              {periodLabel}
             </span>
-            {state.money < 20 && (
-              <span className="text-xs text-destructive flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 rounded-full">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                Low funds
-              </span>
-            )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="relative">
-          <div className="text-4xl font-mono font-bold text-foreground mb-2">${state.money.toFixed(2)}</div>
-          {state.careStreak >= 3 && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary/10 rounded-full text-secondary text-sm">
-              <Flame className="w-4 h-4" />
-              <span className="font-medium">{state.careStreak}-day streak bonus available!</span>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <SummaryCard
+              label="Total Income"
+              value={`$${totalIncome.toFixed(2)}`}
+              sub="Earned this period"
+              positive={totalIncome > 0}
+            />
+            <SummaryCard
+              label="Total Expenses"
+              value={`$${totalExpenses.toFixed(2)}`}
+              sub="Spent this period"
+            />
+            <SummaryCard
+              label="Net Amount"
+              value={`${netAmount >= 0 ? "+" : ""}$${Math.abs(netAmount).toFixed(2)}`}
+              sub={netAmount >= 0 ? "Positive cashflow" : "More out than in"}
+              positive={netAmount > 0}
+              urgent={netAmount < 0 && totalExpenses > 0}
+            />
+            <SummaryCard
+              label="Top Category"
+              value={
+                topCategory
+                  ? topCategory[0].charAt(0).toUpperCase() +
+                    topCategory[0].slice(1)
+                  : "-"
+              }
+              sub={
+                topCategory
+                  ? `$${topCategory[1].toFixed(2)} spent`
+                  : "No expenses yet"
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Customization Controls ── */}
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
+        <CardContent className="pt-4 pb-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3">
+            Customize Report
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <FilterGroup
+              label="Time Range"
+              value={timeRange}
+              onChange={setTimeRange}
+              options={[
+                { value: "week", label: "This Week" },
+                { value: "all", label: "All Time" },
+              ]}
+            />
+            <FilterGroup
+              label="Show"
+              value={transactionFilter}
+              onChange={setTransactionFilter}
+              options={[
+                { value: "all", label: "All" },
+                { value: "expense", label: "Expenses" },
+                { value: "income", label: "Income" },
+              ]}
+            />
+            <FilterGroup
+              label="Sort By"
+              value={sortOrder}
+              onChange={setSortOrder}
+              options={[
+                { value: "newest", label: "Newest" },
+                { value: "amount", label: "Highest" },
+              ]}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── Insights ── */}
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-3 text-base">
+            <div className="p-2 bg-amber-500/10 rounded-xl">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+            </div>
+            <span className="font-serif">Insights</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {insights.map((insight, index) => (
+            <div
+              key={index}
+              className="flex items-start gap-2.5 p-3 bg-accent/30 rounded-xl"
+            >
+              <span className="shrink-0 mt-0.5 text-amber-500">
+                {index === 0 ? (
+                  <Lightbulb className="w-4 h-4" />
+                ) : (
+                  <BarChart3 className="w-4 h-4" />
+                )}
+              </span>
+              <p className="text-sm text-foreground leading-relaxed">
+                {insight}
+              </p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* ── Spending Breakdown ── */}
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-3 text-base">
+              <div className="p-2 bg-secondary/10 rounded-xl">
+                <BarChart3 className="w-4 h-4 text-secondary" />
+              </div>
+              <span className="font-serif">Spending Breakdown</span>
+            </div>
+            <span className="text-xs text-muted-foreground font-normal">
+              {periodLabel}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {sortedCategories.length > 0 ? (
+            <div className="space-y-4">
+              {sortedCategories.map(([category, amount], index) => {
+                const percentage =
+                  totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
+                return (
+                  <div
+                    key={category}
+                    className="space-y-1.5 animate-fade-in-up opacity-0"
+                    style={{
+                      animationDelay: `${index * 0.05}s`,
+                      animationFillMode: "forwards",
+                    }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2 text-sm text-foreground">
+                        <span className="text-muted-foreground">
+                          {CATEGORY_ICONS[category] ?? (
+                            <Package className="w-4 h-4" />
+                          )}
+                        </span>
+                        <span className="capitalize font-medium">
+                          {category}
+                        </span>
+                      </span>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {percentage.toFixed(1)}%
+                        </span>
+                        <span className="font-mono font-semibold text-sm text-foreground tabular-nums w-16 text-right">
+                          ${amount.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="h-2 bg-accent/40 rounded-full overflow-hidden">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500",
+                          CATEGORY_BAR_COLORS[category] ?? "bg-primary",
+                        )}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <div className="p-4 bg-accent/30 rounded-full">
+                <CircleDollarSign className="w-7 h-7 text-muted-foreground/40" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  No expenses{" "}
+                  {timeRange === "week" ? "this week" : "recorded yet"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Care for your pet to see spending data here.
+                </p>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Budget Progress */}
-      <Card className="glass-card rounded-2xl">
+      {/* ── Transaction List ── */}
+      <Card className="bg-card border border-border rounded-xl shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-3 text-base">
-            <div className="p-2 bg-chart-1/10 rounded-xl">
-              <TrendingDown className="w-4 h-4 text-chart-1" />
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-3 text-base">
+              <div className="p-2 bg-chart-1/10 rounded-xl">
+                <Receipt className="w-4 h-4 text-chart-1" />
+              </div>
+              <span className="font-serif">Transactions</span>
             </div>
-            <span className="font-serif">Weekly Budget</span>
+            <span className="text-xs text-muted-foreground font-normal">
+              {displayTransactions.length}{" "}
+              {displayTransactions.length === 1 ? "entry" : "entries"}
+            </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Spent</span>
-            <span className="font-mono font-semibold text-foreground">${state.weeklySpent.toFixed(2)}</span>
-          </div>
+        <CardContent>
+          {displayTransactions.length > 0 ? (
+            <div>
+              {/* Column headers - desktop only */}
+              <div className="hidden sm:grid grid-cols-[72px_1fr_100px_80px] gap-2 px-3 pb-2 border-b border-border/50">
+                {(["Date", "Description", "Category", "Amount"] as const).map(
+                  (heading) => (
+                    <span
+                      key={heading}
+                      className={cn(
+                        "text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60",
+                        heading === "Amount" && "text-right",
+                      )}
+                    >
+                      {heading}
+                    </span>
+                  ),
+                )}
+              </div>
 
-          {/* Progress bar */}
-          <div className="h-3.5 bg-accent/40 rounded-full overflow-hidden">
-            <div className={cn('h-full rounded-full transition-all duration-500 relative', isOverBudget ? 'bg-destructive' : 'bg-chart-1')} style={{ width: `${Math.min(budgetUsedPercent, 100)}%` }}>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <div className="space-y-0.5 mt-1">
+                {displayTransactions.map((transaction, index) => (
+                  <div
+                    key={transaction.id}
+                    className="flex sm:grid sm:grid-cols-[72px_1fr_100px_80px] gap-2 items-center p-3 rounded-xl hover:bg-accent/30 transition-colors duration-150 animate-fade-in-up opacity-0"
+                    style={{
+                      animationDelay: `${index * 0.03}s`,
+                      animationFillMode: "forwards",
+                    }}
+                  >
+                    {/* Date - desktop */}
+                    <span className="hidden sm:block text-xs font-mono text-muted-foreground tabular-nums">
+                      {formatDate(transaction.timestamp)}
+                    </span>
+
+                    {/* Description + mobile date */}
+                    <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-none">
+                      <div
+                        className={cn(
+                          "p-1.5 rounded-lg shrink-0",
+                          transaction.type === "income"
+                            ? "bg-secondary/15"
+                            : "bg-chart-1/15",
+                        )}
+                      >
+                        {transaction.type === "income" ? (
+                          <ArrowUpRight className="w-3 h-3 text-secondary" />
+                        ) : (
+                          <ArrowDownRight className="w-3 h-3 text-chart-1" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-sm text-foreground truncate block">
+                          {transaction.description}
+                        </span>
+                        <span className="text-xs text-muted-foreground sm:hidden">
+                          {formatDate(transaction.timestamp)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Category - desktop */}
+                    <span className="hidden sm:block text-xs px-2 py-0.5 bg-accent/50 rounded-full text-muted-foreground capitalize text-center">
+                      {transaction.category}
+                    </span>
+
+                    {/* Amount */}
+                    <span
+                      className={cn(
+                        "font-mono font-semibold text-sm ml-auto sm:ml-0 sm:text-right shrink-0",
+                        transaction.type === "income"
+                          ? "text-secondary"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      {transaction.type === "income" ? "+" : "-"}$
+                      {transaction.amount.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Budget: ${state.weeklyBudget}</span>
-            <span className={cn('text-sm font-semibold px-3 py-1 rounded-full', isOverBudget ? 'bg-destructive/15 text-destructive' : 'bg-secondary/15 text-secondary')}>
-              {isOverBudget ? `Over by $${Math.abs(remainingBudget).toFixed(2)}` : `$${remainingBudget.toFixed(2)} left`}
-            </span>
-          </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <div className="p-4 bg-accent/30 rounded-full">
+                <Receipt className="w-7 h-7 text-muted-foreground/40" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {transactionFilter !== "all"
+                    ? `No ${transactionFilter === "expense" ? "expense" : "income"} transactions ${timeRange === "week" ? "this week" : ""}`
+                    : `No transactions ${timeRange === "week" ? "this week" : "yet"}`}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {transactionFilter !== "all"
+                    ? "Try switching the filter to see other entries."
+                    : "Interactions with your pet will appear here."}
+                </p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      {/* Spending Breakdown */}
-      {Object.keys(spendingByCategory).length > 0 ? (
-        <Card className="glass-card rounded-2xl">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 bg-secondary/10 rounded-xl">
-                <DollarSign className="w-4 h-4 text-secondary" />
-              </div>
-              <span className="font-serif">Spending Breakdown</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {Object.entries(spendingByCategory).map(([category, amount], index) => (
-                <div
-                  key={category}
-                  className="flex justify-between items-center p-3 bg-accent/30 rounded-xl animate-fade-in-up opacity-0"
-                  style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="text-lg">{categoryIcons[category] || '📦'}</span>
-                    <span className="capitalize font-medium text-foreground">{category}</span>
-                  </span>
-                  <span className="font-mono font-semibold text-muted-foreground">${amount.toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="glass-card rounded-2xl">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-3 text-base">
-              <div className="p-2 bg-secondary/10 rounded-xl">
-                <DollarSign className="w-4 h-4 text-secondary" />
-              </div>
-              <span className="font-serif">Spending Breakdown</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3 p-3 bg-accent/30 rounded-xl text-sm text-muted-foreground">
-              <span className="text-lg">🫧</span>
-              <span>No spending yet.</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Recent Transactions */}
-      {recentTransactions.length > 0 ? (
-        <Card className="glass-card rounded-2xl">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-serif">Recent Transactions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {recentTransactions.map((transaction, index) => (
-                <div
-                  key={transaction.id}
-                  className="flex justify-between items-center p-3 rounded-xl hover:bg-accent/30 transition-colors duration-200 animate-fade-in-up opacity-0"
-                  style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'forwards' }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={cn('p-2 rounded-lg', transaction.type === 'income' ? 'bg-secondary/15' : 'bg-chart-1/15')}>
-                      {transaction.type === 'income' ? <ArrowUpRight className="w-4 h-4 text-secondary" /> : <ArrowDownRight className="w-4 h-4 text-chart-1" />}
-                    </div>
-                    <span className="text-sm truncate max-w-[180px] text-foreground">{transaction.description}</span>
-                  </div>
-                  <span className={cn('font-mono font-semibold', transaction.type === 'income' ? 'text-secondary' : 'text-muted-foreground')}>
-                    {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="glass-card rounded-2xl">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-serif">Recent Transactions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3 p-3 bg-accent/30 rounded-xl text-sm text-muted-foreground">
-              <span className="text-lg">🧾</span>
-              <span>No transactions yet.</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

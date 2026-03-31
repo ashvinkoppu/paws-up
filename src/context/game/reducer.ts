@@ -1,5 +1,5 @@
 /**
- * Game Reducer — pure function that handles every state transition.
+ * Game Reducer - pure function that handles every state transition.
  *
  * Each `GameAction` dispatched from the provider is matched in a
  * `switch` statement and returns the next immutable `GameState`.
@@ -10,6 +10,7 @@
  */
 import { GameState, PetStats, Transaction, GameNotification, DailyTracking, PERSONALITY_MODIFIERS, GROWTH_THRESHOLDS, WeeklyGoal } from '@/types/game';
 import { DAILY_TASK_POOL, DEFAULT_DAILY_TRACKING } from '@/data/tasks';
+import { GAME_MINUTES_PER_DECAY_TICK } from '@/data/gameTiming';
 import { GameAction } from '@/context/game/types';
 import { initialState } from '@/context/game/types';
 import {
@@ -347,9 +348,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     /**
-     * DECAY_STATS — runs on a 30-second real-time interval.
+     * DECAY_STATS - runs on the shared simulation interval.
      * Reduces each stat based on personality modifiers and current behavior.
-     * Advances game time by 24 minutes per tick (~5 real min per game day),
+     * Advances game time by the shared decay increment,
      * checks for skipped meals, evaluates pet behavior, and handles extreme neglect (pet death).
      */
     case 'DECAY_STATS': {
@@ -381,9 +382,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
       });
 
-      // Advance game time by 24 minutes per decay tick (~5 real min per game day)
+      // Advance game time in step with the shared pacing constants.
       const oldGameTime = state.gameTime;
-      const newGameTime = (oldGameTime + 24) % 1440;
+      const newGameTime = (oldGameTime + GAME_MINUTES_PER_DECAY_TICK) % 1440;
       const crossedMidnight = newGameTime < oldGameTime;
 
       // Reset meals when crossing midnight
@@ -456,7 +457,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     /**
-     * LOAD_GAME — restores a previously saved state from the cloud.
+     * LOAD_GAME - restores a previously saved state from the cloud.
      * Performs migration for fields that may be missing in older save
      * formats, ensuring backwards compatibility.
      */
@@ -1014,7 +1015,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         notifications: prependNotification(resultState.notifications, createNotification({
           type: 'milestone',
           title: 'Weekly Goal Complete!',
-          description: `${goal.name} — +${goal.reward.xp} XP, +$${goal.reward.money}`,
+          description: `${goal.name} - +${goal.reward.xp} XP, +$${goal.reward.money}`,
           icon: '🎯',
         })),
       };

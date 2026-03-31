@@ -47,17 +47,17 @@ export const DAILY_TASK_POOL: DailyTaskDef[] = [
 // ── Milestones (12, in 3 tiers) ─────────────────────────────────────────
 
 export const MILESTONES: MilestoneDef[] = [
-  // Tier 1 — Beginner
+  // Tier 1 - Beginner
   { id: 'ms-feed-10', name: 'Well Fed', description: 'Feed your pet 10 times total', icon: '🍖', tier: 1, xpReward: 50, moneyReward: 10, checkFn: 'feedCount10' },
   { id: 'ms-play-10', name: 'Best Friend', description: 'Play with your pet 10 times', icon: '🎾', tier: 1, xpReward: 50, moneyReward: 10, checkFn: 'playCount10' },
   { id: 'ms-level-3', name: 'Rising Star', description: 'Reach level 3', icon: '⭐', tier: 1, xpReward: 50, moneyReward: 15, checkFn: 'level3' },
   { id: 'ms-streak-3', name: 'Consistent Carer', description: 'Achieve a 3-day care streak', icon: '🔥', tier: 1, xpReward: 50, moneyReward: 10, checkFn: 'streak3' },
-  // Tier 2 — Intermediate
+  // Tier 2 - Intermediate
   { id: 'ms-feed-50', name: 'Gourmet Pet', description: 'Feed your pet 50 times total', icon: '👨‍🍳', tier: 2, xpReward: 100, moneyReward: 25, checkFn: 'feedCount50' },
   { id: 'ms-play-50', name: 'Play Champion', description: 'Play with your pet 50 times', icon: '🏅', tier: 2, xpReward: 100, moneyReward: 25, checkFn: 'playCount50' },
   { id: 'ms-level-5', name: 'Veteran Owner', description: 'Reach level 5', icon: '🌟', tier: 2, xpReward: 100, moneyReward: 30, checkFn: 'level5' },
   { id: 'ms-streak-7', name: 'Dedicated Carer', description: 'Achieve a 7-day care streak', icon: '💪', tier: 2, xpReward: 100, moneyReward: 25, checkFn: 'streak7' },
-  // Tier 3 — Expert
+  // Tier 3 - Expert
   { id: 'ms-feed-100', name: 'Feeding Legend', description: 'Feed your pet 100 times total', icon: '🏆', tier: 3, xpReward: 200, moneyReward: 50, checkFn: 'feedCount100' },
   { id: 'ms-play-100', name: 'Play Legend', description: 'Play 100 times total', icon: '👑', tier: 3, xpReward: 200, moneyReward: 50, checkFn: 'playCount100' },
   { id: 'ms-level-10', name: 'Master Owner', description: 'Reach level 10', icon: '💎', tier: 3, xpReward: 200, moneyReward: 75, checkFn: 'level10' },

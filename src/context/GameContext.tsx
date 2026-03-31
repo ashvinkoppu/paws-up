@@ -1,5 +1,5 @@
 /**
- * GameContext — top-level barrel re-export.
+ * GameContext - top-level barrel re-export.
  *
  * Proxies everything from `@/context/game` so legacy imports from
  * `@/context/GameContext` continue to work. Prefer importing directly
@@ -7,5 +7,5 @@
  *
  * @module context/GameContext
  */
-export { GameProvider, useGame } from './game';
-export type { ActionFeedbackEvent } from './game';
+export { GameProvider, useGame } from "./game";
+export type { ActionFeedbackEvent } from "./game";
