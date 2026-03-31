@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { PawPrint, ChevronRight, Shield } from "lucide-react";
+import { PawPrint, ChevronRight, Star } from "lucide-react";
 import { useScrolled } from "@/hooks/use-scroll-state";
 import PublicFooter from "@/components/layout/PublicFooter";
 
-const PrivacyPolicy: React.FC = () => {
+const Attributions: React.FC = () => {
   const scrolled = useScrolled();
 
   useEffect(() => {
@@ -14,65 +14,127 @@ const PrivacyPolicy: React.FC = () => {
 
   const sections = [
     {
-      title: "Information We Collect",
-      content: `We collect information you provide directly to us, such as when you create an account, update your profile, or contact us for support. This may include:
+      title: "UI Framework & Rendering",
+      content: `React — Copyright © Meta Platforms, Inc. and affiliates
+License: MIT
+https://github.com/facebook/react
 
-• Email address and password for account authentication
-• Username and profile preferences
-• Game progress and financial tracking data you choose to input
-• Device information and usage statistics to improve our service`,
-    },
-    {
-      title: "How We Use Your Information",
-      content: `We use the information we collect to:
+The core library powering Paws Up's component-based UI. All interactive elements, state management, and rendering are built on top of React 19.
 
-• Provide, maintain, and improve our services
-• Process transactions and send related information
-• Send you technical notices, updates, and support messages
-• Respond to your comments, questions, and customer service requests
-• Monitor and analyze trends, usage, and activities in connection with our services`,
-    },
-    {
-      title: "Data Storage and Security",
-      content: `We take reasonable measures to help protect your personal information from loss, theft, misuse, unauthorized access, disclosure, alteration, and destruction. Your data is stored securely using industry-standard encryption and security practices.
+React Router DOM — Copyright © Remix Software Inc.
+License: MIT
+https://github.com/remix-run/react-router
 
-We retain your information for as long as your account is active or as needed to provide you services. You may request deletion of your account and associated data at any time.`,
+Handles all client-side navigation and route definitions within the app.`,
     },
     {
-      title: "Sharing of Information",
-      content: `We do not sell, trade, or otherwise transfer your personal information to third parties. We may share information only in the following circumstances:
+      title: "Component Library & Styling",
+      content: `shadcn/ui — Copyright © shadcn
+License: MIT
+https://github.com/shadcn-ui/ui
 
-• With your consent or at your direction
-• With service providers who assist in our operations
-• To comply with legal obligations or protect our rights
-• In connection with a merger, acquisition, or sale of assets`,
-    },
-    {
-      title: "Your Rights and Choices",
-      content: `You have the right to:
+Paws Up uses shadcn/ui as its component foundation. Components are copied directly into the codebase and customized to fit the app's design language.
 
-• Access, update, or delete your personal information
-• Opt out of promotional communications
-• Request a copy of your data
-• Withdraw consent where applicable
+Radix UI — Copyright © WorkOS
+License: MIT
+https://github.com/radix-ui/primitives
 
-To exercise these rights, please contact us through the app or email us directly.`,
+Accessible, unstyled primitives used under the hood by shadcn/ui components including dialogs, dropdowns, tooltips, accordions, and more.
+
+Tailwind CSS — Copyright © Tailwind Labs Inc.
+License: MIT
+https://github.com/tailwindlabs/tailwindcss
+
+Utility-first CSS framework used for all layout, spacing, typography, and color styling throughout the app.
+
+tailwind-merge — Copyright © Dany Castillo
+License: MIT
+https://github.com/nicolo-ribaudo/tailwind-merge
+
+Utility for merging Tailwind class names without style conflicts.
+
+class-variance-authority — Copyright © Joe Bell
+License: Apache-2.0
+https://github.com/joe-bell/cva
+
+Used internally by shadcn/ui to define component variants in a type-safe way.
+
+clsx — Copyright © Luke Edwards
+License: MIT
+https://github.com/lukeed/clsx
+
+Lightweight utility for conditionally joining class names.
+
+tailwindcss-animate — Copyright © Jamie Kyle
+License: MIT
+https://github.com/jamiebuilds/tailwindcss-animate
+
+Tailwind plugin providing pre-built CSS animation utilities used for transitions and motion throughout the UI.
+
+next-themes — Copyright © Pacocoursey
+License: MIT
+https://github.com/pacocoursey/next-themes
+
+Provides seamless theme switching support (light/dark mode) for the application.`,
     },
     {
-      title: "Cookies and Tracking",
-      content: `We use cookies and similar tracking technologies to collect and store information about your preferences and usage. You can control cookies through your browser settings, though disabling them may affect some features of our service.`,
+      title: "Icons",
+      content: `Lucide React — Copyright © Lucide Contributors
+License: ISC
+https://github.com/lucide-icons/lucide
+
+All icons used throughout Paws Up — paw prints, shields, arrows, and more — come from the Lucide icon library.`,
     },
     {
-      title: "Children's Privacy",
-      content: `Our service is designed to be family-friendly. We do not knowingly collect personal information from children under 13 without parental consent. If you believe we have collected information from a child under 13, please contact us immediately.`,
+      title: "Backend & Authentication",
+      content: `Supabase — Copyright © Supabase Inc.
+License: Apache-2.0
+https://github.com/supabase/supabase
+
+Paws Up uses Supabase for user authentication, database storage, and real-time data. This includes @supabase/supabase-js and @supabase/auth-ui-react.`,
     },
     {
-      title: "Changes to This Policy",
-      content: `We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last Updated" date. Your continued use of the service after changes constitutes acceptance of the updated policy.`,
+      title: "Data Fetching",
+      content: `TanStack React Query — Copyright © TanStack
+License: MIT
+https://github.com/TanStack/query
+
+Used for server-state management, caching, and data synchronization between the client and Supabase backend.`,
     },
     {
-      title: "Contact Us",
-      content: `If you have any questions about this Privacy Policy or our practices, please contact us through the app's support feature or reach out to our team directly.`,
+      title: "Notifications",
+      content: `Sonner — Copyright © emilkowalski_
+License: MIT
+https://github.com/emilkowalski/sonner
+
+Toast notification library used for feedback messages across the app (success, error, and informational alerts).`,
+    },
+    {
+      title: "Build Tooling",
+      content: `Vite — Copyright © Evan You and Vite Contributors
+License: MIT
+https://github.com/vitejs/vite
+
+The build tool and development server powering Paws Up's fast hot-module replacement and optimized production builds.
+
+@vitejs/plugin-react-swc — Copyright © Vite Contributors
+License: MIT
+https://github.com/vitejs/vite-plugin-react-swc
+
+Vite plugin enabling fast React transforms using the SWC compiler.`,
+    },
+    {
+      title: "Deployment",
+      content: `Vercel — Copyright © Vercel Inc.
+https://vercel.com
+
+Paws Up is hosted and deployed on Vercel's platform. Serverless API functions are powered by @vercel/node.`,
+    },
+    {
+      title: "License Summary",
+      content: `All third-party libraries and tools listed above retain their respective copyrights and licenses. Paws Up makes no claim of ownership over these works. We are grateful to the open-source community for making projects like this possible.
+
+If you believe any attribution is missing or incorrect, please open an issue on our GitHub repository or contact us directly through the app.`,
     },
   ];
 
@@ -139,11 +201,11 @@ To exercise these rights, please contact us through the app or email us directly
         {/* Header */}
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 text-sm font-medium text-primary bg-primary/10 px-4 py-1.5 rounded-full mb-6 border border-primary/20">
-            <Shield className="w-4 h-4" />
+            <Star className="w-4 h-4" />
             Legal
           </div>
           <h1 className="font-serif text-5xl font-bold text-foreground leading-[1.1] tracking-tight mb-4">
-            Privacy Policy
+            Attributions
           </h1>
           <p className="text-muted-foreground">
             Last updated:{" "}
@@ -158,10 +220,10 @@ To exercise these rights, please contact us through the app or email us directly
         {/* Introduction */}
         <div className="mb-12">
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Welcome to Paws Up! We are committed to protecting your privacy and
-            ensuring you have a positive experience using our app. This Privacy
-            Policy explains how we collect, use, disclose, and safeguard your
-            information when you use our pet care and budgeting game.
+            Paws Up is built on the shoulders of a fantastic open-source
+            ecosystem. This page credits the libraries, tools, and platforms
+            that make the app possible. We're grateful to every maintainer and
+            contributor behind these projects.
           </p>
         </div>
 
@@ -205,17 +267,17 @@ To exercise these rights, please contact us through the app or email us directly
         {/* Bottom navigation */}
         <div className="mt-16 pt-8 border-t border-border flex items-center justify-between">
           <Link
+            to="/privacy"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Privacy Policy
+            <ChevronRight className="w-4 h-4" />
+          </Link>
+          <Link
             to="/terms"
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Terms of Service
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-          <Link
-            to="/faq"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            FAQ
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -226,4 +288,4 @@ To exercise these rights, please contact us through the app or email us directly
   );
 };
 
-export default PrivacyPolicy;
+export default Attributions;

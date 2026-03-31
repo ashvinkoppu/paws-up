@@ -1,19 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PawPrint, ChevronRight, ScrollText } from 'lucide-react';
+import { useScrolled } from '@/hooks/use-scroll-state';
+import PublicFooter from '@/components/layout/PublicFooter';
 
 const TermsOfService: React.FC = () => {
-  const [scrolled, setScrolled] = useState(false);
+  const scrolled = useScrolled();
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const sections = [
@@ -189,7 +185,7 @@ Our total liability for any claims arising from your use of the service shall no
         </div>
 
         {/* Table of Contents */}
-        <div className="mb-12 rounded-xl border border-zinc-200 bg-white p-6">
+        <div className="mb-12 rounded-xl border border-border bg-card p-6">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">Contents</p>
           <div className="grid sm:grid-cols-2 gap-1">
             {sections.map((section, index) => (
@@ -234,26 +230,7 @@ Our total liability for any claims arising from your use of the service shall no
         </div>
       </main>
 
-      {/* Footer */}
-      <div className="border-t border-border py-7">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <PawPrint className="w-4 h-4" />
-            <span className="font-medium">Paws Up</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Privacy
-            </Link>
-            <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              FAQ
-            </Link>
-            <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Terms
-            </Link>
-          </div>
-        </div>
-      </div>
+      <PublicFooter />
     </div>
   );
 };

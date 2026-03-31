@@ -38,6 +38,7 @@ import Dashboard from "./pages/Dashboard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import FAQ from "./pages/FAQ";
+import Attributions from "./pages/Attributions";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import Park from "./pages/Park";
@@ -59,6 +60,7 @@ const App = () => (
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/faq" element={<FAQ />} />
+                <Route path="/attributions" element={<Attributions />} />
                 <Route
                   path="/dashboard"
                   element={

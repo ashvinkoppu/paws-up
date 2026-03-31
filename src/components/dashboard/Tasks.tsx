@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { calculateLevel, DAILY_TASK_POOL, MILESTONES } from '@/data/tasks';
 import { cn } from '@/lib/utils';
-import { Check, Clock, Gift, Lock, Star, Trophy, Target, CalendarDays, Sun } from 'lucide-react';
+import { Check, Clock, Gift, Lock, Star, Trophy } from 'lucide-react';
 
 /** Returns a live "Xh Ym" string counting down to local midnight. Updates every 60s. */
 function useCountdownToMidnight() {
@@ -52,7 +52,7 @@ interface XpFloater {
 }
 
 const Tasks: React.FC = () => {
-  const { state, claimDailyBonus, claimDailyTask, expireTimedTask, initWeeklyGoals, claimWeeklyGoal, claimTomorrowReward } = useGame();
+  const { state, claimDailyBonus, claimDailyTask } = useGame();
   const countdown = useCountdownToMidnight();
   const [xpFloaters, setXpFloaters] = useState<XpFloater[]>([]);
   const [claimingTasks, setClaimingTasks] = useState<Set<string>>(new Set());
@@ -94,41 +94,6 @@ const Tasks: React.FC = () => {
     [claimDailyTask, triggerXpAnimation],
   );
 
-  // Timed task expiration check - runs every second.
-  // forceRender is a dummy counter that triggers re-renders so countdown timers update in the UI.
-  const [, forceRender] = useState(0);
-
-  useEffect(() => {
-    const hasTimedTasks = state.dailyTasks.some((task) => task.timed && task.timerExpiresAt && !task.completed && !task.claimed);
-    if (!hasTimedTasks) return;
-
-    const interval = setInterval(() => {
-      const now = Date.now();
-      state.dailyTasks.forEach((task) => {
-        if (task.timed && task.timerExpiresAt && !task.completed && !task.claimed && now >= task.timerExpiresAt) {
-          expireTimedTask(task.id);
-        }
-      });
-      forceRender((previous) => previous + 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [state.dailyTasks, expireTimedTask]);
-
-  // Helper to format remaining time
-  function formatTimeRemaining(expiresAt: number): string {
-    const remaining = Math.max(0, expiresAt - Date.now());
-    const minutes = Math.floor(remaining / 60000);
-    const seconds = Math.floor((remaining % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }
-
-  // Initialize weekly goals on mount
-  useEffect(() => {
-    if (state.gameStarted && state.pet) {
-      initWeeklyGoals();
-    }
-  }, [state.gameStarted, state.pet?.id, initWeeklyGoals]);
 
   if (!state.pet) return null;
 
@@ -158,7 +123,7 @@ const Tasks: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* XP Summary Bar */}
-      <Card className="rounded-2xl glass-card overflow-hidden relative">
+      <Card className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden relative">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -193,116 +158,8 @@ const Tasks: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Tomorrow Reward Card */}
-      {state.tomorrowReward && (
-        <Card
-          className={cn(
-            'rounded-2xl glass-card overflow-hidden border-2',
-            state.tomorrowReward.available ? 'border-amber-400/50 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-500/10' : 'border-slate-400/30 bg-slate-900/50 grayscale-[0.5]',
-          )}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div
-                className={cn('w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg', state.tomorrowReward.available ? 'bg-gradient-to-br from-amber-400 to-orange-500' : 'bg-slate-700')}
-              >
-                {state.tomorrowReward.available ? <Sun className="w-7 h-7 text-white" /> : <Clock className="w-7 h-7 text-slate-300" />}
-              </div>
-              <div className="flex-1">
-                <h4 className="font-serif font-bold text-lg text-foreground">{state.tomorrowReward.available ? 'Welcome Back!' : 'Come Back Tomorrow!'}</h4>
-                <p className="text-sm text-muted-foreground">
-                  {state.tomorrowReward.available ? 'Your daily reward is ready:' : 'Your next reward will be:'}{' '}
-                  <span className="font-semibold text-amber-600">{state.tomorrowReward.description}</span>
-                </p>
-              </div>
-              <Button
-                onClick={claimTomorrowReward}
-                disabled={!state.tomorrowReward.available}
-                className={cn(
-                  'font-semibold px-5 shadow-lg transition-all',
-                  state.tomorrowReward.available
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white'
-                    : 'bg-slate-800 text-slate-400 border border-slate-700',
-                )}
-              >
-                {state.tomorrowReward.available ? (
-                  <>
-                    <Gift className="w-4 h-4 mr-2" />
-                    Claim
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4 mr-2" />
-                    Locked
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Weekly Goals Card */}
-      {state.weeklyGoals.length > 0 && (
-        <Card className="rounded-2xl glass-card overflow-hidden">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-serif flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-violet-500" />
-                Weekly Goals
-              </CardTitle>
-              <span className="text-xs text-muted-foreground font-mono">
-                {state.weeklyGoals.filter((g) => g.completed).length}/{state.weeklyGoals.length} complete
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 space-y-2">
-            {state.weeklyGoals.map((goal) => {
-              // Savings goals track spending (lower is better), so progress inverts the ratio.
-              // Streak and other goal types use days completed out of 7.
-              const progressPercent =
-                goal.type === 'savings' ? Math.max(0, 100 - (goal.currentValue / goal.target) * 100) : goal.type === 'streak' ? (goal.daysCompleted / 7) * 100 : (goal.daysCompleted / 7) * 100;
-
-              return (
-                <div
-                  key={goal.id}
-                  className={cn('flex items-center gap-3 p-3 rounded-xl border transition-all', goal.completed ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-card border-border')}
-                >
-                  <span className="text-2xl flex-shrink-0">{goal.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={cn('text-sm font-semibold', goal.completed && 'text-emerald-600')}>{goal.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        +{goal.reward.xp} XP, +${goal.reward.money}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-1.5">{goal.description}</p>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-accent rounded-full overflow-hidden">
-                        <div
-                          className={cn('h-full rounded-full transition-all duration-500', goal.completed ? 'bg-emerald-500' : 'bg-violet-400')}
-                          style={{ width: `${Math.min(progressPercent, 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">
-                        {goal.type === 'savings' ? `$${goal.currentValue}/$${goal.target}` : `${goal.daysCompleted}/7 days`}
-                      </span>
-                    </div>
-                  </div>
-                  {goal.completed && (
-                    <Button size="sm" onClick={() => claimWeeklyGoal(goal.id)} className="bg-emerald-500 hover:bg-emerald-600 text-white flex-shrink-0 text-xs px-3">
-                      Claim
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      )}
-
       {/* Daily Tasks Card */}
-      <Card className="rounded-2xl glass-card overflow-hidden">
+      <Card className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-serif flex items-center gap-2">
@@ -334,11 +191,9 @@ const Tasks: React.FC = () => {
                   'flex items-center gap-3 p-3 rounded-xl border transition-all overflow-hidden',
                   task.completed
                     ? 'bg-emerald-500/5 border-emerald-500/20'
-                    : task.timed && task.timerExpiresAt && task.timerExpiresAt - Date.now() < 120000
-                      ? 'bg-red-500/5 border-red-500/20'
-                      : progress > 0
-                        ? 'bg-amber-500/5 border-amber-500/20'
-                        : 'bg-card border-border',
+                    : progress > 0
+                      ? 'bg-amber-500/5 border-amber-500/20'
+                      : 'bg-card border-border',
                 )}
                 style={
                   isClaiming
@@ -354,16 +209,6 @@ const Tasks: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className={cn('text-sm font-semibold truncate', task.completed && 'text-emerald-600')}>{taskDef.name}</span>
-                    {task.timed && task.timerExpiresAt && !task.completed && (
-                      <span
-                        className={cn(
-                          'text-[10px] font-mono px-1.5 py-0.5 rounded-full flex-shrink-0',
-                          task.timerExpiresAt - Date.now() < 120000 ? 'bg-red-500/15 text-red-600' : 'bg-amber-500/10 text-amber-600',
-                        )}
-                      >
-                        ⏱ {formatTimeRemaining(task.timerExpiresAt)}
-                      </span>
-                    )}
                     <span className="text-xs text-muted-foreground ml-2 flex-shrink-0 flex items-center gap-1">
                       {taskDef.rewardType === 'discount' && <span className="font-bold text-emerald-500">{taskDef.discountValue}% OFF</span>}
                       <span>+{taskDef.xpReward} XP</span>
@@ -420,7 +265,7 @@ const Tasks: React.FC = () => {
       </Card>
 
       {/* Milestones Card */}
-      <Card className="rounded-2xl glass-card overflow-hidden">
+      <Card className="rounded-2xl bg-card border border-border shadow-sm overflow-hidden">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-serif flex items-center gap-2">
             <Trophy className="w-4 h-4 text-amber-500" />

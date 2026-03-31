@@ -16,7 +16,7 @@
  */
 import React from 'react';
 import { useGame } from '@/context/GameContext';
-import { Activity } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
 import { PetStats } from '@/types/game';
 import { STAT_CONFIG, getStatColor } from '@/data/statConfig';
@@ -61,49 +61,40 @@ const SidePanel: React.FC = () => {
   const status = getOverallStatus();
 
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden transition-all duration-300">
+    <div className="bg-card border border-border rounded-xl shadow-sm p-4">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border bg-accent/20">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg">
-              <Activity className="w-4 h-4 text-primary" />
-            </div>
-            <h3 className="font-serif font-semibold text-base text-foreground">Pet Status</h3>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className={cn('px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all duration-300', status.color)}>{status.label}</div>
-          </div>
-        </div>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-serif font-semibold text-foreground">Pet Health</h3>
+        <div className={cn('px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all duration-300', status.color)}>{status.label}</div>
+      </div>
 
-        {/* Colorful stat bars */}
-        <div className="flex flex-col gap-2 mt-3 pt-2 border-t border-border">
-          {(Object.keys(STAT_CONFIG) as (keyof PetStats)[]).map((stat) => {
-            const value = stats[stat];
-            const config = STAT_CONFIG[stat];
-            const gradient = STAT_GRADIENTS[stat];
-            const glow = STAT_GLOW[stat];
-            return (
-              <div key={stat} className="flex items-center gap-2" title={`${config.label}: ${Math.round(value)}%`}>
-                <span className={cn('text-sm w-5 text-center transition-transform', value <= 30 && 'animate-wiggle')}>{config.icon}</span>
-                <div className="flex-1 h-2.5 bg-muted/30 rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      'h-full rounded-full bg-gradient-to-r transition-all duration-700',
-                      gradient,
-                      value > 50 && `shadow-sm ${glow}`,
-                      value <= 15 && 'animate-pulse',
-                    )}
-                    style={{ width: `${Math.max(value, 2)}%` }}
-                  />
-                </div>
-                <span className={cn('text-xs font-mono font-bold w-8 text-right', value <= 15 ? 'text-red-600' : value <= 30 ? 'text-amber-600' : 'text-foreground/70')}>
-                  {Math.round(value)}
-                </span>
+      {/* Stat bars */}
+      <div className="flex flex-col gap-2">
+        {(Object.keys(STAT_CONFIG) as (keyof PetStats)[]).map((stat) => {
+          const value = stats[stat];
+          const config = STAT_CONFIG[stat];
+          const gradient = STAT_GRADIENTS[stat];
+          const glow = STAT_GLOW[stat];
+          return (
+            <div key={stat} className="flex items-center gap-2" title={`${config.label}: ${Math.round(value)}%`}>
+              <span className={cn('text-sm w-5 text-center transition-transform', value <= 30 && 'animate-wiggle')}>{config.icon}</span>
+              <div className="flex-1 h-2.5 bg-muted/30 rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    'h-full rounded-full bg-gradient-to-r transition-all duration-700',
+                    gradient,
+                    value > 50 && `shadow-sm ${glow}`,
+                    value <= 15 && 'animate-pulse',
+                  )}
+                  style={{ width: `${Math.max(value, 2)}%` }}
+                />
               </div>
-            );
-          })}
-        </div>
+              <span className={cn('text-xs font-mono font-bold w-8 text-right', value <= 15 ? 'text-red-600' : value <= 30 ? 'text-amber-600' : 'text-foreground/70')}>
+                {Math.round(value)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

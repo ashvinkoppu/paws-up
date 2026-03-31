@@ -10,12 +10,14 @@
  * While the auth session is still loading, a centered loading indicator is
  * shown to prevent a flash of the login redirect.
  */
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
-import { useGame } from '@/context/GameContext';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { useGame } from "@/context/GameContext";
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { session, loading } = useAuth();
   const { state } = useGame();
 

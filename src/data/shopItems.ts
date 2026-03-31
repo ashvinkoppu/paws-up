@@ -15,6 +15,8 @@
  * @module data/shopItems
  */
 import { ShopItem } from '@/types/game';
+import { LayoutGrid, UtensilsCrossed, Heart, Sparkles, HeartPulse, Zap, LucideProps } from 'lucide-react';
+import { ForwardRefExoticComponent, RefAttributes } from 'react';
 
 // Shop categories organized by pet attributes for consistent naming
 // Hunger → Food items
@@ -27,17 +29,17 @@ export interface ShopCategory {
   id: string;
   attribute: 'hunger' | 'happiness' | 'cleanliness' | 'health' | 'energy';
   label: string;
-  icon: string;
+  icon: ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>>;
   description: string;
 }
 
 export const SHOP_CATEGORIES: ShopCategory[] = [
-  { id: 'all', attribute: 'hunger', label: 'All', icon: '🛒', description: 'Browse all items' },
-  { id: 'hunger', attribute: 'hunger', label: 'Hunger', icon: '🍖', description: 'Buy food in the shop' },
-  { id: 'happiness', attribute: 'happiness', label: 'Happiness', icon: '💕', description: 'Buy toys or accessories and play with me' },
-  { id: 'cleanliness', attribute: 'cleanliness', label: 'Cleanliness', icon: '✨', description: 'Book grooming' },
-  { id: 'health', attribute: 'health', label: 'Health', icon: '❤️', description: 'Buy vitamins or schedule a vet checkup' },
-  { id: 'energy', attribute: 'energy', label: 'Energy', icon: '⚡', description: 'Let me rest or reduce activities' },
+  { id: 'all', attribute: 'hunger', label: 'All', icon: LayoutGrid, description: 'Browse all items' },
+  { id: 'hunger', attribute: 'hunger', label: 'Hunger', icon: UtensilsCrossed, description: 'Buy food in the shop' },
+  { id: 'happiness', attribute: 'happiness', label: 'Happiness', icon: Heart, description: 'Buy toys or accessories and play with me' },
+  { id: 'cleanliness', attribute: 'cleanliness', label: 'Cleanliness', icon: Sparkles, description: 'Book grooming' },
+  { id: 'health', attribute: 'health', label: 'Health', icon: HeartPulse, description: 'Buy vitamins or schedule a vet checkup' },
+  { id: 'energy', attribute: 'energy', label: 'Energy', icon: Zap, description: 'Let me rest or reduce activities' },
 ];
 
 export const SHOP_ITEMS: ShopItem[] = [

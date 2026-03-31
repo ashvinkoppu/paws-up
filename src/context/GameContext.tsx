@@ -7,5 +7,5 @@
  *
  * @module context/GameContext
  */
-export { GameProvider, useGame } from './game';
-export type { ActionFeedbackEvent } from './game';
+export { GameProvider, useGame } from "./game";
+export type { ActionFeedbackEvent } from "./game";

@@ -24,15 +24,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ShoppingCart, Package, Lightbulb, Check, Crown, X } from 'lucide-react';
+import { ShoppingCart, Package, Lightbulb, Check, Crown, X, Gem, Shirt, Tag } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 /** Display metadata for each accessory equipment slot. */
-const SLOT_LABELS: Record<AccessorySlot, { label: string; icon: string }> = {
-  head: { label: 'Head', icon: '🎩' },
-  neck: { label: 'Neck', icon: '📿' },
-  body: { label: 'Body', icon: '👔' },
-  tag: { label: 'Tag', icon: '🏷️' },
+const SLOT_LABELS: Record<AccessorySlot, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
+  head: { label: 'Head', icon: Crown },
+  neck: { label: 'Neck', icon: Gem },
+  body: { label: 'Body', icon: Shirt },
+  tag: { label: 'Tag', icon: Tag },
 };
 
 const Shop: React.FC = () => {
@@ -141,7 +141,7 @@ const Shop: React.FC = () => {
   const totalInventoryCount = consumableInventory.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <Card className="h-full glass-card shadow-lg rounded-2xl">
+    <Card className="h-full bg-card border border-border rounded-xl shadow-sm">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-xl">
@@ -194,7 +194,7 @@ const Shop: React.FC = () => {
                   )}
                   title={category.description}
                 >
-                  <span className="mr-1.5">{category.icon}</span>
+                  <category.icon className="w-3.5 h-3.5 mr-1" />
                   {category.label}
                 </Button>
               ))}
@@ -285,6 +285,7 @@ const Shop: React.FC = () => {
                 {(Object.keys(SLOT_LABELS) as AccessorySlot[]).map((slot) => {
                   const equippedId = equippedAccessories[slot];
                   const accessory = equippedId ? getAccessoryById(equippedId) : null;
+                  const SlotIcon = SLOT_LABELS[slot].icon;
                   return (
                     <div
                       key={slot}
@@ -293,7 +294,11 @@ const Shop: React.FC = () => {
                         accessory ? 'border-secondary/30 bg-secondary/5' : 'border-dashed border-border/50 bg-muted/10',
                       )}
                     >
-                      <span className="text-lg">{accessory ? accessory.emoji : SLOT_LABELS[slot].icon}</span>
+                      {accessory ? (
+                        <span className="text-lg">{accessory.emoji}</span>
+                      ) : (
+                        <SlotIcon className="w-5 h-5 text-muted-foreground" />
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium text-muted-foreground">{SLOT_LABELS[slot].label}</div>
                         <div className="text-xs font-semibold text-foreground truncate">{accessory ? accessory.name : 'Empty'}</div>
@@ -311,7 +316,7 @@ const Shop: React.FC = () => {
 
             {/* Accessory shop */}
             <h4 className="font-serif font-semibold text-sm text-foreground">
-              {petGender === 'neutral' ? 'All Accessories' : `${petGender === 'male' ? '♂' : '♀'} ${petGender.charAt(0).toUpperCase() + petGender.slice(1)} Accessories`}
+              {petGender === 'neutral' ? 'All Accessories' : `${petGender.charAt(0).toUpperCase() + petGender.slice(1)} Accessories`}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {availableAccessories.map((accessory, index) => {
@@ -320,6 +325,7 @@ const Shop: React.FC = () => {
                 const finalPrice = getDiscountedPrice(accessory.price);
                 const canAfford = state.money >= finalPrice;
                 const slotInfo = SLOT_LABELS[accessory.slot];
+                const SlotIcon = slotInfo.icon;
 
                 return (
                   <div
@@ -346,8 +352,9 @@ const Shop: React.FC = () => {
                         <div>
                           <h4 className="font-semibold text-sm text-foreground">{accessory.name}</h4>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <Badge variant="outline" className="text-xs">
-                              {slotInfo.icon} {slotInfo.label}
+                            <Badge variant="outline" className="text-xs flex items-center gap-1">
+                              <SlotIcon className="w-3 h-3" />
+                              {slotInfo.label}
                             </Badge>
                             {accessory.condition && (
                               <Badge variant="outline" className="text-xs border-chart-1/50 text-chart-1">
