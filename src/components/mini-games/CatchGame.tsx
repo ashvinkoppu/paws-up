@@ -1,5 +1,5 @@
 /**
- * CatchGame - A 15-second timed "click the target" mini-game.
+ * CatchGame - A 7-second timed "click the target" mini-game.
  *
  * A treat (bone emoji) spawns at a random position inside the game area.
  * The player clicks anywhere to move their pet; if the click lands within a
@@ -15,11 +15,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Target, Coins } from "lucide-react";
+import { PET_IMAGES, PET_COLOR_FILTERS } from "@/data/petVisuals";
+import { Species, PetColor } from "@/types/game";
 
 interface CatchGameProps {
   onWin: (reward: number) => void;
   onLose: () => void;
-  petSpecies: string;
+  petSpecies: Species;
+  petColor: PetColor;
   highScore: number;
   onNewHighScore: (score: number) => void;
 }
@@ -36,13 +39,14 @@ const CatchGame: React.FC<CatchGameProps> = ({
   onWin,
   onLose,
   petSpecies,
+  petColor,
   highScore,
   onNewHighScore,
 }) => {
   const [targetPosition, setTargetPosition] = useState({ x: 50, y: 50 });
   const [petPosition, setPetPosition] = useState({ x: 50, y: 80 });
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(7);
   const [gameActive, setGameActive] = useState(true);
   const [isJumping, setIsJumping] = useState(false);
   const [activeFeedback, setActiveFeedback] = useState<
@@ -50,21 +54,6 @@ const CatchGame: React.FC<CatchGameProps> = ({
   >([]);
   const [currentBoneIndex, setCurrentBoneIndex] = useState(0);
   const [totalEarned, setTotalEarned] = useState(0);
-
-  const getPetEmoji = (species: string) => {
-    switch (species) {
-      case "dog":
-        return "🐕";
-      case "cat":
-        return "🐈";
-      case "rabbit":
-        return "🐇";
-      case "hamster":
-        return "🐹";
-      default:
-        return "🐾";
-    }
-  };
 
   useEffect(() => {
     if (!gameActive) return;
@@ -204,7 +193,7 @@ const CatchGame: React.FC<CatchGameProps> = ({
             "h-full rounded-full transition-all duration-1000 ease-linear",
             timeLeft <= 5 ? "bg-destructive" : "bg-secondary",
           )}
-          style={{ width: `${(timeLeft / 15) * 100}%` }}
+          style={{ width: `${(timeLeft / 7) * 100}%` }}
         />
       </div>
 
@@ -255,13 +244,18 @@ const CatchGame: React.FC<CatchGameProps> = ({
             {/* The Pet */}
             <div
               className={cn(
-                "absolute w-16 h-16 flex items-center justify-center text-5xl pointer-events-none",
+                "absolute w-16 h-16 flex items-center justify-center pointer-events-none",
                 "transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out",
-                isJumping && "scale-125 mb-2",
+                isJumping && "scale-125",
               )}
               style={{ left: `${petPosition.x}%`, top: `${petPosition.y}%` }}
             >
-              {getPetEmoji(petSpecies)}
+              <img
+                src={PET_IMAGES[petSpecies]}
+                alt="your pet"
+                className="w-14 h-14 object-contain drop-shadow-md"
+                style={{ filter: PET_COLOR_FILTERS[petColor] || undefined }}
+              />
             </div>
           </>
         )}

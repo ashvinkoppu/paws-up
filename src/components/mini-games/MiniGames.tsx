@@ -419,6 +419,7 @@ const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
                     onWin={handleWin}
                     onLose={handleLose}
                     petSpecies={state.pet?.species || "dog"}
+                    petColor={state.pet?.color || "golden"}
                     highScore={state.highScores?.["catch"] || 0}
                     onNewHighScore={(score) => updateHighScore("catch", score)}
                   />
