@@ -1871,6 +1871,18 @@
 
 /* ─── Print / PDF Export ──────────────────────────────────────────────────── */
 @media print {
+  /* Force background colors/images to render — without this, colored stat
+     bars, category pills, and accent stripes disappear on paper. */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    size: letter portrait;
+    margin: 1.5cm 2cm;
+  }
+
   /* Hide everything by default */
   body * {
     visibility: hidden;
@@ -1884,8 +1896,26 @@
 
   #finance-report-print {
     position: absolute;
-    inset: 0;
-    padding: 24px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0;
+    /* Intentionally omits bottom / inset — the old `inset: 0` set bottom: 0
+       which clamped the element height to one page, cutting off all content
+       past the first printed page. Without it, content flows naturally. */
+  }
+
+  /* Keep each card section together; avoid awkward mid-card page splits */
+  #finance-report-print > * {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 12px;
+  }
+
+  /* Transaction list rows may span pages naturally */
+  #finance-report-print .print-break-auto {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
   }
 
   /* Neutralise staggered-fade animations — elements start opacity-0 and the
@@ -1895,8 +1925,8 @@
     opacity: 1 !important;
   }
 
-  /* Remove decorative shadows and rounded corners that don't render well */
-  #finance-report-print .shadow-sm {
+  /* Remove decorative shadows that don't render well on paper */
+  #finance-report-print [class*="shadow"] {
     box-shadow: none !important;
   }
 }

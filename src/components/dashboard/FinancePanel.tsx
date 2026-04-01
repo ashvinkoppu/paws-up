@@ -85,10 +85,21 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 }) => (
   <div
     className={cn(
-      "bg-background border rounded-xl p-4",
+      "relative overflow-hidden bg-background border rounded-xl p-4",
       urgent ? "border-rose-300 dark:border-rose-800" : "border-border",
     )}
   >
+    {/* Status accent stripe at top */}
+    <div
+      className={cn(
+        "absolute inset-x-0 top-0 h-0.5",
+        urgent
+          ? "bg-rose-400"
+          : positive
+            ? "bg-emerald-400"
+            : "bg-primary/25",
+      )}
+    />
     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-1.5">
       {label}
     </p>
@@ -292,6 +303,12 @@ const FinancePanel: React.FC = () => {
 
   const periodLabel = timeRange === "week" ? "This Week" : "All Time";
 
+  const printDate = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   const formatDate = (timestamp: number) =>
     new Date(timestamp).toLocaleDateString("en-US", {
       month: "short",
@@ -301,7 +318,7 @@ const FinancePanel: React.FC = () => {
   return (
     <div id="finance-report-print" className="space-y-5">
       {/* ── Report Header + Budget Snapshot ── */}
-      <Card className="bg-card border border-border rounded-xl shadow-sm">
+      <Card className="bg-card border border-border rounded-xl shadow-sm break-inside-avoid">
         <CardContent className="pt-5 pb-5">
           <div className="flex items-start justify-between gap-3 mb-5">
             <div>
@@ -318,6 +335,9 @@ const FinancePanel: React.FC = () => {
                     state.pet.species.slice(1)}
                 </p>
               )}
+              <p className="hidden print:block text-xs text-muted-foreground mt-1">
+                Generated {printDate}
+              </p>
             </div>
             <div className="flex items-center gap-2 shrink-0 mt-0.5">
               <button
@@ -368,7 +388,7 @@ const FinancePanel: React.FC = () => {
       </Card>
 
       {/* ── Period Analysis Cards ── */}
-      <Card className="bg-card border border-border rounded-xl shadow-sm">
+      <Card className="bg-card border border-border rounded-xl shadow-sm break-inside-avoid">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-base">
@@ -421,7 +441,7 @@ const FinancePanel: React.FC = () => {
       </Card>
 
       {/* ── Customization Controls ── */}
-      <Card className="bg-card border border-border rounded-xl shadow-sm">
+      <Card className="bg-card border border-border rounded-xl shadow-sm print:hidden break-inside-avoid">
         <CardContent className="pt-4 pb-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3">
             Customize Report
@@ -460,7 +480,7 @@ const FinancePanel: React.FC = () => {
       </Card>
 
       {/* ── Insights ── */}
-      <Card className="bg-card border border-border rounded-xl shadow-sm">
+      <Card className="bg-card border border-border rounded-xl shadow-sm break-inside-avoid">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-3 text-base">
             <div className="p-2 bg-amber-500/10 rounded-xl">
@@ -491,7 +511,7 @@ const FinancePanel: React.FC = () => {
       </Card>
 
       {/* ── Spending Breakdown ── */}
-      <Card className="bg-card border border-border rounded-xl shadow-sm">
+      <Card className="bg-card border border-border rounded-xl shadow-sm break-inside-avoid">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-base">
@@ -573,7 +593,7 @@ const FinancePanel: React.FC = () => {
       </Card>
 
       {/* ── Transaction List ── */}
-      <Card className="bg-card border border-border rounded-xl shadow-sm">
+      <Card className="bg-card border border-border rounded-xl shadow-sm print-break-auto">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-base">
