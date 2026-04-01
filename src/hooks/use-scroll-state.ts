@@ -26,7 +26,7 @@ export function useScrolled(threshold = 20): boolean {
  */
 export function useInView(
   threshold = 0.12,
-): [React.RefObject<HTMLDivElement>, boolean] {
+): [React.RefObject<HTMLDivElement | null>, boolean] {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
