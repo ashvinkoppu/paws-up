@@ -92,6 +92,7 @@ const GameDashboard: React.FC = () => {
     restartTutorial,
     putPetToSleep,
     wakePetUp,
+    triggerRandomEvent,
   } = useGame();
   const { signOut } = useAuth();
   const navigate = useNavigate();
@@ -432,6 +433,14 @@ const GameDashboard: React.FC = () => {
                   >
                     <GraduationCap className="w-4 h-4 mr-3 text-muted-foreground" />
                     <span className="text-sm">Restart Tutorial</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={triggerRandomEvent}
+                    disabled={!!state.currentEvent}
+                    className="rounded-none cursor-pointer py-2.5 px-4 focus:bg-accent/40"
+                  >
+                    <Zap className="w-4 h-4 mr-3 text-muted-foreground" />
+                    <span className="text-sm">Trigger Random Event</span>
                   </DropdownMenuItem>
                 </div>
                 <div>
