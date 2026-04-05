@@ -6,7 +6,9 @@
  * and a clean two-column layout with a prominent step stepper.
  */
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGame } from "@/context/GameContext";
+import { useAuth } from "@/context/AuthContext";
 import { initialState } from "@/context/game/types";
 import { ACHIEVEMENT_REWARD } from "@/context/game/helpers";
 import {
@@ -27,6 +29,7 @@ import {
   Clock3,
   Heart,
   Leaf,
+  LogOut,
   Moon,
   Palette,
   PawPrint,
@@ -295,6 +298,8 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({
   onComplete,
 }) => {
   const { createPet } = useGame();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -407,6 +412,11 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({
     onComplete?.();
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Accent top line - matches landing page and auth pages */}
@@ -427,9 +437,20 @@ const PetCreationWizard: React.FC<PetCreationWizardProps> = ({
               Paws Up
             </span>
           </div>
-          <div className="hidden items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-2 text-sm text-muted-foreground shadow-sm backdrop-blur md:flex">
-            <CheckCircle2 className="h-4 w-4 text-secondary" />
-            Create your first companion
+          <div className="flex items-center gap-3">
+            <div className="hidden items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-2 text-sm text-muted-foreground shadow-sm backdrop-blur md:flex">
+              <CheckCircle2 className="h-4 w-4 text-secondary" />
+              Create your first companion
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="h-9 px-3 text-muted-foreground hover:text-foreground gap-1.5"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm">Sign out</span>
+            </Button>
           </div>
         </div>
       </nav>
