@@ -11,7 +11,7 @@
  * - Plain-language insights based on currently filtered data
  * - Strong empty states when data is sparse
  */
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useGame } from "@/context/GameContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -30,7 +30,7 @@ import {
   BarChart3,
   PawPrint,
   AlertTriangle,
-  Printer,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -309,6 +309,29 @@ const FinancePanel: React.FC = () => {
     day: "numeric",
   });
 
+  const downloadPdf = useCallback(async () => {
+    const { default: html2canvas } = await import("html2canvas");
+    const { default: jsPDF } = await import("jspdf");
+
+    const element = document.getElementById("finance-report-print");
+    if (!element) return;
+
+    const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * pageWidth) / canvas.width;
+    let y = 0;
+    while (y < imgHeight) {
+      pdf.addImage(imgData, "PNG", 0, -y, imgWidth, imgHeight);
+      y += pageHeight;
+      if (y < imgHeight) pdf.addPage();
+    }
+    pdf.save(`cost-of-care-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+  }, []);
+
   const formatDate = (timestamp: number) =>
     new Date(timestamp).toLocaleDateString("en-US", {
       month: "short",
@@ -335,17 +358,17 @@ const FinancePanel: React.FC = () => {
                     state.pet.species.slice(1)}
                 </p>
               )}
-              <p className="hidden print:block text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Generated {printDate}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0 mt-0.5">
               <button
-                onClick={() => window.print()}
+                onClick={downloadPdf}
                 className="print:hidden flex items-center gap-1.5 px-3 py-1.5 bg-accent border border-border rounded-full text-xs font-semibold text-foreground hover:bg-accent/80 transition-colors"
               >
-                <Printer className="w-3.5 h-3.5" />
-                Print
+                <Download className="w-3.5 h-3.5" />
+                Download PDF
               </button>
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 rounded-full">
                 <PawPrint className="w-3.5 h-3.5 text-primary" />
